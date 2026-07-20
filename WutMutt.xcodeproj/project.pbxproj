@@ -1,0 +1,476 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BB001001 /* WutMuttApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002001 /* WutMuttApp.swift */; };
+		BB001002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002002 /* ContentView.swift */; };
+		BB001003 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002003 /* AppModel.swift */; };
+		BB001004 /* BreedIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002004 /* BreedIdentifier.swift */; };
+		BB001005 /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002005 /* CameraController.swift */; };
+		BB001006 /* DogImageFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002006 /* DogImageFetcher.swift */; };
+		BB001007 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002007 /* Theme.swift */; };
+		BB001008 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002008 /* Components.swift */; };
+		BB001009 /* CurtainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002009 /* CurtainView.swift */; };
+		BB001010 /* CameraScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002010 /* CameraScreen.swift */; };
+		BB001011 /* AnalyzingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002011 /* AnalyzingView.swift */; };
+		BB001012 /* ResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002012 /* ResultsView.swift */; };
+		BB001013 /* BreedDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002013 /* BreedDetailView.swift */; };
+		BB001014 /* NoDogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002014 /* NoDogView.swift */; };
+		BB001015 /* ShareOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002015 /* ShareOverlay.swift */; };
+		BB001016 /* KeyEntryOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002016 /* KeyEntryOverlay.swift */; };
+		BB003001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB004001 /* Assets.xcassets */; };
+		BB003002 /* star-golden-retriever.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004002 /* star-golden-retriever.png */; };
+		BB003003 /* star-australian-shepherd.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004003 /* star-australian-shepherd.png */; };
+		BB003004 /* star-basset-hound.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004004 /* star-basset-hound.png */; };
+		BB003005 /* star-chinese-crested.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004005 /* star-chinese-crested.png */; };
+		BB003006 /* star-staffordshire-bull-terrier.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004006 /* star-staffordshire-bull-terrier.png */; };
+		BB003007 /* Italiana-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004007 /* Italiana-Regular.ttf */; };
+		BB003008 /* GreatVibes-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004008 /* GreatVibes-Regular.ttf */; };
+		BB003009 /* PlayfairDisplay-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004009 /* PlayfairDisplay-Medium.ttf */; };
+		BB003010 /* PlayfairDisplay-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004010 /* PlayfairDisplay-Bold.ttf */; };
+		BB003011 /* PlayfairDisplay-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004011 /* PlayfairDisplay-MediumItalic.ttf */; };
+		BB003012 /* PlayfairDisplay-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004012 /* PlayfairDisplay-BoldItalic.ttf */; };
+		BB003013 /* Nunito-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004013 /* Nunito-SemiBold.ttf */; };
+		BB003014 /* Nunito-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004014 /* Nunito-Bold.ttf */; };
+		BB003015 /* Nunito-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004015 /* Nunito-ExtraBold.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BB002001 /* WutMuttApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WutMuttApp.swift; sourceTree = "<group>"; };
+		BB002002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		BB002003 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		BB002004 /* BreedIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedIdentifier.swift; sourceTree = "<group>"; };
+		BB002005 /* CameraController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
+		BB002006 /* DogImageFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogImageFetcher.swift; sourceTree = "<group>"; };
+		BB002007 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		BB002008 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		BB002009 /* CurtainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurtainView.swift; sourceTree = "<group>"; };
+		BB002010 /* CameraScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreen.swift; sourceTree = "<group>"; };
+		BB002011 /* AnalyzingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzingView.swift; sourceTree = "<group>"; };
+		BB002012 /* ResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsView.swift; sourceTree = "<group>"; };
+		BB002013 /* BreedDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedDetailView.swift; sourceTree = "<group>"; };
+		BB002014 /* NoDogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoDogView.swift; sourceTree = "<group>"; };
+		BB002015 /* ShareOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareOverlay.swift; sourceTree = "<group>"; };
+		BB002016 /* KeyEntryOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEntryOverlay.swift; sourceTree = "<group>"; };
+		BB004001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BB004002 /* star-golden-retriever.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-golden-retriever.png"; sourceTree = "<group>"; };
+		BB004003 /* star-australian-shepherd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-australian-shepherd.png"; sourceTree = "<group>"; };
+		BB004004 /* star-basset-hound.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-basset-hound.png"; sourceTree = "<group>"; };
+		BB004005 /* star-chinese-crested.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-chinese-crested.png"; sourceTree = "<group>"; };
+		BB004006 /* star-staffordshire-bull-terrier.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-staffordshire-bull-terrier.png"; sourceTree = "<group>"; };
+		BB004007 /* Italiana-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Italiana-Regular.ttf"; sourceTree = "<group>"; };
+		BB004008 /* GreatVibes-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "GreatVibes-Regular.ttf"; sourceTree = "<group>"; };
+		BB004009 /* PlayfairDisplay-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-Medium.ttf"; sourceTree = "<group>"; };
+		BB004010 /* PlayfairDisplay-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-Bold.ttf"; sourceTree = "<group>"; };
+		BB004011 /* PlayfairDisplay-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-MediumItalic.ttf"; sourceTree = "<group>"; };
+		BB004012 /* PlayfairDisplay-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-BoldItalic.ttf"; sourceTree = "<group>"; };
+		BB004013 /* Nunito-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-SemiBold.ttf"; sourceTree = "<group>"; };
+		BB004014 /* Nunito-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-Bold.ttf"; sourceTree = "<group>"; };
+		BB004015 /* Nunito-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-ExtraBold.ttf"; sourceTree = "<group>"; };
+		BB004020 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB005001 /* WutMutt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WutMutt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BB008002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BB006001 = {
+			isa = PBXGroup;
+			children = (
+				BB006002 /* WutMutt */,
+				BB006003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BB006002 /* WutMutt */ = {
+			isa = PBXGroup;
+			children = (
+				BB002001 /* WutMuttApp.swift */,
+				BB002002 /* ContentView.swift */,
+				BB006004 /* Models */,
+				BB006005 /* Views */,
+				BB006006 /* Utils */,
+				BB006007 /* Fonts */,
+				BB004001 /* Assets.xcassets */,
+				BB004002 /* star-golden-retriever.png */,
+				BB004003 /* star-australian-shepherd.png */,
+				BB004004 /* star-basset-hound.png */,
+				BB004005 /* star-chinese-crested.png */,
+				BB004006 /* star-staffordshire-bull-terrier.png */,
+				BB004020 /* Info.plist */,
+			);
+			path = WutMutt;
+			sourceTree = "<group>";
+		};
+		BB006003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB005001 /* WutMutt.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BB006004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BB002003 /* AppModel.swift */,
+				BB002004 /* BreedIdentifier.swift */,
+				BB002005 /* CameraController.swift */,
+				BB002006 /* DogImageFetcher.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BB006005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BB002009 /* CurtainView.swift */,
+				BB002010 /* CameraScreen.swift */,
+				BB002011 /* AnalyzingView.swift */,
+				BB002012 /* ResultsView.swift */,
+				BB002013 /* BreedDetailView.swift */,
+				BB002014 /* NoDogView.swift */,
+				BB002015 /* ShareOverlay.swift */,
+				BB002016 /* KeyEntryOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BB006006 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				BB002007 /* Theme.swift */,
+				BB002008 /* Components.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		BB006007 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				BB004007 /* Italiana-Regular.ttf */,
+				BB004008 /* GreatVibes-Regular.ttf */,
+				BB004009 /* PlayfairDisplay-Medium.ttf */,
+				BB004010 /* PlayfairDisplay-Bold.ttf */,
+				BB004011 /* PlayfairDisplay-MediumItalic.ttf */,
+				BB004012 /* PlayfairDisplay-BoldItalic.ttf */,
+				BB004013 /* Nunito-SemiBold.ttf */,
+				BB004014 /* Nunito-Bold.ttf */,
+				BB004015 /* Nunito-ExtraBold.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BB007001 /* WutMutt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB009001 /* Build configuration list for PBXNativeTarget "WutMutt" */;
+			buildPhases = (
+				BB008001 /* Sources */,
+				BB008002 /* Frameworks */,
+				BB008003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WutMutt;
+			productName = WutMutt;
+			productReference = BB005001 /* WutMutt.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BB00A001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					BB007001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = BB009002 /* Build configuration list for PBXProject "WutMutt" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BB006001;
+			productRefGroup = BB006003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB007001 /* WutMutt */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB008003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB003001 /* Assets.xcassets in Resources */,
+				BB003002 /* star-golden-retriever.png in Resources */,
+				BB003003 /* star-australian-shepherd.png in Resources */,
+				BB003004 /* star-basset-hound.png in Resources */,
+				BB003005 /* star-chinese-crested.png in Resources */,
+				BB003006 /* star-staffordshire-bull-terrier.png in Resources */,
+				BB003007 /* Italiana-Regular.ttf in Resources */,
+				BB003008 /* GreatVibes-Regular.ttf in Resources */,
+				BB003009 /* PlayfairDisplay-Medium.ttf in Resources */,
+				BB003010 /* PlayfairDisplay-Bold.ttf in Resources */,
+				BB003011 /* PlayfairDisplay-MediumItalic.ttf in Resources */,
+				BB003012 /* PlayfairDisplay-BoldItalic.ttf in Resources */,
+				BB003013 /* Nunito-SemiBold.ttf in Resources */,
+				BB003014 /* Nunito-Bold.ttf in Resources */,
+				BB003015 /* Nunito-ExtraBold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BB008001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB001001 /* WutMuttApp.swift in Sources */,
+				BB001002 /* ContentView.swift in Sources */,
+				BB001003 /* AppModel.swift in Sources */,
+				BB001004 /* BreedIdentifier.swift in Sources */,
+				BB001005 /* CameraController.swift in Sources */,
+				BB001006 /* DogImageFetcher.swift in Sources */,
+				BB001007 /* Theme.swift in Sources */,
+				BB001008 /* Components.swift in Sources */,
+				BB001009 /* CurtainView.swift in Sources */,
+				BB001010 /* CameraScreen.swift in Sources */,
+				BB001011 /* AnalyzingView.swift in Sources */,
+				BB001012 /* ResultsView.swift in Sources */,
+				BB001013 /* BreedDetailView.swift in Sources */,
+				BB001014 /* NoDogView.swift in Sources */,
+				BB001015 /* ShareOverlay.swift in Sources */,
+				BB001016 /* KeyEntryOverlay.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BB009003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BB009004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BB009005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 763CXVDDKH;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WutMutt/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wutmutt.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BB009006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 763CXVDDKH;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WutMutt/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wutmutt.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BB009001 /* Build configuration list for PBXNativeTarget "WutMutt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB009005 /* Debug */,
+				BB009006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB009002 /* Build configuration list for PBXProject "WutMutt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB009003 /* Debug */,
+				BB009004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BB00A001 /* Project object */;
+}
