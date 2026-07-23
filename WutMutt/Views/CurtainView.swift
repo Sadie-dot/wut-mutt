@@ -38,7 +38,14 @@ struct CurtainView: View {
                 ZStack(alignment: .bottom) {
                     StarPortrait(star: model.star)
                         .padding(8)
-                    // Scrim + tabloid headline over the portrait's lower third
+                    // Full-width scrim over the portrait's lower third
+                    LinearGradient(stops: [
+                        .init(color: Color.wmDeep.opacity(0), location: 0.48),
+                        .init(color: Color.wmDeep.opacity(0.55), location: 0.70),
+                        .init(color: Color.wmDeep.opacity(0.94), location: 1)
+                    ], startPoint: .top, endPoint: .bottom)
+                        .padding(8)
+                    // Tabloid headline block
                     VStack(spacing: 10) {
                         Hairline()
                         Text(model.star.headline.uppercased())
@@ -61,16 +68,7 @@ struct CurtainView: View {
                         Hairline()
                     }
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 20)
-                    .background(
-                        LinearGradient(stops: [
-                            .init(color: Color.wmDeep.opacity(0), location: 0),
-                            .init(color: Color.wmDeep.opacity(0.55), location: 0.42),
-                            .init(color: Color.wmDeep.opacity(0.94), location: 1)
-                        ], startPoint: .top, endPoint: .bottom)
-                        .padding(.top, -70)
-                    )
-                    .padding(8)
+                    .padding(.bottom, 28)
                 }
             }
             .frame(width: W - 68, height: H - 190 - 230)
