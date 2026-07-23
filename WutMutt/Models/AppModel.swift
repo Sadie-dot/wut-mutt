@@ -226,10 +226,14 @@ final class AppModel: ObservableObject {
     // MARK: The scan — analyzing beat + Claude call
 
     func startScan(with image: UIImage) {
+        // In the simulator a missing key doesn't block the show: the Claude
+        // call fails fast and the canned fallback episode plays instead.
+        #if !targetEnvironment(simulator)
         guard BreedIdentifier.hasCredentials else {
             keyEntryOpen = true
             return
         }
+        #endif
         capturedImage = image
         portraitImage = nil
         teaserIdx = 0
