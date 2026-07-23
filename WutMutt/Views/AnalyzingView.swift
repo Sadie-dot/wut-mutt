@@ -52,7 +52,7 @@ struct AnalyzingView: View {
                     // 2-line teasers.
                     .frame(height: 96)
                     .frame(maxWidth: .infinity)
-                    .shadowPool(opacity: 0.6)
+                    .shadowPool(opacity: 0.6, midOpacity: 0.45, radiusFraction: 0.9)
                     .accessibilityAddTraits(.updatesFrequently)
 
                 BobbingDots()

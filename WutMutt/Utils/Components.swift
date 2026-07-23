@@ -108,21 +108,30 @@ struct Hairline: View {
 }
 
 /// Feathered "shadow pool" backing for text over photos — never a solid chip.
+/// An oversized ellipse gradient clipped to the box, so it fills the banner's
+/// full width and keeps fairly square vertical edges, per the prototype's
+/// `radial-gradient(ellipse 90-100% …)` treatment.
 struct ShadowPool: ViewModifier {
     var opacity: Double = 0.72
+    var midOpacity: Double = 0.6
+    var radiusFraction: CGFloat = 1.0
+
     func body(content: Content) -> some View {
         content.background(
-            RadialGradient(stops: [.init(color: Color.wmNearBlack.opacity(opacity), location: 0),
-                                   .init(color: Color.wmNearBlack.opacity(opacity * 0.83), location: 0.55),
-                                   .init(color: .clear, location: 1)],
-                           center: .center, startRadius: 10, endRadius: 160)
+            EllipticalGradient(stops: [
+                .init(color: Color.wmNearBlack.opacity(opacity), location: 0),
+                .init(color: Color.wmNearBlack.opacity(midOpacity), location: 0.55),
+                .init(color: Color.wmNearBlack.opacity(0), location: 1)
+            ], center: .center, startRadiusFraction: 0, endRadiusFraction: radiusFraction)
         )
     }
 }
 
 extension View {
-    func shadowPool(opacity: Double = 0.72) -> some View {
-        modifier(ShadowPool(opacity: opacity))
+    func shadowPool(opacity: Double = 0.72, midOpacity: Double = 0.6,
+                    radiusFraction: CGFloat = 1.0) -> some View {
+        modifier(ShadowPool(opacity: opacity, midOpacity: midOpacity,
+                            radiusFraction: radiusFraction))
     }
 }
 
