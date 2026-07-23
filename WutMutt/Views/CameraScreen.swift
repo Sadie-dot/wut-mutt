@@ -57,7 +57,7 @@ struct CameraScreen: View {
             .padding(.bottom, 12)
             .shadowPool()
             .frame(maxHeight: .infinity, alignment: .bottom)
-            .padding(.bottom, 268 - 27)
+            .padding(.bottom, 268)
             .accessibilityAddTraits(.updatesFrequently)
 
             // Bottom controls — ALBUM / REVEAL / FLIP
