@@ -67,12 +67,12 @@ struct BreedDetailView: View {
         .padding(EdgeInsets(top: 64, leading: 26, bottom: 32, trailing: 26))
         .background(
             ZStack(alignment: .topTrailing) {
-                LinearGradient(colors: [.wmAccent, .wmHeroGradEnd],
-                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                LinearGradient.wmHero
                 RadialGradient(colors: [Color.wmPink.opacity(0.25), Color.wmPink.opacity(0)],
                                center: .center, startRadius: 0, endRadius: 110)
                     .frame(width: 220, height: 220)
                     .offset(x: 60, y: -60)
+                    .glowPulseOpacity()
             }
             .clipped()
         )
@@ -111,10 +111,12 @@ struct BreedDetailView: View {
 
     private func polaroid(_ image: UIImage) -> some View {
         VStack(spacing: 0) {
+            // cover / center top, sized so the paper bottoms out level with
+            // the four-card trait rail (≈294pt tall)
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
-                .frame(height: 250)
+                .frame(height: 253, alignment: .top)
                 .frame(maxWidth: .infinity)
                 .clipped()
                 .accessibilityLabel("Reference photo of \(breed.name)")

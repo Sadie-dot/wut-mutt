@@ -137,8 +137,7 @@ struct ShareCardView: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
-            .background(LinearGradient(colors: [.wmAccent, .wmHeroGradEnd],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing))
+            .background(LinearGradient.wmHero)
 
             if let image = model.capturedImage {
                 Image(uiImage: image)

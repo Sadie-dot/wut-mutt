@@ -135,7 +135,39 @@ extension View {
     }
 }
 
+/// The raspberry hero gradient (`linear-gradient(160deg, #D91F5C, #A3134A)`),
+/// shared by the breed-detail hero and the share-card header.
+extension LinearGradient {
+    static let wmHero = LinearGradient(
+        colors: [.wmAccent, .wmHeroGradEnd],
+        startPoint: UnitPoint(x: 0.33, y: 0.03),
+        endPoint: UnitPoint(x: 0.67, y: 0.97))
+}
+
 // MARK: - Motion
+
+/// The set's 4s glow pulse applied to an existing view's opacity
+/// (0.55 ↔ 0.9), steady under Reduce Motion.
+struct PulsingOpacity: ViewModifier {
+    var duration: Double = 4
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var bright = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(reduceMotion ? 0.72 : (bright ? 0.9 : 0.55))
+            .animation(reduceMotion ? nil :
+                        .easeInOut(duration: duration / 2).repeatForever(autoreverses: true),
+                       value: bright)
+            .onAppear { if !reduceMotion { bright = true } }
+    }
+}
+
+extension View {
+    func glowPulseOpacity(duration: Double = 4) -> some View {
+        modifier(PulsingOpacity(duration: duration))
+    }
+}
 
 /// Gentle 3s scale pulse for primary buttons (1 → 1.06), off under Reduce Motion.
 struct ButtonPulse: ViewModifier {
