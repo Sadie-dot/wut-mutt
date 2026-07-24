@@ -48,8 +48,6 @@ struct NoDogView: View {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFill()
-                                .saturation(0)
-                                .contrast(1.05)
                         } else {
                             Color.wmDeep
                         }
@@ -57,6 +55,10 @@ struct NoDogView: View {
                     .frame(width: 162, height: 162)
                     .clipShape(Circle())
                     .overlay(Circle().strokeBorder(Color.wmDeep, lineWidth: 3))
+                    // The prototype's grayscale filter covers the whole div,
+                    // border included — the raspberry border reads near-black.
+                    .saturation(0)
+                    .contrast(1.05)
                     .offset(x: 3, y: 3)
                 }
                 .frame(width: 168, height: 168)
