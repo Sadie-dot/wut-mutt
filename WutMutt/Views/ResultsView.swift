@@ -35,6 +35,9 @@ struct ResultsView: View {
                 }
                 .padding(EdgeInsets(top: 64, leading: 24, bottom: 44, trailing: 24))
             }
+            // The design measures its 64pt top padding from the physical
+            // screen top, so don't stack the status-bar inset on top of it.
+            .ignoresSafeArea(edges: .top)
         }
     }
 
@@ -54,7 +57,8 @@ struct ResultsView: View {
     }
 
     private var portrait: some View {
-        GildedCircle(diameter: 210) {
+        // 210pt photo + 7pt ring each side, per the prototype's box model
+        GildedCircle(diameter: 224) {
             if let image = model.portraitImage ?? model.capturedImage {
                 Image(uiImage: image)
                     .resizable()

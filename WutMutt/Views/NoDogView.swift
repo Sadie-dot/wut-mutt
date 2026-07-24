@@ -30,7 +30,8 @@ struct NoDogView: View {
                 Hairline()
 
                 // Mugshot of the imposter
-                GildedCircle(diameter: 156, ringWidth: 6) {
+                // 156pt photo + 6pt ring each side
+                GildedCircle(diameter: 168, ringWidth: 6) {
                     if let image = model.capturedImage {
                         Image(uiImage: image)
                             .resizable()
