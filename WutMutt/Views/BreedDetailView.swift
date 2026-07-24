@@ -75,6 +75,7 @@ struct BreedDetailView: View {
                 RadialGradient(colors: [Color.wmPink.opacity(0.25), Color.wmPink.opacity(0)],
                                center: .center, startRadius: 0, endRadius: 155)
                     .frame(width: 220, height: 220)
+                    .clipShape(Circle())   // the prototype's border-radius: 50%
                     .offset(x: 60, y: -60)
                     .glowPulseOpacity()
             }
