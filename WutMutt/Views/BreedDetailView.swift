@@ -92,8 +92,7 @@ struct BreedDetailView: View {
             let contentW = WMScreen.width - 44
             let railW = (contentW - 10) / 3
             HStack(alignment: .top, spacing: 10) {
-                polaroid(headshot)
-                    .frame(width: contentW - railW - 10)
+                polaroid(headshot, paperWidth: contentW - railW - 10)
                 VStack(spacing: 10) {
                     traitCard("SIZE", breed.size, compact: true)
                     traitCard("ENERGY", breed.energy, compact: true)
@@ -114,15 +113,15 @@ struct BreedDetailView: View {
         }
     }
 
-    private func polaroid(_ image: UIImage) -> some View {
+    private func polaroid(_ image: UIImage, paperWidth: CGFloat) -> some View {
         VStack(spacing: 0) {
-            // cover / center top, sized so the paper bottoms out level with
-            // the four-card trait rail (≈294pt tall)
+            // cover / center top, hard-sized to the paper's inner width so a
+            // landscape photo can't inflate the layout; height keeps the
+            // paper level with the four-card trait rail (≈294pt tall)
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
-                .frame(height: 253, alignment: .top)
-                .frame(maxWidth: .infinity)
+                .frame(width: paperWidth - 14, height: 253, alignment: .top)
                 .clipped()
                 .accessibilityLabel("Reference photo of \(breed.name)")
             // Blank Polaroid flap
