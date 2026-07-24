@@ -51,7 +51,9 @@ struct BreedDetailView: View {
                     .font(.playfair(12, bold: true, relativeTo: .caption))
                     .kerning(4)
                     .foregroundColor(.wmCream)
-                Text(breed.name)
+                // Trailing no-break space gives Great Vibes' swashes (the
+                // 'd' curl) room before the fit-to-width bounds clip them.
+                Text(breed.name + "\u{00A0}")
                     .font(.greatVibes(breed.heroNameSize))
                     .foregroundColor(.wmIce)
                     .lineLimit(1)
@@ -68,8 +70,10 @@ struct BreedDetailView: View {
         .background(
             ZStack(alignment: .topTrailing) {
                 LinearGradient.wmHero
+                // Falloff runs past the frame (CSS farthest-corner ≈ 155) so
+                // the glow fades out with no visible disk edge.
                 RadialGradient(colors: [Color.wmPink.opacity(0.25), Color.wmPink.opacity(0)],
-                               center: .center, startRadius: 0, endRadius: 110)
+                               center: .center, startRadius: 0, endRadius: 155)
                     .frame(width: 220, height: 220)
                     .offset(x: 60, y: -60)
                     .glowPulseOpacity()
