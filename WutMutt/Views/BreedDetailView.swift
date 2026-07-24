@@ -25,7 +25,9 @@ struct BreedDetailView: View {
                     .padding(EdgeInsets(top: 22, leading: 22, bottom: 44, trailing: 22))
                 }
             }
-            .ignoresSafeArea(edges: .top)
+            // The design's paddings measure to the physical screen edges, so
+            // don't stack the status-bar or home-indicator insets on them.
+            .ignoresSafeArea()
         }
         .onAppear { model.loadBreedPhoto(for: breed) }
     }

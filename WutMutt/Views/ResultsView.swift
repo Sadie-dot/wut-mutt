@@ -35,9 +35,9 @@ struct ResultsView: View {
                 }
                 .padding(EdgeInsets(top: 64, leading: 24, bottom: 44, trailing: 24))
             }
-            // The design measures its 64pt top padding from the physical
-            // screen top, so don't stack the status-bar inset on top of it.
-            .ignoresSafeArea(edges: .top)
+            // The design's 64pt top and 44pt bottom paddings measure to the
+            // physical screen edges, so don't stack the safe-area insets.
+            .ignoresSafeArea()
         }
     }
 
