@@ -50,6 +50,9 @@ struct ResultsView: View {
             Text("The mutt is…")
                 .font(.greatVibes(52))
                 .foregroundColor(.wmAccent)
+                // Great Vibes carries a tall line box; the design sets
+                // line-height 1, so pull the script up against the kicker.
+                .padding(.top, -12)
                 .accessibilityAddTraits(.isHeader)
             Hairline(width: 80)
         }
