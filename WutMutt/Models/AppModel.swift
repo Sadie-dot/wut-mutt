@@ -276,6 +276,14 @@ final class AppModel: ObservableObject {
     }
 
     private nonisolated static func identify(_ image: UIImage) async -> BreedVerdict {
+        #if DEBUG
+        // Dev hook (the prototype's teddy-bear shortcut):
+        // `SIMCTL_CHILD_WM_FORCE_VERDICT=nodog simctl launch` forces the
+        // shocking-twist path without an API key.
+        if ProcessInfo.processInfo.environment["WM_FORCE_VERDICT"] == "nodog" {
+            return .notADog
+        }
+        #endif
         do { return try await BreedIdentifier().identify(image) }
         catch { return .unavailable }
     }

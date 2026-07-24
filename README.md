@@ -23,8 +23,13 @@ device Keychain (`ClaudeKeyStore`). If the API is unreachable or returns
 something unparseable, the app plays a canned fallback episode instead of an
 error screen — the show must go on.
 
-Dev shortcut: `SIMCTL_CHILD_WM_CLAUDE_KEY=sk-ant-… xcrun simctl launch <udid>
-com.wutmutt.app` injects a key in Debug builds without touching the Keychain.
+Dev shortcuts (Debug builds only):
+
+- `SIMCTL_CHILD_WM_CLAUDE_KEY=sk-ant-… xcrun simctl launch <udid>
+  com.wutmutt.app` injects a key without touching the Keychain.
+- `SIMCTL_CHILD_WM_FORCE_VERDICT=nodog xcrun simctl launch <udid>
+  com.wutmutt.app` forces every reveal to the "not a mutt" twist screen —
+  the prototype's teddy-bear shortcut, no key needed.
 
 ## How it's put together
 
