@@ -87,13 +87,10 @@ struct GildedCircle<Content: View>: View {
             .clipShape(Circle())
             .frame(width: diameter, height: diameter)
             .background(
-                // Stops pulled forward so the ring hits full deep teal by its
-                // right side — the reference's ring visibly recedes into the
-                // set there instead of staying bright all the way around.
                 Circle().fill(LinearGradient(
                     stops: [.init(color: .wmIceLight, location: 0),
-                            .init(color: .wmIce, location: 0.35),
-                            .init(color: .wmIceDeep, location: 0.72)],
+                            .init(color: .wmIce, location: 0.45),
+                            .init(color: .wmIceDeep, location: 1)],
                     startPoint: .topLeading, endPoint: .bottomTrailing))
             )
     }

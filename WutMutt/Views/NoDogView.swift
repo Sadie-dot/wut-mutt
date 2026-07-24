@@ -31,20 +31,35 @@ struct NoDogView: View {
 
                 Hairline()
 
-                // Mugshot of the imposter
-                // 156pt photo + 6pt ring each side
-                GildedCircle(diameter: 168, ringWidth: 6) {
-                    if let image = model.capturedImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .saturation(0)
-                            .contrast(1.05)
-                    } else {
-                        Color.wmDeep
+                // Mugshot of the imposter. The photo circle sits 3pt oversized
+                // and offset toward the bottom-right (the prototype's
+                // content-box border overflow), so the gilded ring tapers from
+                // ~7pt at the top-left to nothing at the bottom-right.
+                ZStack {
+                    Circle()
+                        .fill(LinearGradient(
+                            stops: [.init(color: .wmIceLight, location: 0),
+                                    .init(color: .wmIce, location: 0.45),
+                                    .init(color: .wmIceDeep, location: 1)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 168, height: 168)
+                    Group {
+                        if let image = model.capturedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .saturation(0)
+                                .contrast(1.05)
+                        } else {
+                            Color.wmDeep
+                        }
                     }
+                    .frame(width: 162, height: 162)
+                    .clipShape(Circle())
+                    .overlay(Circle().strokeBorder(Color.wmDeep, lineWidth: 3))
+                    .offset(x: 3, y: 3)
                 }
-                .overlay(Circle().strokeBorder(Color.wmDeep, lineWidth: 3).padding(6))
+                .frame(width: 168, height: 168)
                 .padding(.top, -6)
                 .accessibilityLabel("Mugshot of our mystery guest")
 
