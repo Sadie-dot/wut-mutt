@@ -16,7 +16,9 @@ struct NoDogView: View {
             GlowPulse()
 
             VStack(spacing: 16) {
-                Text("Wut?")
+                // Balanced no-break spaces give the '?' swash room before the
+                // text bounds clip it, without shifting the optical center.
+                Text("\u{00A0}Wut?\u{00A0}")
                     .font(.greatVibes(60))
                     .foregroundColor(.wmIce)
                     .shadow(color: Color.wmIce.opacity(0.45), radius: 12)
