@@ -15,6 +15,7 @@ struct ContentView: View {
             case .results:          ResultsView()
             case .detail(let idx):  BreedDetailView(breedIndex: idx)
             case .nodog:            NoDogView()
+            case .offAir(let info): OffAirView(offAir: info)
             }
 
             if model.shareOpen { ShareOverlay() }

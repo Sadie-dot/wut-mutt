@@ -1,0 +1,164 @@
+// Wut Mutt breed-identification proxy.
+//
+// Holds the Anthropic API key server-side so the iOS app never ships or
+// stores it. The app POSTs { image } to /identify; the prompt, model, and
+// output schema live HERE so the endpoint can't be repurposed as a general
+// Claude proxy. Responses are passed through in the Anthropic Messages
+// format the app already parses.
+//
+// Errors carry a machine-readable `type` alongside the human message so the
+// app can tell "the studio is dark until tomorrow" from "we lost the feed"
+// and say the right thing — it must never quietly invent a breed reading.
+//
+// Secrets (set with `npx wrangler secret put <NAME>`):
+//   ANTHROPIC_API_KEY  — required
+//   APP_TOKEN          — recommended; the app sends it as x-wm-app-token
+// Optional bindings/vars (see wrangler.toml):
+//   RATE_KV            — KV namespace enabling the per-IP daily cap
+//   DAILY_CAP          — reveals per IP per day (default 40)
+
+const MODEL = "claude-sonnet-4-5";
+const MAX_TOKENS = 2500;
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (request.method !== "POST" || url.pathname !== "/identify") {
+      return err("not_found", "Not found.", 404);
+    }
+    if (env.APP_TOKEN && request.headers.get("x-wm-app-token") !== env.APP_TOKEN) {
+      return err("unauthorized", "Unauthorized.", 401);
+    }
+
+    // Per-IP daily cap (skipped gracefully when no KV namespace is bound).
+    // The message is written in the show's voice — the app displays it.
+    if (env.RATE_KV) {
+      const ip = request.headers.get("cf-connecting-ip") || "unknown";
+      const key = `rl:${ip}:${new Date().toISOString().slice(0, 10)}`;
+      const used = parseInt((await env.RATE_KV.get(key)) || "0", 10);
+      const cap = parseInt(env.DAILY_CAP || "40", 10);
+      if (used >= cap) {
+        return err("rate_limit",
+                   "The studio goes dark until tomorrow. Even soap stars need their rest.",
+                   429);
+      }
+      await env.RATE_KV.put(key, String(used + 1), { expirationTtl: 90000 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return err("bad_request", "Body must be JSON.", 400);
+    }
+
+    const image = body.image;
+    if (typeof image !== "string" || image.length < 100 || image.length > 8_000_000) {
+      return err("bad_request", "Missing or oversized image.", 400);
+    }
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(image.slice(0, 4000))) {
+      return err("bad_request", "Image must be base64 JPEG.", 400);
+    }
+
+    const upstream = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify(anthropicRequest(image)),
+    });
+
+    // Pass the upstream body through unchanged on success. On failure, don't
+    // leak Anthropic's wording (it can name the account or the key) — map it
+    // to our own type so the app picks the right screen.
+    const raw = await upstream.text();
+    if (upstream.ok) {
+      return new Response(raw, {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    if (upstream.status === 429) {
+      return err("rate_limit",
+                 "The studio goes dark until tomorrow. Even soap stars need their rest.",
+                 429);
+    }
+    // 401/403 (bad or revoked key) and 400 (bad request) are the developer's
+    // problem, not the viewer's, and there is nothing they can do but wait.
+    if (upstream.status >= 400 && upstream.status < 500) {
+      return err("upstream_config", "The show is off the air. We're working on it.", 502);
+    }
+    return err("upstream_unavailable", "The studio isn't answering. Try again in a moment.", 503);
+  },
+};
+
+function err(type, message, status) {
+  return new Response(JSON.stringify({ type: "error", error: { type, message } }), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+// Mirrors BreedIdentifier.swift's bring-your-own-key request — keep the two
+// in sync when the prompt or schema changes.
+function anthropicRequest(imageBase64) {
+  const prompt = `Analyze this photo for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.
+
+Rules:
+- If no real live dog is present, set isDog false, certainty 99, and breeds to an empty array.
+- Otherwise give 3 or 4 breeds whose "pct" values are integers summing to exactly 100, most confident first.
+- "certainty" is 40-99: how confident the visual breed read is.
+- "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
+- "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
+- "clues" are 3 short visual details seen in THIS photo.
+- "fact" is a real, accurate, fun breed fact in 1-2 sentences. Never invent facts.
+- If the mix is uncertain, the last breed may be a wildcard named "A Special Guest".`;
+
+  return {
+    model: MODEL,
+    max_tokens: MAX_TOKENS,
+    system: "You identify dog breeds from photos for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.",
+    output_config: { format: { type: "json_schema", schema: verdictSchema() } },
+    messages: [{
+      role: "user",
+      content: [
+        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageBase64 } },
+        { type: "text", text: prompt },
+      ],
+    }],
+  };
+}
+
+// A schema rather than "respond with strict JSON" prompting: the app used to
+// fall back to a canned episode whenever a single field came back missing.
+function verdictSchema() {
+  const str = { type: "string" };
+  const breed = {
+    type: "object",
+    properties: {
+      name: str,
+      pct: { type: "integer" },
+      tagline: str,
+      size: str,
+      energy: str,
+      drool: str,
+      floof: str,
+      clues: { type: "array", items: str },
+      fact: str,
+    },
+    required: ["name", "pct", "tagline", "size", "energy", "drool", "floof", "clues", "fact"],
+    additionalProperties: false,
+  };
+  return {
+    type: "object",
+    properties: {
+      isDog: { type: "boolean" },
+      certainty: { type: "integer" },
+      breeds: { type: "array", items: breed },
+    },
+    required: ["isDog", "certainty", "breeds"],
+    additionalProperties: false,
+  };
+}

@@ -2,9 +2,12 @@ import UIKit
 import Security
 
 // Live breed reveals via the Claude API (see the End Credits AI disclosure).
-// The photo goes to Claude, which returns the episode's breed breakdown as
-// strict JSON; anything that fails on the way falls back to the canned
-// episode upstream — the viewer never sees an error screen.
+// The photo goes to Claude — either through the developer-hosted Worker proxy
+// (which holds the API key) or, when no proxy is configured, directly with the
+// user's own key.
+//
+// Nothing here ever invents a breed reading. When the studio can't be reached,
+// the caller gets an `.offAir` verdict describing what actually happened.
 
 // MARK: - API key storage (Keychain)
 
@@ -35,113 +38,315 @@ enum ClaudeKeyStore {
     static func save(_ key: String) {
         let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        let base: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service
-        ]
         SecItemDelete(base as CFDictionary)
         var add = base
         add[kSecValueData as String] = Data(trimmed.utf8)
         SecItemAdd(add as CFDictionary, nil)
     }
+
+    /// Drops a key the API has rejected, so the next reveal asks for a new one
+    /// instead of failing the same way forever.
+    static func clear() {
+        SecItemDelete(base as CFDictionary)
+    }
+
+    private static var base: [String: Any] {
+        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service]
+    }
 }
 
 // MARK: - Verdict
 
+/// What the studio came back with.
 enum BreedVerdict {
     case dog(breeds: [Breed], certainty: Int)
     case notADog
-    case unavailable
+    /// Couldn't get a real reading. Carries what to tell the viewer — the app
+    /// never fills this gap with a fabricated episode.
+    case offAir(OffAir)
 }
 
-enum BreedIdentifierError: Error {
-    case missingKey, badImage, badResponse
+/// The copy for an off-air card, in the show's voice.
+struct OffAir: Equatable {
+    let headline: String
+    let kicker: String
+    let message: String
+    /// False when trying again now can't possibly help (daily cap, bad key).
+    let retryable: Bool
+    /// The user's own key was rejected — reopen the key prompt.
+    var needsNewKey = false
+}
+
+enum BreedIdentifierError: LocalizedError {
+    case notConfigured
+    case badImage
+    case api(type: String?, message: String)
+    case refused
+
+    var errorDescription: String? {
+        switch self {
+        case .notConfigured:  return "No way to reach Claude is configured."
+        case .badImage:       return "Couldn't read that photo."
+        case .api(_, let m):  return m
+        case .refused:        return "Claude declined to analyze this photo."
+        }
+    }
+}
+
+// MARK: - Backend selection
+
+/// How the app reaches Claude. When the Info.plist carries a proxy URL the app
+/// routes through the developer-hosted Worker (which holds the API key) and no
+/// per-user key is needed. Otherwise each user supplies their own key.
+enum IdentifyBackend {
+    /// Developer-hosted proxy: the app ships no key, users just point and shoot.
+    case proxy(url: URL, appToken: String?)
+    /// Bring-your-own-key: the user's key is read from the Keychain.
+    case directKey(String)
+
+    static func resolve() -> IdentifyBackend? {
+        if let (url, token) = Self.proxyConfig {
+            return .proxy(url: url, appToken: token)
+        }
+        if let key = ClaudeKeyStore.key {
+            return .directKey(key)
+        }
+        return nil
+    }
+
+    private static var proxyConfig: (URL, String?)? {
+        let info = Bundle.main.infoDictionary
+        guard let raw = (info?["WMIdentifyProxyURL"] as? String)?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.isEmpty, let url = URL(string: raw) else { return nil }
+        let token = (info?["WMIdentifyAppToken"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (url, (token?.isEmpty == false) ? token : nil)
+    }
+
+    /// Whether the "Connect Claude" key prompt should ever appear. A configured
+    /// proxy never prompts.
+    static var usesProxy: Bool { proxyConfig != nil }
 }
 
 // MARK: - Identifier
 
 struct BreedIdentifier {
 
-    static var hasCredentials: Bool { ClaudeKeyStore.key != nil }
+    /// Whether a reveal can even be attempted — a proxy is configured, or the
+    /// user has stored a key.
+    static var hasCredentials: Bool { IdentifyBackend.resolve() != nil }
 
     func identify(_ image: UIImage) async throws -> BreedVerdict {
-        guard let key = ClaudeKeyStore.key else { throw BreedIdentifierError.missingKey }
+        guard let backend = IdentifyBackend.resolve() else {
+            throw BreedIdentifierError.notConfigured
+        }
         guard let jpeg = downscaledJPEG(image) else { throw BreedIdentifierError.badImage }
+        let imageBase64 = jpeg.base64EncodedString()
 
-        var request = URLRequest(url: URL(string: "https://api.anthropic.com/v1/messages")!)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 120
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(key, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-        request.httpBody = try JSONSerialization.data(withJSONObject: body(imageBase64: jpeg.base64EncodedString()))
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-            throw BreedIdentifierError.badResponse
+        let request: URLRequest
+        switch backend {
+        case .proxy(let url, let appToken):
+            request = proxyRequest(url: url, appToken: appToken, imageBase64: imageBase64)
+        case .directKey(let key):
+            request = directRequest(apiKey: key, imageBase64: imageBase64)
         }
 
-        let message = try JSONDecoder().decode(APIMessage.self, from: data)
-        guard let text = message.content.first(where: { $0.type == "text" })?.text else {
-            throw BreedIdentifierError.badResponse
-        }
-        return try parse(text)
+        return try await send(request, backend: backend)
     }
 
-    private func body(imageBase64: String) -> [String: Any] {
-        let prompt = """
-        Analyze this photo. Return JSON: {"isDog": boolean, "certainty": integer 40-99 \
-        (how confident the visual breed read is), "breeds": [3 or 4 items, "pct" integers \
-        summing to 100, each {"name","pct","tagline","size","energy","drool","floof",\
-        "clues":["3 short visual clues seen in THIS photo"],"fact"}]}. "tagline" is a \
-        melodramatic soap-opera character description (e.g. "The brooding lead with a \
-        hidden past"). "size"/"energy"/"drool"/"floof" are 1-3 word ratings. "fact" is a \
-        real, fun, accurate breed fact in 1-2 sentences. If the mix is uncertain, the \
-        last breed may be a wildcard named "A Special Guest". If no real live dog is \
-        present, return {"isDog": false, "certainty": 99, "breeds": []}.
-        """
-        return [
+    // MARK: Requests
+
+    private func proxyRequest(url: URL, appToken: String?, imageBase64: String) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 60
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let appToken { request.setValue(appToken, forHTTPHeaderField: "x-wm-app-token") }
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["image": imageBase64])
+        return request
+    }
+
+    /// Talks to the Anthropic API directly with the user's own key. Mirrors the
+    /// proxy's model, prompt, and schema — keep the two in sync.
+    private func directRequest(apiKey: String, imageBase64: String) -> URLRequest {
+        var request = URLRequest(url: URL(string: "https://api.anthropic.com/v1/messages")!)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 60
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: [
             "model": "claude-sonnet-4-5",
             "max_tokens": 2500,
-            "system": "You identify dog breeds from photos for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera. Respond with STRICT JSON only — no markdown fences, no commentary.",
+            "system": "You identify dog breeds from photos for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.",
+            "output_config": ["format": ["type": "json_schema", "schema": Self.verdictSchema]],
             "messages": [[
                 "role": "user",
                 "content": [
                     ["type": "image",
                      "source": ["type": "base64", "media_type": "image/jpeg", "data": imageBase64]],
-                    ["type": "text", "text": prompt]
+                    ["type": "text", "text": Self.prompt]
                 ]
             ]]
-        ]
+        ])
+        return request
     }
 
-    private func parse(_ text: String) throws -> BreedVerdict {
-        let cleaned = text
-            .replacingOccurrences(of: "```json", with: "")
-            .replacingOccurrences(of: "```", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let data = cleaned.data(using: .utf8),
-              let wire = try? JSONDecoder().decode(WirePayload.self, from: data) else {
-            throw BreedIdentifierError.badResponse
+    // MARK: Pipeline
+
+    private func send(_ request: URLRequest, backend: IdentifyBackend) async throws -> BreedVerdict {
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            let envelope = try? JSONDecoder().decode(APIErrorEnvelope.self, from: data)
+            throw BreedIdentifierError.api(
+                type: envelope?.error.type ?? Self.errorType(for: http.statusCode, backend: backend),
+                message: envelope?.error.message ?? Self.genericFailure(status: http.statusCode))
         }
-        if wire.isDog == false { return .notADog }
-        guard let wireBreeds = wire.breeds, !wireBreeds.isEmpty else {
-            throw BreedIdentifierError.badResponse
+
+        let message = try JSONDecoder().decode(APIMessage.self, from: data)
+        if message.stopReason == "refusal" { throw BreedIdentifierError.refused }
+        guard let text = message.content.first(where: { $0.type == "text" })?.text,
+              let payload = text.data(using: .utf8) else {
+            throw BreedIdentifierError.api(type: nil, message: "Empty response from Claude.")
         }
-        let breeds = wireBreeds.prefix(4).enumerated().map { i, b in
-            Breed(name: b.name,
-                  pct: b.pct,
-                  tagline: b.tagline ?? "",
-                  size: b.size ?? "—",
-                  energy: b.energy ?? "—",
-                  drool: b.drool ?? "—",
-                  floof: b.floof ?? "—",
-                  clues: b.clues ?? [],
-                  fact: b.fact ?? "",
-                  colorIndex: i)
+        return try parse(payload)
+    }
+
+    /// Shown when the failure carried no message of its own. Viewers get the
+    /// show's voice; the status code is for whoever is holding the debugger.
+    private static func genericFailure(status: Int) -> String {
+        #if DEBUG
+        return "Something came between us and the studio.\n(HTTP \(status))"
+        #else
+        return "Something came between us and the studio."
+        #endif
+    }
+
+    /// When the response body isn't our envelope — a direct-to-Anthropic call,
+    /// or an edge error — classify by status so the app still says the right
+    /// thing. A rejected key on the BYOK path is the one worth naming.
+    private static func errorType(for status: Int, backend: IdentifyBackend) -> String {
+        switch (status, backend) {
+        case (401, .directKey), (403, .directKey): return "invalid_key"
+        case (429, _):                             return "rate_limit"
+        case (500...599, _):                       return "upstream_unavailable"
+        default:                                   return "upstream_config"
         }
-        let certainty = max(40, min(99, wire.certainty ?? 80))
-        return .dog(breeds: Array(breeds), certainty: certainty)
+    }
+
+    private func parse(_ data: Data) throws -> BreedVerdict {
+        guard let wire = try? JSONDecoder().decode(WirePayload.self, from: data) else {
+            throw BreedIdentifierError.api(type: nil, message: "Couldn't read the studio's answer.")
+        }
+        guard wire.isDog, !wire.breeds.isEmpty else { return .notADog }
+        let breeds = wire.breeds.prefix(4).enumerated().map { i, b in
+            Breed(name: b.name, pct: b.pct, tagline: b.tagline,
+                  size: b.size, energy: b.energy, drool: b.drool, floof: b.floof,
+                  clues: b.clues, fact: b.fact, colorIndex: i)
+        }
+        return .dog(breeds: Array(breeds), certainty: max(40, min(99, wire.certainty)))
+    }
+
+    // MARK: Off-air copy
+
+    /// Turns a failure into something honest to put on screen. The one thing
+    /// it never does is pretend the reveal succeeded.
+    static func offAir(for error: Error) -> OffAir {
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed,
+                 .cannotConnectToHost, .cannotFindHost, .timedOut:
+                return OffAir(headline: "We've lost the feed.",
+                              kicker: "TECHNICAL DIFFICULTIES",
+                              message: "Something has come between us and the studio.\nCheck your connection and we'll pick up\nright where we left off.",
+                              retryable: true)
+            default:
+                break
+            }
+        }
+
+        switch error {
+        case BreedIdentifierError.api(let type, let message):
+            switch type {
+            case "rate_limit":
+                return OffAir(headline: "That's a wrap.",
+                              kicker: "TONIGHT'S EPISODE HAS ENDED",
+                              message: message, retryable: false)
+            case "invalid_key":
+                return OffAir(headline: "Cut!",
+                              kicker: "THE STUDIO REFUSED YOUR CREDENTIALS",
+                              message: "That Claude API key was turned away.\nCheck it and try again.",
+                              retryable: false, needsNewKey: true)
+            case "upstream_unavailable":
+                return OffAir(headline: "Please stand by.",
+                              kicker: "TECHNICAL DIFFICULTIES",
+                              message: message, retryable: true)
+            default:
+                return OffAir(headline: "Off the air.",
+                              kicker: "PLEASE STAND BY",
+                              message: message, retryable: false)
+            }
+
+        case BreedIdentifierError.refused:
+            return OffAir(headline: "Cut!",
+                          kicker: "THE NETWORK OBJECTS",
+                          message: "Claude declined to analyze this photo.\nTry a different shot.",
+                          retryable: false)
+
+        case BreedIdentifierError.badImage:
+            return OffAir(headline: "Cut!",
+                          kicker: "THAT TAKE DIDN'T SURVIVE THE EDIT",
+                          message: "Something went wrong with that photo.\nLet's shoot it again.",
+                          retryable: true)
+
+        default:
+            return OffAir(headline: "Please stand by.",
+                          kicker: "TECHNICAL DIFFICULTIES",
+                          message: "The reveal didn't make it to air.\nLet's try that take again.",
+                          retryable: true)
+        }
+    }
+
+    // MARK: Prompt + schema (mirrors proxy/src/index.js)
+
+    private static let prompt = """
+    Analyze this photo for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.
+
+    Rules:
+    - If no real live dog is present, set isDog false, certainty 99, and breeds to an empty array.
+    - Otherwise give 3 or 4 breeds whose "pct" values are integers summing to exactly 100, most confident first.
+    - "certainty" is 40-99: how confident the visual breed read is.
+    - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
+    - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
+    - "clues" are 3 short visual details seen in THIS photo.
+    - "fact" is a real, accurate, fun breed fact in 1-2 sentences. Never invent facts.
+    - If the mix is uncertain, the last breed may be a wildcard named "A Special Guest".
+    """
+
+    private static var verdictSchema: [String: Any] {
+        let str: [String: Any] = ["type": "string"]
+        let breed: [String: Any] = [
+            "type": "object",
+            "properties": [
+                "name": str, "pct": ["type": "integer"], "tagline": str,
+                "size": str, "energy": str, "drool": str, "floof": str,
+                "clues": ["type": "array", "items": str], "fact": str
+            ],
+            "required": ["name", "pct", "tagline", "size", "energy", "drool", "floof", "clues", "fact"],
+            "additionalProperties": false
+        ]
+        return [
+            "type": "object",
+            "properties": [
+                "isDog": ["type": "boolean"],
+                "certainty": ["type": "integer"],
+                "breeds": ["type": "array", "items": breed]
+            ],
+            "required": ["isDog", "certainty", "breeds"],
+            "additionalProperties": false
+        ]
     }
 
     /// Downscale to ≤640px on the long edge and recompress until the base64
@@ -167,28 +372,44 @@ struct BreedIdentifier {
 
 // MARK: - Wire types
 
+private struct APIErrorEnvelope: Decodable {
+    struct Payload: Decodable {
+        let type: String?
+        let message: String
+    }
+    let error: Payload
+}
+
 private struct APIMessage: Decodable {
     struct Block: Decodable {
         let type: String
         let text: String?
     }
     let content: [Block]
+    let stopReason: String?
+
+    enum CodingKeys: String, CodingKey {
+        case content
+        case stopReason = "stop_reason"
+    }
 }
 
+/// The schema guarantees these fields, so they're non-optional by contract
+/// rather than by hope.
 private struct WirePayload: Decodable {
     let isDog: Bool
-    let certainty: Int?
-    let breeds: [WireBreed]?
+    let certainty: Int
+    let breeds: [WireBreed]
 }
 
 private struct WireBreed: Decodable {
     let name: String
     let pct: Int
-    let tagline: String?
-    let size: String?
-    let energy: String?
-    let drool: String?
-    let floof: String?
-    let clues: [String]?
-    let fact: String?
+    let tagline: String
+    let size: String
+    let energy: String
+    let drool: String
+    let floof: String
+    let clues: [String]
+    let fact: String
 }

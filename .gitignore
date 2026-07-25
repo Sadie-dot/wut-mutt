@@ -3,3 +3,7 @@ xcuserdata/
 DerivedData/
 build/
 *.xcuserstate
+
+# Private proxy config — real Worker URL + app token live here, never committed.
+# The committed template is Secrets.local.example.xcconfig.
+WutMutt/Config/Secrets.local.xcconfig

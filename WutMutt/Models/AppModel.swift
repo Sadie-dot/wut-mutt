@@ -66,6 +66,7 @@ struct Breed: Identifiable {
 enum Screen: Equatable {
     case curtain, home, analyzing, results, nodog
     case detail(Int)
+    case offAir(OffAir)
 
     var isDarkSet: Bool {
         switch self {
@@ -226,14 +227,30 @@ final class AppModel: ObservableObject {
     // MARK: The scan — analyzing beat + Claude call
 
     func startScan(with image: UIImage) {
-        // In the simulator a missing key doesn't block the show: the Claude
-        // call fails fast and the canned fallback episode plays instead.
-        #if !targetEnvironment(simulator)
         guard BreedIdentifier.hasCredentials else {
+            #if targetEnvironment(simulator)
+            // Nothing configured in the simulator — play the canned episode so
+            // the whole show stays demoable without credentials. This is the
+            // ONLY path that fabricates a reading, and it can't reach a device.
+            runEpisode(with: image) { .dog(breeds: Breed.fallbackEpisode, certainty: 87) }
+            #else
             keyEntryOpen = true
+            #endif
             return
         }
-        #endif
+        runEpisode(with: image) { await Self.identify(image) }
+    }
+
+    /// Re-runs the reveal on the photo we already have, for the off-air card.
+    func retryScan() {
+        guard let image = capturedImage else { goHome(); return }
+        startScan(with: image)
+    }
+
+    /// The analyzing beat: five teasers over 8 seconds, running alongside
+    /// whatever is producing the verdict, advancing when both finish.
+    private func runEpisode(with image: UIImage,
+                            verdict: @escaping @Sendable () async -> BreedVerdict) {
         capturedImage = image
         portraitImage = nil
         teaserIdx = 0
@@ -243,7 +260,7 @@ final class AppModel: ObservableObject {
         scanTask?.cancel()
         scanTask = Task { [weak self] in
             guard let self else { return }
-            async let verdict = Self.identify(image)
+            async let pending = verdict()
 
             // Teasers play once, 1.6s apiece, then hold on the last — the
             // sequence itself is the 8s minimum runtime.
@@ -254,7 +271,7 @@ final class AppModel: ObservableObject {
             }
             try? await Task.sleep(nanoseconds: 1_600_000_000)
 
-            let result = await verdict
+            let result = await pending
             guard !Task.isCancelled, self.screen == .analyzing else { return }
 
             switch result {
@@ -265,27 +282,34 @@ final class AppModel: ObservableObject {
                 self.certainty = certainty
                 self.cropPortrait(from: image)
                 self.screen = .results
-            case .unavailable:
-                // Claude failure or malformed JSON — run the canned episode.
-                self.breeds = Breed.fallbackEpisode
-                self.certainty = 87
-                self.cropPortrait(from: image)
-                self.screen = .results
+            case .offAir(let info):
+                // A key the API turned away is worse than useless — drop it so
+                // the next reveal asks for a new one.
+                if info.needsNewKey { ClaudeKeyStore.clear() }
+                self.screen = .offAir(info)
             }
         }
     }
 
     private nonisolated static func identify(_ image: UIImage) async -> BreedVerdict {
         #if DEBUG
-        // Dev hook (the prototype's teddy-bear shortcut):
-        // `SIMCTL_CHILD_WM_FORCE_VERDICT=nodog simctl launch` forces the
-        // shocking-twist path without an API key.
-        if ProcessInfo.processInfo.environment["WM_FORCE_VERDICT"] == "nodog" {
+        // Dev hooks: `SIMCTL_CHILD_WM_FORCE_VERDICT=<case> simctl launch`
+        // forces a path without needing to reproduce it for real.
+        switch ProcessInfo.processInfo.environment["WM_FORCE_VERDICT"] {
+        case "nodog":                       // the prototype's teddy-bear shortcut
             return .notADog
+        case "offair":                      // daily cap spent
+            return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.api(
+                type: "rate_limit",
+                message: "The studio goes dark until tomorrow.\nEven soap stars need their rest.")))
+        case "offline":                     // lost the feed
+            return .offAir(BreedIdentifier.offAir(for: URLError(.notConnectedToInternet)))
+        default:
+            break
         }
         #endif
         do { return try await BreedIdentifier().identify(image) }
-        catch { return .unavailable }
+        catch { return .offAir(BreedIdentifier.offAir(for: error)) }
     }
 
     // MARK: Portrait crop
@@ -349,6 +373,8 @@ final class AppModel: ObservableObject {
         case .results:   message = "The results are in: \(breeds.first?.name ?? "") leads the cast."
         case .nodog:     message = "Shocking twist: that is not a dog."
         case .home:      message = "Camera. Fit your dog in the frame."
+        case .offAir(let info):
+            message = "\(info.headline) \(info.message.replacingOccurrences(of: "\n", with: " "))"
         default:         message = nil
         }
         if let message {

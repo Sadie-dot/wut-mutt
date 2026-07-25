@@ -1,0 +1,17 @@
+name = "wutmutt-identify"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Per-IP daily rate cap (DAILY_CAP reveals/IP/day). Create the namespace with
+# `npx wrangler kv namespace create RATE_KV` and paste the printed id below,
+# then uncomment. Without it the Worker runs uncapped.
+# [[kv_namespaces]]
+# binding = "RATE_KV"
+# id = "paste-the-id-wrangler-prints"
+
+[vars]
+DAILY_CAP = "40"
+
+# Secrets are NOT set here — never commit them. Set with:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+#   npx wrangler secret put APP_TOKEN

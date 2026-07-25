@@ -1,0 +1,14 @@
+{
+  "name": "wutmutt-identify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker that proxies Wut Mutt breed identification to the Anthropic API, keeping the API key server-side.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.107.0"
+  }
+}

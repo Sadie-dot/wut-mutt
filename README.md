@@ -17,19 +17,36 @@ shocking-twist screen.
 Open `WutMutt.xcodeproj` in Xcode and run on an iOS simulator or device
 (iOS 17+, portrait iPhone only).
 
-Live breed reveals call the Claude API with a bring-your-own-key flow: the
-app prompts for an Anthropic API key on first reveal and stores it in the
-device Keychain (`ClaudeKeyStore`). If the API is unreachable or returns
-something unparseable, the app plays a canned fallback episode instead of an
-error screen — the show must go on.
+Live breed reveals need Claude, and there are two ways to reach it:
 
-Dev shortcuts (Debug builds only):
+- **Proxy (shipping setup).** Deploy `proxy/` — a Cloudflare Worker holding
+  the Anthropic key server-side, with a per-IP daily cap — then put its URL
+  and app token in a git-ignored `WutMutt/Config/Secrets.local.xcconfig`.
+  The app ships no key and users never see a prompt. See
+  [proxy/README.md](proxy/README.md).
+- **Bring your own key (default on a fresh clone).** With no proxy
+  configured, the app prompts for an Anthropic API key on first reveal and
+  stores it in the device Keychain (`ClaudeKeyStore`).
 
-- `SIMCTL_CHILD_WM_CLAUDE_KEY=sk-ant-… xcrun simctl launch <udid>
-  com.wutmutt.app` injects a key without touching the Keychain.
-- `SIMCTL_CHILD_WM_FORCE_VERDICT=nodog xcrun simctl launch <udid>
-  com.wutmutt.app` forces every reveal to the "not a mutt" twist screen —
-  the prototype's teddy-bear shortcut, no key needed.
+When a reveal can't happen, the app says so on an off-air card in the show's
+voice — the daily cap ("That's a wrap."), a dropped connection ("We've lost
+the feed."), a rejected key — rather than inventing a breed reading. The one
+place a canned episode still plays is the simulator with nothing configured
+at all, so the whole show stays demoable without credentials.
+
+**Privacy:** with the proxy configured, photos transit your Worker on the way
+to Anthropic. Say so in the app's privacy policy and App Store data
+disclosures.
+
+Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launch
+<udid> com.wutmutt.app`:
+
+- `WM_CLAUDE_KEY=sk-ant-…` injects a key without touching the Keychain.
+- `WM_FORCE_VERDICT=nodog` forces the "not a mutt" twist screen — the
+  prototype's teddy-bear shortcut.
+- `WM_FORCE_VERDICT=offair` / `=offline` force the two off-air cards (daily
+  cap and lost feed). These need a backend configured, since without one the
+  simulator plays the demo episode instead.
 
 ## How it's put together
 
@@ -41,8 +58,10 @@ Dev shortcuts (Debug builds only):
   a 2.2s timer stands in for detection and tonight's star stands in for the
   capture.
 - **The scan** — five teasers × 1.6s set an 8-second minimum runtime while
-  the Claude vision call (`BreedIdentifier`, `claude-sonnet-4-5`, strict-JSON
-  prompt) runs concurrently; the screen advances when both finish.
+  the Claude vision call (`BreedIdentifier`, `claude-sonnet-4-5`, constrained
+  with a JSON schema) runs concurrently; the screen advances when both
+  finish. The prompt and schema live in the Worker; `BreedIdentifier` mirrors
+  them for the bring-your-own-key path — keep the two in sync.
 - **Results portrait** — Vision crops the captured photo toward the dog's
   face before it lands in the gilded circle.
 - **Breed headshots** — placeholder behavior per the handoff: a fuzzy-matched

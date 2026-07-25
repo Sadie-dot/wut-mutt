@@ -1,0 +1,16 @@
+// Base build config for the WutMutt app target.
+//
+// Defaults below keep the app in bring-your-own-key mode: each user enters
+// their own Claude API key on first reveal. To route identification through
+// your Cloudflare Worker proxy instead (so the app ships no key), copy
+// Secrets.local.example.xcconfig to Secrets.local.xcconfig and fill it in.
+//
+// These two values flow into Info.plist via $(WMIdentifyProxyURL) /
+// $(WMIdentifyAppToken), which BreedIdentifier reads at launch.
+
+WMIdentifyProxyURL =
+WMIdentifyAppToken =
+
+// Optional, git-ignored override. The "?" makes this a no-op when the file is
+// absent (e.g. a fresh clone), so the committed defaults above still stand.
+#include? "Secrets.local.xcconfig"
