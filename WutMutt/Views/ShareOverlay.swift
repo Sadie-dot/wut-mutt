@@ -64,6 +64,8 @@ struct ShareOverlay: View {
             }
             .padding(.horizontal, 32)
         }
+        // The design centers the card on the screen, not inside the safe area.
+        .ignoresSafeArea()
         .zIndex(30)
         .onAppear {
             if reduceMotion { popped = true }
@@ -129,6 +131,9 @@ struct ShareCardView: View {
                 Text("The mutt is…")
                     .font(.greatVibes(30))
                     .foregroundColor(.wmIce)
+                    // Great Vibes' line box runs ~1.23em; the design sets
+                    // line-height 1, so trim the half-leading off both ends.
+                    .padding(.vertical, -3.5)
                 Text(model.shareKicker)
                     .font(.playfair(12, relativeTo: .caption))
                     .kerning(4)
@@ -139,7 +144,10 @@ struct ShareCardView: View {
             .padding(.vertical, 16)
             .background(LinearGradient.wmHero)
 
-            if let image = model.capturedImage {
+            // The design's card is face-forward (the prototype hand-crops to
+            // `object-position: 62% 28%`), so use the same Vision face crop the
+            // gilded portrait gets rather than a centered crop of the raw shot.
+            if let image = model.portraitImage ?? model.capturedImage {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -183,7 +191,7 @@ struct ShareCardView: View {
         .background(Color.wmCream)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.wmGold, lineWidth: 1))
-        .shadow(color: .black.opacity(0.5), radius: 30, y: 12)
+        .shadow(color: .black.opacity(0.5), radius: 30, y: 24)
     }
 }
 

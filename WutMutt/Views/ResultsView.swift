@@ -50,9 +50,11 @@ struct ResultsView: View {
             Text("The mutt is…")
                 .font(.greatVibes(52))
                 .foregroundColor(.wmAccent)
-                // Great Vibes carries a tall line box; the design sets
-                // line-height 1, so pull the script up against the kicker.
-                .padding(.top, -6)
+                // Great Vibes carries a ~1.23em line box; the design sets
+                // line-height 1, so trim the half-leading off both ends —
+                // the top pull seats the script against the kicker, the
+                // bottom one keeps the hairline and portrait on their marks.
+                .padding(.vertical, -6)
                 .accessibilityAddTraits(.isHeader)
             Hairline(width: 80)
         }
@@ -140,15 +142,14 @@ struct ResultsView: View {
                 .padding(.bottom, 6)
 
             ForEach(Array(model.breeds.enumerated()), id: \.element.id) { index, breed in
-                BreedRow(breed: breed, isLead: index == 0,
-                         isLast: index == model.breeds.count - 1) {
+                BreedRow(breed: breed, isLead: index == 0) {
                     model.loadBreedPhoto(for: breed)
                     model.screen = .detail(index)
                 }
             }
         }
         .padding(.horizontal, 18)
-        .padding(.bottom, 6)
+        .padding(.vertical, 6)
         .background(card)
     }
 
@@ -195,7 +196,6 @@ struct ResultsView: View {
 struct BreedRow: View {
     let breed: Breed
     let isLead: Bool
-    let isLast: Bool
     let open: () -> Void
 
     var body: some View {
@@ -230,10 +230,10 @@ struct BreedRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(RowPressStyle())
+        // Every row carries a separator in the design, last one included —
+        // it lands on the card's 6pt bottom padding.
         .overlay(alignment: .bottom) {
-            if !isLast {
-                Rectangle().fill(Color.wmTrack).frame(height: 1)
-            }
+            Rectangle().fill(Color.wmTrack).frame(height: 1)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(breed.name), \(breed.pct) percent")

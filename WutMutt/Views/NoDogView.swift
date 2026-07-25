@@ -22,6 +22,9 @@ struct NoDogView: View {
                     .font(.greatVibes(60))
                     .foregroundColor(.wmIce)
                     .shadow(color: Color.wmIce.opacity(0.45), radius: 12)
+                    // Great Vibes' ~1.23em line box against the design's
+                    // line-height 1 — without this the mugshot rides ~14pt low.
+                    .padding(.vertical, -7)
                     .accessibilityAddTraits(.isHeader)
 
                 Text("UNHINGED BETRAYAL")
@@ -70,14 +73,15 @@ struct NoDogView: View {
                         .font(.playfair(12, relativeTo: .caption))
                         .kerning(4)
                         .foregroundColor(.wmPink)
+                    // Line spacing set to the design's 1.6 / 1.5 line-heights.
                     Text("May be a ghost… perhaps a crime lord…\nor even an interior decorator\nwho is also a heart surgeon.")
                         .font(.playfair(16, italic: true, relativeTo: .body))
                         .foregroundColor(.wmPink)
-                        .lineSpacing(5)
+                        .lineSpacing(6.5)
                     Text("The story is out, and this imposter\nis not a mutt.")
                         .font(.playfair(19, bold: true, italic: true, relativeTo: .title3))
                         .foregroundColor(.wmCream)
-                        .lineSpacing(4)
+                        .lineSpacing(6.5)
                         .padding(.bottom, -4)
                 }
 

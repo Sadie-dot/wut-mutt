@@ -6,6 +6,9 @@ struct BreedDetailView: View {
     @EnvironmentObject private var model: AppModel
     let breedIndex: Int
 
+    @State private var railHeight: CGFloat = 0
+    private let polaroidFlap: CGFloat = 34
+
     private var breed: Breed {
         model.breeds.indices.contains(breedIndex) ? model.breeds[breedIndex] : model.breeds[0]
     }
@@ -60,6 +63,9 @@ struct BreedDetailView: View {
                     .foregroundColor(.wmIce)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
+                    // Great Vibes' ~1.23em line box against the design's
+                    // line-height 1.1 — trim the difference off both ends.
+                    .padding(.vertical, -breed.heroNameSize * 0.065)
                     .shadow(color: Color.wmIce.opacity(0.45), radius: 12)
                     .accessibilityAddTraits(.isHeader)
                 Text(breed.tagline)
@@ -94,7 +100,8 @@ struct BreedDetailView: View {
             let contentW = WMScreen.width - 44
             let railW = (contentW - 10) / 3
             HStack(alignment: .top, spacing: 10) {
-                polaroid(headshot, paperWidth: contentW - railW - 10)
+                polaroid(headshot, paperWidth: contentW - railW - 10,
+                         paperHeight: railHeight)
                 VStack(spacing: 10) {
                     traitCard("SIZE", breed.size, compact: true)
                     traitCard("ENERGY", breed.energy, compact: true)
@@ -102,7 +109,13 @@ struct BreedDetailView: View {
                     traitCard("FLOOF", breed.floof, compact: true)
                 }
                 .frame(width: railW)
+                // The design spans the polaroid across all four cards
+                // (`grid-row: span 4`), so the rail sets the paper's height.
+                .background(GeometryReader { geo in
+                    Color.clear.preference(key: RailHeightKey.self, value: geo.size.height)
+                })
             }
+            .onPreferenceChange(RailHeightKey.self) { railHeight = $0 }
         } else {
             // No reference image — original 2×2 grid with full labels
             let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
@@ -115,19 +128,22 @@ struct BreedDetailView: View {
         }
     }
 
-    private func polaroid(_ image: UIImage, paperWidth: CGFloat) -> some View {
-        VStack(spacing: 0) {
+    private func polaroid(_ image: UIImage, paperWidth: CGFloat,
+                          paperHeight: CGFloat) -> some View {
+        // Paper = 7pt top padding + photo + blank flap; the photo takes
+        // whatever the trait rail leaves, with the design's 200pt floor.
+        let photoHeight = max(200, paperHeight - 7 - polaroidFlap)
+        return VStack(spacing: 0) {
             // cover / center top, hard-sized to the paper's inner width so a
-            // landscape photo can't inflate the layout; height keeps the
-            // paper level with the four-card trait rail (≈294pt tall)
+            // landscape photo can't inflate the layout
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
-                .frame(width: paperWidth - 14, height: 253, alignment: .top)
+                .frame(width: paperWidth - 14, height: photoHeight, alignment: .top)
                 .clipped()
                 .accessibilityLabel("Reference photo of \(breed.name)")
             // Blank Polaroid flap
-            Color.clear.frame(height: 34)
+            Color.clear.frame(height: polaroidFlap)
         }
         .padding(EdgeInsets(top: 7, leading: 7, bottom: 0, trailing: 7))
         .background(Color.wmCard)
@@ -206,5 +222,14 @@ struct BreedDetailView: View {
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color.wmMintBorder, lineWidth: 1))
         )
         .padding(.bottom, 24)
+    }
+}
+
+/// Height of the trait rail, so the Polaroid can span it like the design's
+/// `grid-row: span 4`.
+private struct RailHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
