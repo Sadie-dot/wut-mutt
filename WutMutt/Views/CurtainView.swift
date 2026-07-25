@@ -195,7 +195,7 @@ struct CreditsOverlay: View {
                             .font(.nunito(12, weight: .extraBold))
                             .kerning(3)
                             .foregroundColor(.wmPink)
-                        Text("© 2026 Wut Mutt Productions.\nAll rights reserved. All dogs good.")
+                        Text("© 2026 Wut Mutt Productions.\nAll rights reserved.")
                             .font(.nunito(13, weight: .bold))
                             .foregroundColor(.wmCream)
                             .lineSpacing(4.4)
