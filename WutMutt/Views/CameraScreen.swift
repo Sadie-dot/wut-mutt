@@ -53,10 +53,15 @@ struct CameraScreen: View {
                 // "Cue dramatic entrance" directs the dog, not the viewer — on
                 // its own it never says why REVEAL is dimmed. A screenplay
                 // parenthetical is the set's own register for stage direction,
-                // so it can state the requirement plainly without breaking
-                // voice. Leaves with the dog's arrival.
+                // so it can carry the instruction without breaking voice.
+                // Leaves with the dog's arrival.
+                //
+                // Phrased as the action to take rather than the deficiency, and
+                // deliberately avoids "frame": the gilded rectangle is decor,
+                // not a crop boundary — capture is full-sensor and Vision
+                // re-crops — so framing language would teach the wrong model.
                 if !model.dogDetected {
-                    Text("(no dog in frame yet)")
+                    Text("(point the camera at your dog)")
                         .font(.playfair(13, italic: true, relativeTo: .footnote))
                         .foregroundColor(Color.wmPink.opacity(0.9))
                         .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 4, y: 1)
