@@ -210,6 +210,54 @@ extension View {
     func fadeUp(delay: Double) -> some View { modifier(FadeUp(delay: delay)) }
 }
 
+// MARK: - Credits links
+
+/// "AI Disclosure · Image Credits · © 2026" — the footer links.
+///
+/// Appears on the curtain *and* on results, because nothing in the app ever
+/// returns to `.curtain`: once someone taps "Snap a pic" the opening screen is
+/// gone for the session, and a disclosure only reachable there is effectively
+/// unreachable. Results is the natural second home — its footer already claims
+/// the guess is "powered by Claude", so the disclosure belongs on the sentence
+/// that makes the claim.
+struct CreditsLinks: View {
+    var tint: Color
+    var separatorOpacity: Double = 0.45
+    @EnvironmentObject private var model: AppModel
+
+    var body: some View {
+        HStack(spacing: 10) {
+            link("AI Disclosure") { model.aiDisclosureOpen = true }
+            dot
+            link("Image Credits") { model.imageCreditsOpen = true }
+            dot
+            Text("© 2026")
+                .font(.nunito(12, weight: .bold))
+                .foregroundColor(tint.opacity(0.9))
+        }
+    }
+
+    private var dot: some View {
+        Circle()
+            .fill(tint.opacity(separatorOpacity))
+            .frame(width: 3, height: 3)
+    }
+
+    /// 44pt tap target, pulled back out of the layout so the footer keeps its
+    /// design height.
+    private func link(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.nunito(12, weight: .bold))
+                .underline()
+                .foregroundColor(tint)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .padding(.vertical, -15)
+    }
+}
+
 // MARK: - Pill buttons
 
 /// Filled ice pill ("Snap a pic") with glow and gentle pulse.

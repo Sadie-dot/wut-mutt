@@ -24,6 +24,7 @@
 		BB001015 /* ShareOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002015 /* ShareOverlay.swift */; };
 		BB001016 /* KeyEntryOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002016 /* KeyEntryOverlay.swift */; };
 		BB001017 /* OffAirView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002017 /* OffAirView.swift */; };
+		BB001018 /* CreditsOverlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002018 /* CreditsOverlays.swift */; };
 		BB003001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB004001 /* Assets.xcassets */; };
 		BB003002 /* star-golden-retriever.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004002 /* star-golden-retriever.png */; };
 		BB003003 /* star-australian-shepherd.png in Resources */ = {isa = PBXBuildFile; fileRef = BB004003 /* star-australian-shepherd.png */; };
@@ -59,6 +60,7 @@
 		BB002015 /* ShareOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareOverlay.swift; sourceTree = "<group>"; };
 		BB002016 /* KeyEntryOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEntryOverlay.swift; sourceTree = "<group>"; };
 		BB002017 /* OffAirView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffAirView.swift; sourceTree = "<group>"; };
+		BB002018 /* CreditsOverlays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsOverlays.swift; sourceTree = "<group>"; };
 		BB004021 /* Config/Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Config.xcconfig; sourceTree = "<group>"; };
 		BB004001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BB004002 /* star-golden-retriever.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "star-golden-retriever.png"; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				BB002015 /* ShareOverlay.swift */,
 				BB002016 /* KeyEntryOverlay.swift */,
 				BB002017 /* OffAirView.swift */,
+				BB002018 /* CreditsOverlays.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -279,6 +282,7 @@
 				BB001015 /* ShareOverlay.swift in Sources */,
 				BB001016 /* KeyEntryOverlay.swift in Sources */,
 				BB001017 /* OffAirView.swift in Sources */,
+				BB001018 /* CreditsOverlays.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

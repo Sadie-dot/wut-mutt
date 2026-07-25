@@ -27,11 +27,17 @@ struct ResultsView: View {
                     actions
                         .fadeUp(delay: 0.35)
 
-                    Text("Juicy guess powered by Claude. Not a DNA test.")
-                        .font(.nunito(12, weight: .bold))
-                        .foregroundColor(.wmFinePrint)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 4)
+                    VStack(spacing: 10) {
+                        Text("Juicy guess powered by Claude. Not a DNA test.")
+                            .font(.nunito(12, weight: .bold))
+                            .foregroundColor(.wmFinePrint)
+                            .padding(.horizontal, 20)
+                        // The disclosure belongs on the sentence that makes the
+                        // claim — and this is the only other place it can live,
+                        // since nothing ever returns to the curtain.
+                        CreditsLinks(tint: .wmFinePrint, separatorOpacity: 0.5)
+                    }
+                    .padding(.top, 4)
                 }
                 .padding(EdgeInsets(top: 64, leading: 24, bottom: 44, trailing: 24))
             }

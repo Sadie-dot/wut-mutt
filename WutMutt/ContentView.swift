@@ -20,6 +20,10 @@ struct ContentView: View {
 
             if model.shareOpen { ShareOverlay() }
             if model.keyEntryOpen { KeyEntryOverlay() }
+            // Presented here, not from CurtainView: nothing returns to
+            // `.curtain`, so these must be reachable from any screen.
+            if model.aiDisclosureOpen { AIDisclosureOverlay() }
+            if model.imageCreditsOpen { ImageCreditsOverlay() }
         }
         .environmentObject(model)
         .photosPicker(isPresented: $model.pickerPresented,

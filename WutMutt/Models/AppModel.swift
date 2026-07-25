@@ -82,7 +82,8 @@ final class AppModel: ObservableObject {
         didSet { announceScreenChange(from: oldValue) }
     }
     @Published var shareOpen = false
-    @Published var creditsOpen = false
+    @Published var aiDisclosureOpen = false
+    @Published var imageCreditsOpen = false
     @Published var keyEntryOpen = false
     @Published var cameraDeniedAlert = false
 
