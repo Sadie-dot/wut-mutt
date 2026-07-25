@@ -50,6 +50,17 @@ struct CameraScreen: View {
                     .font(.playfair(18, italic: true, relativeTo: .body))
                     .foregroundColor(.wmCream)
                     .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 5, y: 2)
+                // "Cue dramatic entrance" directs the dog, not the viewer — on
+                // its own it never says why REVEAL is dimmed. A screenplay
+                // parenthetical is the set's own register for stage direction,
+                // so it can state the requirement plainly without breaking
+                // voice. Leaves with the dog's arrival.
+                if !model.dogDetected {
+                    Text("(no dog in frame yet)")
+                        .font(.playfair(13, italic: true, relativeTo: .footnote))
+                        .foregroundColor(Color.wmPink.opacity(0.9))
+                        .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 4, y: 1)
+                }
                 Hairline()
             }
             .padding(.horizontal, 24)
@@ -58,6 +69,7 @@ struct CameraScreen: View {
             .shadowPool()
             .frame(maxHeight: .infinity, alignment: .bottom)
             .padding(.bottom, 268)
+            .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.updatesFrequently)
 
             // Bottom controls — ALBUM / REVEAL / FLIP
