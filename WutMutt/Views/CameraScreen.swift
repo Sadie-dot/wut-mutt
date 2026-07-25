@@ -70,11 +70,19 @@ struct CameraScreen: View {
                 // Leaves with the dog's arrival.
                 //
                 // Phrased as the action to take rather than the deficiency, and
-                // deliberately avoids "frame": the gilded rectangle is decor,
+                // says *centre* because that is what the gate actually checks:
+                // DogSubject.region wants the dog's box centre inside the
+                // middle of the shot, so "point the camera at your dog" could
+                // be followed exactly, with the dog off to one side, and REVEAL
+                // would stay dead. The region is generous (76% x 70%), so this
+                // asks for a little more than strictly required — which is the
+                // safe direction for an instruction to err.
+                //
+                // Avoids "frame" deliberately: the gilded rectangle is decor,
                 // not a crop boundary — capture is full-sensor and Vision
                 // re-crops — so framing language would teach the wrong model.
                 if !model.dogDetected {
-                    Text("(point the camera at your dog)")
+                    Text("(center your dog on screen)")
                         .font(.playfair(13, italic: true, relativeTo: .footnote))
                         .foregroundColor(Color.wmPink.opacity(0.9))
                         .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 4, y: 1)
