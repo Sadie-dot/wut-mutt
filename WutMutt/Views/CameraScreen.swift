@@ -201,8 +201,14 @@ struct CameraScreen: View {
                         .fill(Color.wmCream.opacity(0.12))
                         .frame(width: 56, height: 56)
                         .overlay(Circle().strokeBorder(Color.wmCream.opacity(0.7), lineWidth: 2))
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .font(.system(size: 21, weight: .medium))
+                    // The design specifies ⟳ (U+27F3, one gapped circle arrow)
+                    // at 30px. arrow.clockwise is its SF Symbol twin — a single
+                    // arrowhead, same thin stroke — where the literal glyph
+                    // would risk font fallback. Was arrow.triangle.2.circlepath,
+                    // the double-headed refresh mark, which reads heavier and
+                    // busier than the reference at this size.
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 22, weight: .regular))
                         .foregroundColor(.wmCream)
                 }
                 Text("FLIP")
