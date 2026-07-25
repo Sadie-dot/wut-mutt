@@ -41,12 +41,30 @@ disclosures.
 Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launch
 <udid> com.wutmutt.app`:
 
-- `WM_CLAUDE_KEY=sk-ant-…` injects a key without touching the Keychain.
 - `WM_FORCE_VERDICT=nodog` forces the "not a mutt" twist screen — the
   prototype's teddy-bear shortcut.
 - `WM_FORCE_VERDICT=offair` / `=offline` force the two off-air cards (daily
   cap and lost feed). These need a backend configured, since without one the
   simulator plays the demo episode instead.
+- `WM_CLAUDE_KEY` injects a Claude key without touching the Keychain. **Only
+  has an effect in bring-your-own-key mode** — with a proxy configured,
+  `IdentifyBackend.resolve()` picks the proxy first and this is ignored.
+
+⚠️  **Don't type a key inline.** `SIMCTL_CHILD_WM_CLAUDE_KEY=sk-ant-… xcrun …`
+writes the key to your shell history in plaintext, where it survives long after
+you've forgotten it. Keep it in a file outside the repo and expand it instead —
+history then records the substitution, not the value:
+
+```sh
+# one-time: create ~/.wutmutt-dev-key in an editor, containing just the key
+chmod 600 ~/.wutmutt-dev-key
+
+SIMCTL_CHILD_WM_CLAUDE_KEY="$(cat ~/.wutmutt-dev-key)" \
+  xcrun simctl launch <udid> com.wutmutt.app
+```
+
+Create the file in an editor rather than `echo`-ing into it — an `echo` puts the
+key straight back into history, which is the thing you're avoiding.
 
 ## How it's put together
 
