@@ -2,12 +2,18 @@ name = "wutmutt-identify"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 
-# Per-IP daily rate cap (DAILY_CAP reveals/IP/day). Create the namespace with
-# `npx wrangler kv namespace create RATE_KV` and paste the printed id below,
-# then uncomment. Without it the Worker runs uncapped.
-# [[kv_namespaces]]
-# binding = "RATE_KV"
-# id = "paste-the-id-wrangler-prints"
+# Per-IP daily rate cap (DAILY_CAP reveals/IP/day). Without this binding the
+# Worker runs uncapped — it deploys fine either way, so it's easy to miss.
+#
+# The namespace TITLE and the BINDING are different things. Titles are
+# account-global, so this one is "WUTMUTT_RATE_KV" to avoid colliding with
+# Lemon Pig's "RATE_KV"; the binding stays RATE_KV because that's what
+# src/index.js reads (env.RATE_KV). Sharing a namespace between the two apps
+# would mean one person's fruit scans eating this app's daily reveals — the
+# rate-limit key format (`rl:<ip>:<date>`) is identical in both Workers.
+[[kv_namespaces]]
+binding = "RATE_KV"
+id = "95e768d5cd6f4f3c8fe3f087953e20ba"
 
 [vars]
 DAILY_CAP = "40"
