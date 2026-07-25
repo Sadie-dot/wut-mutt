@@ -7,8 +7,13 @@ key, calls Claude with a fixed prompt + schema, and passes the response back.
 ## Why
 
 Anything bundled in an iOS binary is extractable. Putting the key behind this
-Worker means a leaked build can't drain your Anthropic account, and the per-IP
-daily cap stops one person from running up the bill.
+Worker means a leaked build can't drain your Anthropic account, and the daily
+cap stops one person from running up the bill.
+
+The cap is keyed per IPv4 address, and per **/64** for IPv6 — see `rateSubject`
+in `src/index.js`. Keying on a full IPv6 address doesn't work: phones rotate the
+low 64 bits under privacy extensions, so each rotation would grant a fresh
+budget.
 
 ## Deploy
 

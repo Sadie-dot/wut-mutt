@@ -37,7 +37,7 @@ export default {
     // The message is written in the show's voice — the app displays it.
     if (env.RATE_KV) {
       const ip = request.headers.get("cf-connecting-ip") || "unknown";
-      const key = `rl:${ip}:${new Date().toISOString().slice(0, 10)}`;
+      const key = `rl:${rateSubject(ip)}:${new Date().toISOString().slice(0, 10)}`;
       const used = parseInt((await env.RATE_KV.get(key)) || "0", 10);
       const cap = parseInt(env.DAILY_CAP || "40", 10);
       if (used >= cap) {
@@ -96,6 +96,22 @@ export default {
     return err("upstream_unavailable", "The studio isn't answering. Try again in a moment.", 503);
   },
 };
+
+// Who the daily cap applies to. IPv4 is used whole; IPv6 collapses to its /64.
+//
+// macOS and iOS rotate the low 64 bits of an IPv6 address under privacy
+// extensions, so keying on the full address hands a fresh daily budget to
+// anyone whose OS re-rolls it — no malice required. Setting this app up
+// produced two different full addresses from one machine inside an afternoon,
+// which would have been two separate 40-reveal budgets.
+//
+// A /64 is the standard per-site allocation, so it stays put. The trade-off is
+// that everyone behind one /64 now shares a budget: the household on a
+// residential line, but potentially more on carrier or campus networks.
+function rateSubject(ip) {
+  if (!ip.includes(":")) return ip;
+  return ip.split(":").slice(0, 4).join(":") + "::/64";
+}
 
 function err(type, message, status) {
   return new Response(JSON.stringify({ type: "error", error: { type, message } }), {

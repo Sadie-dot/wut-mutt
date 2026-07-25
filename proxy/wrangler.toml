@@ -2,8 +2,9 @@ name = "wutmutt-identify"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 
-# Per-IP daily rate cap (DAILY_CAP reveals/IP/day). Without this binding the
-# Worker runs uncapped — it deploys fine either way, so it's easy to miss.
+# Daily rate cap (DAILY_CAP reveals/day per IPv4 address, or per /64 for IPv6 —
+# see rateSubject in src/index.js). Without this binding the Worker runs
+# uncapped — it deploys fine either way, so it's easy to miss.
 #
 # The namespace TITLE and the BINDING are different things. Titles are
 # account-global, so this one is "WUTMUTT_RATE_KV" to avoid colliding with
