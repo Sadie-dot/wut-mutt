@@ -17,7 +17,10 @@
 //   RATE_KV            — KV namespace enabling the per-IP daily cap
 //   DAILY_CAP          — reveals per IP per day (default 40)
 
-const MODEL = "claude-sonnet-4-5";
+// Sonnet-tier is the right shape for this job: one small image in, one fixed
+// schema out. Sonnet 5 specifically, because `output_config` structured
+// outputs need it — claude-sonnet-4-5 does not support them.
+const MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 2500;
 
 export default {
@@ -120,6 +123,10 @@ Rules:
     model: MODEL,
     max_tokens: MAX_TOKENS,
     system: "You identify dog breeds from photos for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.",
+    // Sonnet 5 thinks by default, and max_tokens caps thinking plus response
+    // together — a schema-constrained read of one photo doesn't need it, and
+    // the truncated JSON would surface as a false "off the air".
+    thinking: { type: "disabled" },
     output_config: { format: { type: "json_schema", schema: verdictSchema() } },
     messages: [{
       role: "user",

@@ -58,10 +58,13 @@ Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launc
   a 2.2s timer stands in for detection and tonight's star stands in for the
   capture.
 - **The scan** — five teasers × 1.6s set an 8-second minimum runtime while
-  the Claude vision call (`BreedIdentifier`, `claude-sonnet-4-5`, constrained
-  with a JSON schema) runs concurrently; the screen advances when both
-  finish. The prompt and schema live in the Worker; `BreedIdentifier` mirrors
-  them for the bring-your-own-key path — keep the two in sync.
+  the Claude vision call (`BreedIdentifier`, `claude-sonnet-5`, thinking off,
+  constrained with a JSON schema) runs concurrently; the screen advances when
+  both finish. The prompt and schema live in the Worker; `BreedIdentifier`
+  mirrors them for the bring-your-own-key path — keep the two in sync.
+  Photos go up at ≤1024px on the long edge, above the handoff's 640px budget:
+  that was a browser-base64 workaround, and breed calls need the coat and
+  muzzle detail it discarded.
 - **Results portrait** — Vision crops the captured photo toward the dog's
   face before it lands in the gilded circle.
 - **Breed headshots** — placeholder behavior per the handoff: a fuzzy-matched

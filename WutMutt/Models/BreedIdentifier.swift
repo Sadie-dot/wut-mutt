@@ -177,9 +177,12 @@ struct BreedIdentifier {
         request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
         request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         request.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "model": "claude-sonnet-4-5",
+            "model": "claude-sonnet-5",
             "max_tokens": 2500,
             "system": "You identify dog breeds from photos for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.",
+            // Thinking is on by default and shares the max_tokens budget with
+            // the response; a schema-constrained photo read doesn't need it.
+            "thinking": ["type": "disabled"],
             "output_config": ["format": ["type": "json_schema", "schema": Self.verdictSchema]],
             "messages": [[
                 "role": "user",
@@ -349,21 +352,28 @@ struct BreedIdentifier {
         ]
     }
 
-    /// Downscale to ≤640px on the long edge and recompress until the base64
-    /// payload stays under ~170KB, per the handoff's image budget.
+    /// Downscale to ≤1024px on the long edge and recompress until the base64
+    /// payload stays under ~530KB.
+    ///
+    /// The handoff budgeted 640px / ~170KB, but that was the prototype working
+    /// around browser base64 limits. Breed calls live in coat texture, ear set,
+    /// and muzzle shape — the detail 640px throws away — and the model accepts
+    /// far more, so the extra resolution buys accuracy for a modest token cost.
+    /// The byte ceiling rises with it; otherwise the quality loop would claw
+    /// back exactly the detail the larger image was meant to carry.
     private func downscaledJPEG(_ image: UIImage) -> Data? {
         let longEdge = max(image.size.width, image.size.height)
-        let scale = min(1, 640 / longEdge)
+        let scale = min(1, 1024 / longEdge)
         let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         let resized = UIGraphicsImageRenderer(size: newSize, format: format).image { _ in
             image.draw(in: CGRect(origin: .zero, size: newSize))
         }
-        var quality: CGFloat = 0.75
+        var quality: CGFloat = 0.8
         var data = resized.jpegData(compressionQuality: quality)
-        while let d = data, d.count > 127_000, quality > 0.3 {
-            quality -= 0.15
+        while let d = data, d.count > 400_000, quality > 0.5 {
+            quality -= 0.1
             data = resized.jpegData(compressionQuality: quality)
         }
         return data

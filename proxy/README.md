@@ -71,12 +71,17 @@ message can name the account or the key, and it isn't the viewer's problem.
 
 ## Model
 
-`MODEL` at the top of `src/index.js` is `claude-sonnet-4-5` — matching what the
-app called directly before the migration. Because it lives here now, changing
-models is a `wrangler deploy`, not an App Store release.
+`MODEL` at the top of `src/index.js` is `claude-sonnet-5`. Because it lives here
+now, changing models is a `wrangler deploy`, not an App Store release.
 
-The response is constrained with `output_config.format.json_schema`, so a
-missing field can't silently cost a real answer.
+Sonnet-tier suits the job — one small image in, one fixed schema out — and Opus
+costs roughly double per scan for a task that isn't reasoning-bound. Sonnet 5
+specifically, because `output_config` structured outputs require it (Sonnet 4.5
+does not support them).
+
+Thinking is explicitly disabled: it is on by default on current models and
+shares the `max_tokens` budget with the response, so leaving it on risks a
+truncated JSON body surfacing to the viewer as a false "off the air".
 
 ## Local test
 
