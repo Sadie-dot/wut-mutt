@@ -19,6 +19,15 @@ id = "95e768d5cd6f4f3c8fe3f087953e20ba"
 [vars]
 DAILY_CAP = "40"
 
+# Which breed names Claude actually returns, so the bundled photo set can be
+# sourced against real frequency instead of a guess at AKC's list. Breed name,
+# position and percentage only — never IPs, never image data. Optional: the
+# Worker runs fine with this binding removed. The dataset is created
+# automatically on first write.
+[[analytics_engine_datasets]]
+binding = "BREEDS_AE"
+dataset = "wutmutt_breeds"
+
 # Secrets are NOT set here — never commit them. Set with:
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   npx wrangler secret put APP_TOKEN

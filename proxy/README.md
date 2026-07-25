@@ -74,6 +74,35 @@ so a capped or unreachable studio never turns into an invented breed reading:
 Upstream 4xx is deliberately remapped to 502 with our own wording: Anthropic's
 message can name the account or the key, and it isn't the viewer's problem.
 
+## Breed logging
+
+The Worker counts which breed names Claude returns, into an Analytics Engine
+dataset (`BREEDS_AE` → `wutmutt_breeds`). Name, position in the list, and
+percentage only — no IPs, no image data, nothing user-linked.
+
+This exists to source the bundled breed photos against reality. Claude is
+unconstrained, so it names crosses and type-categories the AKC doesn't
+recognise — Goldendoodle, the pit-bull cluster — while plenty of AKC breeds may
+never come up. Licensing 40 photos against a guessed list would waste much of
+the work.
+
+The binding is optional; remove it and the Worker runs unchanged. The dataset
+is created on first write. Query it via Cloudflare's Analytics Engine SQL API,
+where `blob1` is the name, `double1` the position (0 = lead breed) and
+`double2` the percentage:
+
+```sql
+SELECT blob1 AS breed, COUNT() AS appearances, AVG(double2) AS avg_pct
+FROM wutmutt_breeds
+WHERE timestamp > NOW() - INTERVAL '30' DAY
+GROUP BY breed
+ORDER BY appearances DESC
+```
+
+Filter `double1 = 0` for lead breeds only — those are the ones whose photo
+carries the detail screen. "a special guest" will appear in the results; it is
+the deliberate wildcard, not a breed, and needs no photo.
+
 ## Model
 
 `MODEL` at the top of `src/index.js` is `claude-sonnet-5`. Because it lives here

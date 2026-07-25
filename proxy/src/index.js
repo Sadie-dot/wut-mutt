@@ -16,6 +16,8 @@
 // Optional bindings/vars (see wrangler.toml):
 //   RATE_KV            — KV namespace enabling the per-IP daily cap
 //   DAILY_CAP          — reveals per IP per day (default 40)
+//   BREEDS_AE          — Analytics Engine dataset counting which breed names
+//                        Claude returns (names only, never anything user-linked)
 
 // Sonnet-tier is the right shape for this job: one small image in, one fixed
 // schema out. Sonnet 5 specifically, because `output_config` structured
@@ -78,6 +80,7 @@ export default {
     // to our own type so the app picks the right screen.
     const raw = await upstream.text();
     if (upstream.ok) {
+      logBreeds(env, raw);
       return new Response(raw, {
         status: 200,
         headers: { "content-type": "application/json" },
@@ -111,6 +114,37 @@ export default {
 function rateSubject(ip) {
   if (!ip.includes(":")) return ip;
   return ip.split(":").slice(0, 4).join(":") + "::/64";
+}
+
+// Counts which breed names Claude actually returns, so the bundled photo set
+// can be sourced against real frequency rather than a guess at AKC's list.
+// That guess would be wrong in both directions: Claude is unconstrained, so it
+// names crosses and type-categories AKC doesn't recognise (Goldendoodle, the
+// pit-bull cluster) while plenty of AKC breeds may never come up at all.
+//
+// Records the name, its position in the list, and its percentage. No IPs, no
+// image data, nothing user-linked — the same posture as Lemon Pig's
+// logDiscovery. Best-effort by design: no binding or a malformed response
+// means no log, and analytics must never break a reveal.
+function logBreeds(env, rawResponse) {
+  if (!env.BREEDS_AE) return;
+  try {
+    const message = JSON.parse(rawResponse);
+    const text = (message.content || []).find((b) => b.type === "text")?.text;
+    const result = JSON.parse(text);
+    if (!result.isDog || !Array.isArray(result.breeds)) return;
+    result.breeds.forEach((breed, position) => {
+      const name = String(breed?.name ?? "").trim().toLowerCase().slice(0, 96);
+      if (!name) return;
+      env.BREEDS_AE.writeDataPoint({
+        indexes: [name],
+        blobs: [name],
+        doubles: [position, Number(breed?.pct) || 0],
+      });
+    });
+  } catch {
+    // Swallow — a logging failure must not affect the response.
+  }
 }
 
 function err(type, message, status) {
