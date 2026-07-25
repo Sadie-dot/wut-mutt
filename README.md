@@ -106,4 +106,4 @@ key straight back into history, which is the thing you're avoiding.
 - Breed reference photos at runtime: [dog.ceo](https://dog.ceo/dog-api/)
   (Stanford Dogs dataset).
 
-© 2026 Wut Mutt Productions. All rights reserved. All dogs good.
+© 2026

@@ -153,8 +153,17 @@ struct CreditsOverlay: View {
     var body: some View {
         ZStack {
             Color(hex: "#2B0616").opacity(0.94)
-            ScrollView {
-                VStack(spacing: 26) {
+
+            VStack(spacing: 0) {
+                // The title and the way out sit outside the ScrollView, so the
+                // dismiss control can never scroll away. Image Credits will run
+                // to dozens of entries, and a Close button at the end of that
+                // list is only reachable by scrolling the whole thing.
+                //
+                // No backdrop-tap dismissal here, unlike Lemon Pig's: this
+                // overlay is full-bleed by design, so there is no "outside" to
+                // tap — every tap would land on content.
+                ZStack {
                     Text("END CREDITS")
                         .font(.italiana(30, relativeTo: .title))
                         .kerning(5)
@@ -162,6 +171,26 @@ struct CreditsOverlay: View {
                         .shadow(color: Color.wmIce.opacity(0.5), radius: 9)
                         .accessibilityAddTraits(.isHeader)
 
+                    HStack {
+                        Spacer()
+                        Button { model.creditsOpen = false } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.wmIce)
+                                .frame(width: 44, height: 44)
+                                .overlay(Circle()
+                                    .strokeBorder(Color.wmIce.opacity(0.7), lineWidth: 1.5))
+                                .contentShape(Circle())
+                        }
+                        .accessibilityLabel("Close")
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 64)
+                .padding(.bottom, 30)
+
+                ScrollView {
+                    VStack(spacing: 26) {
                     VStack(spacing: 8) {
                         Text("CAST — TONIGHT'S STARS")
                             .font(.nunito(12, weight: .extraBold))
@@ -201,25 +230,23 @@ struct CreditsOverlay: View {
                             .lineSpacing(4.4)
                     }
 
-                    OutlinePill(title: "Close") { model.creditsOpen = false }
-                        .frame(width: 150)
+                        OutlinePill(title: "Close") { model.creditsOpen = false }
+                            .frame(width: 150)
+                            .padding(.top, 8)
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 34)
+                    // Hold the column at its natural height, or the scroll
+                    // view's height proposal compresses the cast list.
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 60)
+                    .frame(maxWidth: .infinity)
                 }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 34)
-                // Hold the column at its natural height — the centering frame
-                // below hands down a definite height that would otherwise
-                // compress the cast list.
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 80)
-                .padding(.bottom, 60)
-                .frame(maxWidth: .infinity)
-                // The design centers the column on screen when it fits, with
-                // the 80/60 paddings acting as minimums (`min-height: 100%`
-                // + `justify-content: center`).
-                .frame(minHeight: WMScreen.height, alignment: .center)
             }
         }
         .ignoresSafeArea()
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape) { model.creditsOpen = false }
         .zIndex(45)
     }
 }
