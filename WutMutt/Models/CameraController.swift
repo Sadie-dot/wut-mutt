@@ -3,8 +3,8 @@ import AVFoundation
 import Vision
 
 /// Capture session with photo output plus a throttled Vision pass over the
-/// live feed: VNRecognizeAnimalsRequest looks for a dog roughly inside the
-/// viewfinder region and gates the REVEAL button.
+/// live feed: VNRecognizeAnimalsRequest looks for a dog near the middle of the
+/// shot (see `DogSubject`) and gates the REVEAL button.
 final class CameraController: NSObject, ObservableObject {
     let session = AVCaptureSession()
     @Published var dogInFrame = false
@@ -112,12 +112,8 @@ extension CameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right)
         try? handler.perform([request])
 
-        // "In frame" ≈ the dog's box center falls in the middle of the shot,
-        // matching the gilded viewfinder region.
-        let central = CGRect(x: 0.12, y: 0.15, width: 0.76, height: 0.7)
-        let found = (request.results ?? []).contains { obs in
-            obs.labels.contains { $0.identifier == "Dog" && $0.confidence > 0.5 }
-                && central.contains(CGPoint(x: obs.boundingBox.midX, y: obs.boundingBox.midY))
+        let found = (request.results ?? []).contains {
+            DogSubject.isDog($0) && DogSubject.isCentered($0)
         }
         if found {
             DispatchQueue.main.async { [weak self] in
@@ -125,6 +121,47 @@ extension CameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
                 // Sticky once seen — the caption flips and REVEAL stays lit.
                 self.dogInFrame = true
             }
+        }
+    }
+}
+
+// MARK: - Subject selection
+
+/// What counts as the dog you meant — shared by the REVEAL gate and the
+/// portrait crop so the two can't disagree about which dog that is.
+///
+/// `region` is a subject heuristic, not a crop boundary. It encodes where
+/// people put the thing they are pointing at, and it keeps a dog wandering
+/// through the background from lighting REVEAL. It is deliberately not tied to
+/// the gilded frame: that appears only once a dog is found, so there is
+/// nothing on screen to line up with while you aim.
+enum DogSubject {
+    static let region = CGRect(x: 0.12, y: 0.15, width: 0.76, height: 0.7)
+    static let minConfidence: VNConfidence = 0.5
+
+    static func isDog(_ obs: VNRecognizedObjectObservation, confident: Bool = true) -> Bool {
+        obs.labels.contains {
+            $0.identifier == "Dog" && (!confident || $0.confidence > minConfidence)
+        }
+    }
+
+    static func isCentered(_ obs: VNRecognizedObjectObservation) -> Bool {
+        region.contains(CGPoint(x: obs.boundingBox.midX, y: obs.boundingBox.midY))
+    }
+
+    /// The observation the portrait should crop to. Prefers a confident,
+    /// centered dog — the same test the gate applies, so the portrait shows
+    /// the dog that lit the button — then falls back to any dog at all, since
+    /// library picks never passed the gate and needn't be composed the way a
+    /// viewfinder shot is. Ties go to the largest box, usually the one nearest
+    /// the camera.
+    static func best(in observations: [VNRecognizedObjectObservation]) -> VNRecognizedObjectObservation? {
+        let dogs = observations.filter { isDog($0, confident: false) }
+        let preferred = dogs.filter { isDog($0) && isCentered($0) }
+        let pool = preferred.isEmpty ? dogs : preferred
+        return pool.max {
+            $0.boundingBox.width * $0.boundingBox.height
+                < $1.boundingBox.width * $1.boundingBox.height
         }
     }
 }

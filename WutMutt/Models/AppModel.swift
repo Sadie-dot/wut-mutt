@@ -329,10 +329,11 @@ final class AppModel: ObservableObject {
         var box: CGRect?
         let request = VNRecognizeAnimalsRequest()
         let handler = VNImageRequestHandler(cgImage: cg, orientation: .init(image.imageOrientation))
+        // Picking the subject the same way the REVEAL gate does, so a shot with
+        // more than one dog portraits the one that lit the button rather than
+        // whichever observation Vision happened to return first.
         if (try? handler.perform([request])) != nil,
-           let animal = request.results?.first(where: { obs in
-               obs.labels.contains { $0.identifier == "Dog" }
-           }) {
+           let animal = DogSubject.best(in: request.results ?? []) {
             // Vision boxes are normalized with a bottom-left origin. Favor the
             // upper part of the body box — that's where the face lives.
             let b = animal.boundingBox
