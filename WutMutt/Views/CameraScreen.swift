@@ -14,7 +14,23 @@ struct CameraScreen: View {
         ZStack {
             // Feed
             Color.wmNearBlack
-            #if !targetEnvironment(simulator)
+            #if targetEnvironment(simulator)
+            // No camera here, and a black void tells you nothing about the
+            // shot. Show the same stand-in photo that capture() sends, under
+            // the same grade as the live feed, so what you frame is what you
+            // reveal — the viewfinder, the portrait, and Claude's read all
+            // agree, and the detection beat has something to land on.
+            if let stand = WMSimulator.standIn {
+                Image(uiImage: stand)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: W, height: H)
+                    .clipped()
+                    .saturation(0.95)
+                    .contrast(0.98)
+                    .brightness(0.04)
+            }
+            #else
             CameraPreviewView(session: camera.session)
                 .frame(width: W, height: H)
                 .clipped()
@@ -223,8 +239,8 @@ struct CameraScreen: View {
 
     private func capture() {
         #if targetEnvironment(simulator)
-        // No camera in the simulator — use tonight's star as the stand-in shot.
-        if let stand = UIImage(named: model.star.asset) {
+        // No camera in the simulator — send the stand-in that's on screen.
+        if let stand = WMSimulator.standIn {
             model.startScan(with: stand)
         }
         #else
@@ -236,3 +252,35 @@ struct CameraScreen: View {
         #endif
     }
 }
+
+#if targetEnvironment(simulator)
+/// The photo that plays the part of the camera when there isn't one.
+///
+/// A real dog in real light, not one of the cast portraits: those are AI
+/// renders, so identifying them was Claude reading its own kind of image, and
+/// the results said more about the render than about the pipeline. This one
+/// has the things a phone actually hands us — motion, mixed shade, a subject
+/// that fills the frame — so what the simulator shows is worth believing.
+///
+/// Don't crop it tighter. The source photo is 4:3 landscape; this is a 1040x1200
+/// portrait cut of it, which is about as close as you can get before
+/// VNRecognizeAnimalsRequest stops finding the dog at all. Trimming another
+/// 200pt off the width — still a full head, still obviously a dog to a person —
+/// took detection from 0.75 confidence to zero results, which silently costs
+/// the Vision-cropped portrait on the results screen. The detector wants body,
+/// not face.
+///
+/// Excluded from Release in Config.xcconfig, so it never leaves this machine
+/// in a build. Optional on purpose: without the file the viewfinder is simply
+/// black and REVEAL does nothing, which is the old behavior, not a crash.
+enum WMSimulator {
+    // By explicit path, not UIImage(named:). That lookup finds the loose
+    // star-*.png files by bare name, but returns nil for this .jpg — it
+    // resolves extensionless names against the asset catalog and PNG, so the
+    // photo was in the bundle and the viewfinder was still black.
+    static let standIn: UIImage? = Bundle.main
+        .url(forResource: "sim-stand-in", withExtension: "jpg")
+        .flatMap { try? Data(contentsOf: $0) }
+        .flatMap(UIImage.init(data:))
+}
+#endif

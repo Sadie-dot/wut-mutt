@@ -11,6 +11,13 @@
 WMIdentifyProxyURL =
 WMIdentifyAppToken =
 
+// The simulator has no camera, so it stands in a bundled photo — both as the
+// viewfinder feed and as the shot sent for identification. That photo is a
+// real dog on a real porch, and anything in an .app is extractable, so keep it
+// out of anything that ships. The simulator only ever runs Debug builds, so
+// excluding it here costs nothing.
+EXCLUDED_SOURCE_FILE_NAMES[config=Release] = sim-stand-in.jpg
+
 // Optional, git-ignored override. The "?" makes this a no-op when the file is
 // absent (e.g. a fresh clone), so the committed defaults above still stand.
 #include? "Secrets.local.xcconfig"

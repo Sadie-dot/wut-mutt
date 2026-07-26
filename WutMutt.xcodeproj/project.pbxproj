@@ -40,6 +40,7 @@
 		BB003013 /* Nunito-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004013 /* Nunito-SemiBold.ttf */; };
 		BB003014 /* Nunito-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004014 /* Nunito-Bold.ttf */; };
 		BB003015 /* Nunito-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BB004015 /* Nunito-ExtraBold.ttf */; };
+		BB003016 /* sim-stand-in.jpg in Resources */ = {isa = PBXBuildFile; fileRef = BB004016 /* sim-stand-in.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 		BB004012 /* PlayfairDisplay-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-BoldItalic.ttf"; sourceTree = "<group>"; };
 		BB004013 /* Nunito-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-SemiBold.ttf"; sourceTree = "<group>"; };
 		BB004014 /* Nunito-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-Bold.ttf"; sourceTree = "<group>"; };
+		BB004016 /* sim-stand-in.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "sim-stand-in.jpg"; sourceTree = "<group>"; };
 		BB004015 /* Nunito-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-ExtraBold.ttf"; sourceTree = "<group>"; };
 		BB004020 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB005001 /* WutMutt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WutMutt.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +118,7 @@
 				BB004004 /* star-basset-hound.png */,
 				BB004005 /* star-chinese-crested.png */,
 				BB004006 /* star-staffordshire-bull-terrier.png */,
+				BB004016 /* sim-stand-in.jpg */,
 				BB004020 /* Info.plist */,
 			);
 			path = WutMutt;
@@ -255,6 +258,7 @@
 				BB003013 /* Nunito-SemiBold.ttf in Resources */,
 				BB003014 /* Nunito-Bold.ttf in Resources */,
 				BB003015 /* Nunito-ExtraBold.ttf in Resources */,
+				BB003016 /* sim-stand-in.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
