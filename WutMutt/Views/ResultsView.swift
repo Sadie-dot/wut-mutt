@@ -35,7 +35,7 @@ struct ResultsView: View {
                         // The disclosure belongs on the sentence that makes the
                         // claim — and this is the only other place it can live,
                         // since nothing ever returns to the curtain.
-                        CreditsLinks(tint: .wmFinePrint, separatorOpacity: 0.5)
+                        CreditsLinks(tint: .wmFinePrint)
                     }
                     .padding(.top, 4)
                 }

@@ -239,11 +239,13 @@ extension View {
 /// that makes the claim.
 struct CreditsLinks: View {
     var tint: Color
-    var separatorOpacity: Double = 0.45
+    /// The reference footer puts the middot at the same opacity as the text
+    /// (one inherited rgba, no dimming), so that is the default.
+    var separatorOpacity: Double = 0.92
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 6) {
             link("AI Disclosure") { model.aiDisclosureOpen = true }
             dot
             link("Image Credits") { model.imageCreditsOpen = true }
@@ -254,10 +256,16 @@ struct CreditsLinks: View {
         }
     }
 
+    /// The design's separator is a middot in the footer's own font, inheriting
+    /// the footer's color — not a drawn dot. This was a 3pt circle at 45%,
+    /// which on the curtain's deep raspberry was about half the intended
+    /// contrast and read as a smudge. The glyph also tracks Dynamic Type,
+    /// where a fixed 3pt circle stayed put while the labels grew around it.
     private var dot: some View {
-        Circle()
-            .fill(tint.opacity(separatorOpacity))
-            .frame(width: 3, height: 3)
+        Text("·")
+            .font(.nunito(12, weight: .bold))
+            .foregroundColor(tint.opacity(separatorOpacity))
+            .accessibilityHidden(true)
     }
 
     /// 44pt tap target, pulled back out of the layout so the footer keeps its
