@@ -305,6 +305,8 @@ final class AppModel: ObservableObject {
                 message: "The studio goes dark until tomorrow.\nEven soap stars need their rest.")))
         case "offline":                     // lost the feed
             return .offAir(BreedIdentifier.offAir(for: URLError(.notConnectedToInternet)))
+        case "dog":                         // the happy path, without spending a reveal
+            return .dog(breeds: Breed.fallbackEpisode, certainty: 87)
         default:
             break
         }
@@ -324,17 +326,63 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// The dog, and the copy of the image Vision found it in.
+    ///
+    /// One pass isn't reliable enough here. Vision's animal detector has narrow
+    /// framings where it returns *no observation at all* rather than a weak
+    /// one — not low confidence, nothing to threshold — and a single pixel
+    /// decides it. Measured on one photo: of 31 crop widths, 30 detected at
+    /// 0.63-0.79 and one returned nothing, with tighter crops on both sides
+    /// fine. Re-encoding, JPEG quality and resampling didn't move it; trimming
+    /// one pixel off each edge did, and rescued all 13 failing variants
+    /// collected, none below 0.57.
+    ///
+    /// The live REVEAL gate never needed this — it runs twice a second on a
+    /// handheld feed, so no two frames are identical and a basin this narrow
+    /// washes out immediately. Here there is one image and one chance, and the
+    /// album path never runs the gate at all, so this pass is the only
+    /// detection that ever happens for it.
+    ///
+    /// Crops are taken from whichever copy answered, so there is no coordinate
+    /// remapping to get wrong. The insets are symmetric and a few pixels on a
+    /// photo thousands wide — invisible in a 224pt circle.
+    ///
+    /// A *thrown* request is a different thing from an empty one, and stops the
+    /// ladder immediately: nothing about the image was the problem, so retrying
+    /// only burns time. The simulator is the case in point — every request
+    /// there fails with "Could not create inference context", because the
+    /// detector wants hardware the simulator doesn't have. This whole path is
+    /// therefore dead in the simulator and the portrait is always the
+    /// center-square fallback, which also means the retry can only be
+    /// confirmed on a device.
+    private nonisolated static func findDog(_ cg: CGImage,
+                                            _ orientation: CGImagePropertyOrientation)
+        -> (image: CGImage, animal: VNRecognizedObjectObservation)? {
+        for inset in [0, 1, 3, 8] {
+            let candidate = inset == 0 ? cg : cg.cropping(to: CGRect(
+                x: inset, y: inset,
+                width: cg.width - inset * 2, height: cg.height - inset * 2))
+            guard let candidate else { continue }
+            let request = VNRecognizeAnimalsRequest()
+            let handler = VNImageRequestHandler(cgImage: candidate, orientation: orientation)
+            // Picking the subject the same way the REVEAL gate does, so a shot
+            // with more than one dog portraits the one that lit the button
+            // rather than whichever observation Vision happened to return first.
+            guard (try? handler.perform([request])) != nil else { return nil }
+            if let animal = DogSubject.best(in: request.results ?? []) {
+                return (candidate, animal)
+            }
+        }
+        return nil
+    }
+
     private nonisolated static func faceCrop(_ image: UIImage) -> UIImage {
-        guard let cg = image.cgImage else { return image }
+        guard let full = image.cgImage else { return image }
+        let found = findDog(full, .init(image.imageOrientation))
+        let cg = found?.image ?? full
         let w = CGFloat(cg.width), h = CGFloat(cg.height)
         var box: CGRect?
-        let request = VNRecognizeAnimalsRequest()
-        let handler = VNImageRequestHandler(cgImage: cg, orientation: .init(image.imageOrientation))
-        // Picking the subject the same way the REVEAL gate does, so a shot with
-        // more than one dog portraits the one that lit the button rather than
-        // whichever observation Vision happened to return first.
-        if (try? handler.perform([request])) != nil,
-           let animal = DogSubject.best(in: request.results ?? []) {
+        if let animal = found?.animal {
             // Vision boxes are normalized with a bottom-left origin. Favor the
             // upper part of the body box — that's where the face lives.
             let b = animal.boundingBox
