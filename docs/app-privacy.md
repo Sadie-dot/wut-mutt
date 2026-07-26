@@ -7,6 +7,13 @@ which made them impossible to check against later.
 Not legal advice. Where a question is a judgement call rather than a fact about
 the code, it says so.
 
+**Summary — two data types, both unlinked, no tracking:**
+
+| Data type | Why | Purpose |
+|---|---|---|
+| Usage Data → Other Usage Data | breed-name log | Analytics |
+| Identifiers → Device ID | IP rate-limit counter | App Functionality |
+
 ---
 
 ## The architecture these answers describe
@@ -26,7 +33,15 @@ rate-limit key contains no breed data. If that ever changes, this file is wrong.
 
 Bring-your-own-key builds bypass the Worker entirely — the photo goes straight
 from the device to Anthropic, so neither the rate limit nor the breed count
-applies.
+applies. **This does not happen in the App Store build.** `IdentifyBackend
+.resolve()` prefers the proxy whenever `WMIdentifyProxyURL` is present in
+Info.plist, and a release build has it, so the key prompt is unreachable — it is
+not a fallback when the proxy fails either. A proxy failure produces the off-air
+screen, never a request for the user's key. The prompt exists only for someone
+building from source without `Secrets.local.xcconfig`.
+
+That means the App Privacy answers below describe the only path a store user can
+take; there is no second configuration to declare for.
 
 ---
 
@@ -57,29 +72,27 @@ Two things would flip this and require declaring **User Content → Photos or
 Videos**: caching or logging images in the Worker, or persisting a scan history
 on the device that syncs anywhere.
 
-### Judgement call: the IP rate-limit counter
+### Declare: Identifiers → Device ID
 
-**Recommendation: declare it** as **Identifiers → Device ID**, *not linked to
-identity*, purpose **App Functionality**.
+- **Linked to the user's identity?** → **No**
+- **Used for tracking?** → **No**
+- **Purpose** → **App Functionality**
 
-The argument for declaring: the counter outlives the request it services — ~25
-hours — and it is keyed to an IP address, so it is not obviously covered by the
-"only as long as necessary" carve-out. Rate limiting also runs on every reveal,
-so it can't lean on Apple's exception for collection that is infrequent and
-optional.
+This is the IP rate-limit counter. Decided 2026-07-26 — it was the one open
+judgement call and it is now closed in favour of declaring.
 
-The argument against: an IP address identifies a network rather than a device,
-Apple's taxonomy has no IP entry, and the counter is a single integer used only
-to cap abuse.
+The counter outlives the request it services by about 25 hours and is keyed to
+an IP address, so it does not sit comfortably inside Apple's "only as long as
+necessary to service the request" carve-out. Rate limiting also runs on every
+reveal, so it cannot lean on the exception for collection that is infrequent and
+optional either. The contrary reading — that an IP identifies a network rather
+than a device, and that Apple's taxonomy has no IP entry — is real but thinner,
+and the asymmetry decides it: under-disclosure is a routine rejection reason,
+while over-disclosure costs one line on the product page.
 
-**Lemon Pig did not declare this**, having shipped the same design. If you take
-the recommendation here, consider updating Lemon Pig's label to match — not
-because Apple will cross-reference them, but because two answers to one question
-means one of them is wrong.
-
-Under-disclosure is a routine rejection reason; over-disclosure costs a line on
-the product page and nothing else. That asymmetry is why the recommendation
-leans toward declaring.
+**Lemon Pig ships the same design and does not declare this.** That is now a
+tracked follow-up on the Lemon Pig side; two different answers to one question
+means one of them is wrong, and this is the one we think is right.
 
 ### Tracking
 
@@ -87,7 +100,8 @@ leans toward declaring.
 
 Nothing is linked to identity, there is no advertising, no third-party SDKs, and
 no data is shared with data brokers. The product page should end up with a
-**Data Not Linked to You** section and **no** "Data Used to Track You" section.
+**Data Not Linked to You** section listing **Other Usage Data** and **Device
+ID**, and **no** "Data Used to Track You" section.
 
 ---
 
