@@ -71,9 +71,9 @@ struct CurtainView: View {
                     .padding(.bottom, 28)
                 }
             }
-            .frame(width: W - 68, height: H - 190 - 230)
+            .frame(width: StarFrame.width, height: StarFrame.height)
             .frame(maxHeight: .infinity, alignment: .top)
-            .offset(y: 190)
+            .offset(y: StarFrame.topInset)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Tonight's star: \(model.star.nickname). \(model.star.headline)")
 

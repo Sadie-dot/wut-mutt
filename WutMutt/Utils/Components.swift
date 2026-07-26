@@ -75,6 +75,23 @@ struct GildedFrame<Content: View>: View {
     }
 }
 
+/// Where the star frame sits. One definition, because the curtain's frame and
+/// the camera set's are meant to be the same object: it holds tonight's star,
+/// then reappears around yours. The two were written separately (34 vs 50pt
+/// sides, 190 vs 176 top) and the mismatch read as the frame twitching on the
+/// way in — which is exactly the beat that was supposed to feel continuous.
+///
+/// Insets from the physical screen edges, not the safe area; both screens
+/// ignore safe area and place this by offset.
+enum StarFrame {
+    static let sideInset: CGFloat = 34
+    static let topInset: CGFloat = 190
+    static let bottomInset: CGFloat = 230
+
+    static var width: CGFloat { WMScreen.width - sideInset * 2 }
+    static var height: CGFloat { WMScreen.height - topInset - bottomInset }
+}
+
 /// The gilded circular ring used for the results portrait and no-dog mugshot.
 struct GildedCircle<Content: View>: View {
     var diameter: CGFloat

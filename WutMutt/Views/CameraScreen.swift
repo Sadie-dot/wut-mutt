@@ -52,7 +52,7 @@ struct CameraScreen: View {
             ], center: .init(x: 0.5, y: 0.42), startRadius: 0, endRadius: H * 0.62)
             GlowPulse(center: .init(x: 0.5, y: 0.3))
 
-            // Gilded frame — top 176 / sides 50 / bottom 248.
+            // Gilded frame — StarFrame geometry, identical to the curtain's.
             //
             // Arrives with the dog rather than sitting there throughout. The
             // handoff has it permanent, as a "fit your dog here" guide, but it
@@ -64,10 +64,14 @@ struct CameraScreen: View {
             // holds tonight's star on the curtain, so having it appear when
             // your star does reuses the motif — and it lands on the same 0.5s
             // curve as REVEAL brightening, so the two read as one beat.
+            //
+            // Same object means same measurements: it used to be 32pt narrower
+            // and 14pt higher than the curtain's, so the motif landed slightly
+            // off its mark on a screen you reach one tap later.
             GildedFrame { Color.clear }
-                .frame(width: W - 100, height: H - 176 - 248)
+                .frame(width: StarFrame.width, height: StarFrame.height)
                 .frame(maxHeight: .infinity, alignment: .top)
-                .offset(y: 176)
+                .offset(y: StarFrame.topInset)
                 .opacity(model.dogDetected ? 1 : 0)
                 .animation(.easeInOut(duration: 0.5), value: model.dogDetected)
                 .allowsHitTesting(false)
