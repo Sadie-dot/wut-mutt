@@ -93,14 +93,25 @@ no data is shared with data brokers. The product page should end up with a
 
 ## The two URLs Apple requires
 
-| Field | Page |
+| Field | Paste this |
 |---|---|
-| Privacy Policy URL | `docs/privacy-policy.html` |
-| Support URL | `docs/index.html` |
+| Privacy Policy URL | `https://wut-mutt.pages.dev/privacy-policy` |
+| Support URL | `https://wut-mutt.pages.dev/` |
 
-Both must be publicly reachable before submission. The `wut-mutt` repo is
-**private**, so GitHub Pages cannot serve them from it — see the hosting note in
-the session that added these files.
+Note the privacy URL has **no `.html`**. Cloudflare Pages treats the
+extension-less path as canonical and 308-redirects `privacy-policy.html` to it;
+both work, but give Apple the one that doesn't redirect.
+
+Hosted on Cloudflare Pages (project `wut-mutt`) rather than GitHub Pages,
+because the `wut-mutt` repo is private and Pages cannot serve from it. The
+source of truth is `site/` in this repo; redeploy with:
+
+```
+npx wrangler pages deploy ../site --project-name wut-mutt --branch main
+```
+
+run from `proxy/` (which is where wrangler is installed). `docs/` is not
+deployed — these notes are internal.
 
 ---
 
