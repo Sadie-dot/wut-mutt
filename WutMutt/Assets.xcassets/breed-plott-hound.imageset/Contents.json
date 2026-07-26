@@ -1,0 +1,15 @@
+{
+  "images": [
+    {
+      "filename": "breed-plott-hound.jpg",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "preserves-vector-representation": false
+  }
+}

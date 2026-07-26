@@ -1,0 +1,15 @@
+{
+  "images": [
+    {
+      "filename": "breed-pembroke-welsh-corgi.jpg",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "preserves-vector-representation": false
+  }
+}

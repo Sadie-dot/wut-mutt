@@ -105,7 +105,6 @@ final class AppModel: ObservableObject {
     @Published var portraitImage: UIImage?      // face-centered crop for the gilded portrait
     @Published var breeds: [Breed] = Breed.fallbackEpisode
     @Published var certainty: Int = 87
-    @Published var breedPhotos: [String: UIImage] = [:]
 
     // Photo picker (shared by curtain Upload, camera ALBUM, no-dog Upload)
     @Published var pickerPresented = false
@@ -399,18 +398,6 @@ final class AppModel: ObservableObject {
         crop = crop.intersection(CGRect(x: 0, y: 0, width: w, height: h))
         guard let cut = cg.cropping(to: crop) else { return image }
         return UIImage(cgImage: cut, scale: image.scale, orientation: image.imageOrientation)
-    }
-
-    // MARK: Breed reference photos (dog.ceo stand-in)
-
-    func loadBreedPhoto(for breed: Breed) {
-        let name = breed.name
-        guard breedPhotos[name] == nil else { return }
-        Task {
-            if let image = await DogImageFetcher.shared.photo(matching: name) {
-                self.breedPhotos[name] = image
-            }
-        }
     }
 
     // MARK: VoiceOver

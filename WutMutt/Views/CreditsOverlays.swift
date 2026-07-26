@@ -134,12 +134,43 @@ struct ImageCreditsOverlay: View {
                     .lineSpacing(4)
             }
 
-            // Honest about today: the detail screen still pulls a random photo
-            // per breed from dog.ceo at runtime. Replaced by bundled Commons
-            // photography with per-entry attribution — see the open task.
             CreditsSection(heading: "BREED PHOTOGRAPHY") {
-                creditsBody("Breed reference photos come from the public dog.ceo API, drawn from the Stanford Dogs dataset.")
+                creditsBody("Reference photos are bundled with the app from Wikimedia Commons, under Creative Commons and public-domain licences. Tap any entry to open the original.")
+
+                VStack(spacing: 0) {
+                    ForEach(photoCredits) { credit in
+                        if let url = URL(string: credit.sourceURL) {
+                            Link(destination: url) { creditRow(credit) }
+                                .accessibilityHint("Opens the original photo on Wikimedia Commons")
+                        } else {
+                            creditRow(credit)
+                        }
+                    }
+                }
+                .padding(.top, 6)
             }
         }
+    }
+
+    /// Breed over photographer and licence. Every entry is credited, including
+    /// the public-domain ones — see the note in PhotoCredits.swift.
+    private func creditRow(_ credit: PhotoCredit) -> some View {
+        VStack(spacing: 1) {
+            Text(credit.breed)
+                .font(.nunito(13, weight: .bold))
+                .foregroundColor(.wmCream)
+            Text("\(credit.author) · \(credit.license)")
+                .font(.nunito(11, weight: .semiBold))
+                .foregroundColor(Color.wmCream.opacity(0.62))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 7)
+        .contentShape(Rectangle())
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.wmCream.opacity(0.12))
+                .frame(height: 1)
+        }
+        .accessibilityElement(children: .combine)
     }
 }

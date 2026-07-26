@@ -1,0 +1,15 @@
+{
+  "images": [
+    {
+      "filename": "breed-basset-hound.jpg",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "preserves-vector-representation": false
+  }
+}

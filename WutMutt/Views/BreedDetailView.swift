@@ -12,7 +12,10 @@ struct BreedDetailView: View {
     private var breed: Breed {
         model.breeds.indices.contains(breedIndex) ? model.breeds[breedIndex] : model.breeds[0]
     }
-    private var headshot: UIImage? { model.breedPhotos[breed.name] }
+    /// nil is a normal outcome: Claude names breeds freely and the bundled set
+    /// is 55 deep, so the trait grid below is the other half of this design,
+    /// not a degraded state.
+    private var headshot: UIImage? { BreedPhotos.image(for: breed.name) }
 
     var body: some View {
         ZStack {
@@ -32,7 +35,6 @@ struct BreedDetailView: View {
             // don't stack the status-bar or home-indicator insets on them.
             .ignoresSafeArea()
         }
-        .onAppear { model.loadBreedPhoto(for: breed) }
     }
 
     // MARK: Hero

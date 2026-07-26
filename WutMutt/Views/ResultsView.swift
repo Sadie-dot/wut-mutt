@@ -149,7 +149,6 @@ struct ResultsView: View {
 
             ForEach(Array(model.breeds.enumerated()), id: \.element.id) { index, breed in
                 BreedRow(breed: breed, isLead: index == 0) {
-                    model.loadBreedPhoto(for: breed)
                     model.screen = .detail(index)
                 }
             }

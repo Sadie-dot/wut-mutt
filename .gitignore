@@ -7,3 +7,8 @@ build/
 # Private proxy config — real Worker URL + app token live here, never committed.
 # The committed template is Secrets.local.example.xcconfig.
 WutMutt/Config/Secrets.local.xcconfig
+
+# Commons review thumbnails — regenerable by tools/photo-sourcing/fetch_commons.py
+tools/photo-sourcing/candidates/
+tools/photo-sourcing/sheets/
+tools/photo-sourcing/full/
