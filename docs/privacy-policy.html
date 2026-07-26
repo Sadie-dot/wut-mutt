@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wut Mutt — Privacy Policy</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 720px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem;
+    color: #43112B; background: #FFF4EF;
+  }
+  h1 { font-size: 1.9rem; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.2rem; margin-top: 2rem; color: #8C1238; }
+  .updated { opacity: 0.7; font-size: 0.9rem; }
+  code { font-size: 0.9em; }
+  ul { padding-left: 1.25rem; }
+  /* Keep this last: it overrides the colours set above. */
+  @media (prefers-color-scheme: dark) {
+    body { color: #FFF4EF; background: #43081D; }
+    a { color: #A9F2FF; }
+    h2 { color: #FFD3E3; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Wut Mutt — Privacy Policy</h1>
+<p class="updated">Last updated: July 26, 2026</p>
+
+<p>
+  Wut Mutt is a dog-breed guessing app for iOS. This policy explains what the app
+  does and doesn't do with your information. The short version: Wut Mutt has no
+  accounts and no advertising, and the only data that ever leaves your device is
+  a photo you deliberately choose to have identified.
+</p>
+
+<h2>Information we do not collect</h2>
+<ul>
+  <li>We do not require an account and collect no name, email, or login.</li>
+  <li>We do not use advertising or third-party analytics or tracking SDKs.</li>
+  <li>We do not access your contacts, location, or device identifiers.</li>
+  <li>We do not sell or share personal data with anyone for any purpose.</li>
+</ul>
+
+<h2>Photos you choose to identify</h2>
+<p>
+  The app guesses a dog's breed mix from a photo you take with the camera or pick
+  from your photo library. This only happens when you actively tap REVEAL. When
+  you do:
+</p>
+<ul>
+  <li>
+    The single selected photo is downsized and sent over an encrypted (HTTPS)
+    connection to our identification service (a Cloudflare Worker we operate),
+    which forwards it to Anthropic's Claude API to guess the breed mix and write
+    the episode.
+  </li>
+  <li>
+    Our identification service does <strong>not</strong> store your photo. It
+    passes the image to Anthropic, returns the result to your app, and retains
+    no copy.
+  </li>
+  <li>
+    To prevent abuse, our service temporarily records a rate-limit counter keyed
+    to your network (IP) address for roughly 25 hours. It is used only to cap the
+    number of reveals per day and is not linked to your identity or to your
+    photos. For IPv6 addresses the counter is keyed to the network prefix rather
+    than the full address, because phones routinely change the rest of it.
+  </li>
+  <li>
+    The photo is also held only in memory on your device during your session, so
+    it can be shown as the episode's portrait and included on a card if you
+    choose to share one. It is not written to storage by the app, and it is
+    discarded when you close the app.
+  </li>
+</ul>
+<p>
+  Anthropic processes the image to produce the guess. Anthropic's handling of API
+  inputs is governed by its own terms and privacy policy; per Anthropic's API
+  policies, inputs submitted through the API are not used to train its models.
+  See <a href="https://www.anthropic.com/legal/privacy">Anthropic's Privacy
+  Policy</a>.
+</p>
+
+<h2>Breed names we count</h2>
+<p>
+  When a reveal succeeds, our service records the <em>breed names</em> it
+  returned, each one's position in the list, and its percentage — so future
+  versions can bundle reference photos for the breeds people actually scan.
+  That's the whole record: no photo, no image data, and nothing that identifies
+  you. It is never linked to your IP address, device, or session, and the
+  rate-limit counter above is deliberately kept separate from it.
+</p>
+
+<h2>Sharing an episode</h2>
+<p>
+  If you tap to share, the app draws a card — your photo plus the breed result —
+  and hands it to the standard iOS share sheet. Where it goes from there is your
+  choice and is handled by whichever app or service you pick. We receive nothing.
+</p>
+
+<h2>Your Claude API key (only if you use your own)</h2>
+<p>
+  Wut Mutt lets you supply your own Anthropic API key instead of using our
+  service. If you do, that key is stored only in your device's secure Keychain,
+  and photos are sent directly from your device to Anthropic rather than through
+  our service — which means our rate limit and the breed count above do not
+  apply. We never receive, transmit, or store your personal key. You can remove
+  it at any time by deleting the app.
+</p>
+
+<h2>Settings stored on your device</h2>
+<p>
+  The app remembers one number on your device: which of the five cover stars it
+  showed last, so the next launch shows a different one. It contains nothing
+  about you and never leaves the device.
+</p>
+
+<h2>AI-generated content</h2>
+<p>
+  Breed guesses are generated by Claude, an AI model by Anthropic, from your
+  photo. Results are an educated guess for entertainment — not veterinary,
+  genetic, or dramatic advice. For real answers, ask a vet or a DNA test.
+</p>
+
+<h2>Children's privacy</h2>
+<p>
+  Wut Mutt is not directed to children under 13 and does not knowingly collect
+  personal information from children.
+</p>
+
+<h2>Changes to this policy</h2>
+<p>
+  If this policy changes, we will update the date at the top and post the revised
+  version at this address.
+</p>
+
+<h2>Contact</h2>
+<p>
+  Questions about this policy? Contact the developer at
+  <a href="mailto:sadief@gmail.com">sadief@gmail.com</a>.
+</p>
+
+</body>
+</html>
