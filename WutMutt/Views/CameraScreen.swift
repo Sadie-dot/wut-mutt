@@ -98,17 +98,25 @@ struct CameraScreen: View {
                 // so this asks for a little more than strictly required — the
                 // safe direction for an instruction to err.
                 //
-                // "Our star" keeps the line in the show's voice. It costs the
-                // word "dog", which was doing real work: point this at a cat
-                // and nothing here says the gate wants a dog specifically, so
-                // REVEAL just stays dead. The action still reads without
-                // decoding the metaphor — centre what you're pointing at.
+                // Says "dog" rather than the earlier "our star": point this at a
+                // cat and the metaphor never tells you the gate wants a dog
+                // specifically, so REVEAL just stays dead with no clue why.
+                // Costs some of the show's voice; the parenthetical is the one
+                // place in the app where being understood beats being in
+                // character.
+                //
+                // "Body" asks for the whole animal, not the face. Vision's
+                // detector is trained on animal bodies and boxes them as such,
+                // so a head-filling shot gives it less to work with — and the
+                // instinct when photographing a dog is to get closer. It also
+                // matches what the portrait crop wants: faceCrop takes the top
+                // of the *body* box, so a head-only box crops to a muzzle.
                 //
                 // Avoids "frame" deliberately: the gilded rectangle is decor,
                 // not a crop boundary — capture is full-sensor and Vision
                 // re-crops — so framing language would teach the wrong model.
                 if !model.dogDetected {
-                    Text("(center our star on screen)")
+                    Text("(center dog's body on screen)")
                         .font(.playfair(13, italic: true, relativeTo: .footnote))
                         .foregroundColor(Color.wmPink.opacity(0.9))
                         .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 4, y: 1)
