@@ -15,7 +15,9 @@ let cases: [(String, String?)] = [
     ("Plott Hound",                     "Plott Hound"),
     ("Catahoula Leopard Dog",           "Catahoula Leopard Dog"),
     ("Louisiana Catahoula Leopard Dog", "Catahoula Leopard Dog"),
-    ("Mountain Cur",                    "Mountain Cur"),
+    // Mountain Cur has no bundled photo — Commons has nothing permissive for
+    // it — so it must miss cleanly rather than land on a neighbouring cur.
+    ("Mountain Cur",                    nil),
     ("Boxer",                           "Boxer"),
     ("American Pit Bull Terrier",       "Pit Bull"),
     ("Pit Bull",                        "Pit Bull"),
@@ -49,8 +51,6 @@ let cases: [(String, String?)] = [
     ("St. Bernard",                     "Saint Bernard"),
     ("Shiba Inu",                       "Shiba Inu"),
     ("Siberian Husky",                  "Siberian Husky"),
-    ("Rough Collie",                    "Collie"),
-    ("Border Collie",                   "Border Collie"),
     // Nicknames and rival spellings:
     ("Frenchie",                        "French Bulldog"),
     ("Yorkie",                          "Yorkshire Terrier"),
@@ -61,6 +61,32 @@ let cases: [(String, String?)] = [
     ("Staffy",                          "Staffordshire Bull Terrier"),
     ("Wiener Dog",                      "Dachshund"),
     ("Berner",                          "Bernese Mountain Dog"),
+    // Real breeds that are NOT in the set but share stock words with one that
+    // is. Each of these used to claim the wrong dog's portrait — the same bug
+    // Lemon Pig had when "mangosteen" opened Mango.
+    ("Bull Terrier",                    nil),   // took Staffordshire Bull Terrier
+    ("Miniature Pinscher",              nil),   // took Doberman Pinscher
+    ("Tibetan Mastiff",                 nil),   // took Mastiff
+    ("American Bulldog",                nil),   // took Bulldog
+    ("Bearded Collie",                  nil),   // took Collie
+    ("Anatolian Shepherd",              nil),
+    ("Entlebucher Mountain Dog",        nil),
+    ("Black Mouth Cur",                 nil),
+    ("Field Spaniel",                   nil),
+    ("Cairn Terrier",                   nil),
+
+    // …while the same-breed variants must still land:
+    ("English Bulldog",                 "Bulldog"),
+    ("British Bulldog",                 "Bulldog"),
+    ("English Mastiff",                 "Mastiff"),
+    ("Rough Collie",                    "Collie"),
+    ("Smooth Collie",                   "Collie"),
+    ("Toy Poodle",                      "Poodle"),
+    ("Border Collie",                   "Border Collie"),   // not plain Collie
+    ("Bulldog",                         "Bulldog"),
+    ("Collie",                          "Collie"),
+    ("Mastiff",                         "Mastiff"),
+
     // Must NOT match anything:
     ("A Special Guest",                 nil),
     ("Mixed Breed",                     nil),

@@ -30,6 +30,10 @@ enum BreedPhotos {
         let query = queryTokens(of: name)
         guard !query.isEmpty else { return nil }
 
+        if let known = synonyms[query.sorted().joined(separator: " ")] {
+            return photoCredits.first { $0.breed == known }
+        }
+
         var best: (credit: PhotoCredit, score: Double)?
         for credit in photoCredits {
             let breed = tokens(of: credit.breed)
@@ -49,6 +53,28 @@ enum BreedPhotos {
             // Every word of the shorter name should be accounted for. This is
             // what separates "Australian Shepherd" from "Australian Cattle
             // Dog": both are distinctive, only one covers the query.
+            //
+            // At least one shared word must actually name a breed rather than
+            // describe a kind of one. Without this, any name built from stock
+            // words claims whatever catalog entry shares them: Mountain Cur
+            // took the Bernese Mountain Dog, Bull Terrier took the
+            // Staffordshire, and a Miniature Pinscher — a ten-pound toy — was
+            // given the Doberman's portrait.
+            //
+            // This is the same failure Lemon Pig had, where "mangosteen" was
+            // claimed by Mango because one name contained the other. A wrong
+            // photo is worse than none: the trait grid is a complete design,
+            // and a confidently mislabelled dog is not.
+            //
+            // An exact token match is exempt — a breed whose whole name is
+            // stock words ("Bulldog", "Collie") must still match itself.
+            let identical = shared.count == breed.count && shared.count == query.count
+            let decisive = shared.contains { !generic.contains($0) }
+            guard identical || decisive else { continue }
+
+            // Every word of the shorter name should be accounted for, or one
+            // decisive word must carry it — which is what lets "Blue Heeler"
+            // reach the Australian Cattle Dog.
             let needed = min(breed.count, query.count)
             guard shared.count >= needed || score >= 1.0 else { continue }
 
@@ -77,6 +103,37 @@ enum BreedPhotos {
             .map(String.init)
             .filter { $0.count > 1 && !noise.contains($0) })
     }
+
+    /// Words that describe a kind of dog or where it came from, rather than
+    /// naming one. They can complete a match but never carry it alone, however
+    /// rare they happen to be inside this particular 54-breed set.
+    private static let generic: Set<String> = [
+        // Kinds of dog
+        "mountain", "bull", "bulldog", "terrier", "hound", "spaniel",
+        "retriever", "shepherd", "pointer", "setter", "sheepdog", "collie",
+        "mastiff", "pinscher", "cur", "water", "king", "charles", "great",
+        "royal",
+        // Where it came from
+        "american", "english", "british", "german", "french", "australian",
+        "welsh", "irish", "scottish", "siberian", "chinese", "japanese",
+        "russian", "swiss", "spanish", "italian", "belgian", "tibetan",
+    ]
+
+    /// Names that add a word to a catalog breed and still mean that breed.
+    ///
+    /// These cannot be derived. "English Mastiff" is the catalog's Mastiff
+    /// while "Tibetan Mastiff" is a different dog; "Rough Collie" is the
+    /// catalog's Collie while "Bearded Collie" is not. Both pairs differ only
+    /// by a leading adjective, so the general rule refuses all four and this
+    /// table lets the right two back in.
+    private static let synonyms: [String: String] = [
+        "bulldog english": "Bulldog",
+        "british bulldog": "Bulldog",
+        "english mastiff": "Mastiff",
+        "collie rough": "Collie",
+        "collie smooth": "Collie",
+        "collie scotch": "Collie",
+    ]
 
     /// Nicknames and rival spellings, mapped onto the words the catalog uses.
     /// Claude writes the way people talk — "Lab mix", "Dobermann", "Blue

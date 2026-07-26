@@ -1,69 +1,79 @@
 # Which candidate won, per breed, chosen by looking at the contact sheets.
 #
 # The criteria, in order:
-#   1. Is it head-forward? The polaroid is ~218x200pt and the photo is anchored
+#   1. No people. Not a hand steadying a chin, not a handler's legs at the
+#      edge, not walkers in the far background. The dog is the character; a
+#      stranger's arm in the polaroid makes it someone's snapshot instead.
+#      Leads and collars are fine — they're the dog's.
+#   2. Is it head-forward? The polaroid is ~218x200pt and the photo is anchored
 #      top, so a dog facing the camera survives the crop and a dog facing away
 #      becomes a shoulder.
-#   2. Is it recognisably the breed to someone who owns one?
-#   3. Is the frame clean? Handlers' legs, ring numbers, sponsor boards and
-#      watermarks all read as clutter at this size.
-#   4. Is the short side at least ~620px, the crop's width at 3x?
+#   3. Is it recognisably the breed to someone who owns one?
+#   4. Is the frame clean? Ring numbers, sponsor boards and watermarks all
+#      read as clutter at this size.
+#   5. Is the short side at least ~620px, the crop's width at 3x?
+#
+# Judge these on the square crop, not the whole photograph — several picks
+# that looked fine as candidates lost the dog's head once cropped.
 #
 # Index into the candidates list in candidates/index.json.
 PICKS = {
-    "French Bulldog": 3,
-    "Labrador Retriever": 3,
-    "Golden Retriever": 1,
-    "German Shepherd": 2,
-    "Poodle": 3,
-    "Dachshund": 3,
-    "Bulldog": 2,
-    "Beagle": 1,
-    "Rottweiler": 3,                    # [1] has a person behind the dog
-    "German Shorthaired Pointer": 2,   # [3] is watermarked equishot.be
-    "Yorkshire Terrier": 3,
-    "Boxer": 2,                         # [1] clips the head at the frame edge
-    "Cavalier King Charles Spaniel": 3,
+    "French Bulldog": 0,                # [3] crops the ears off the top
+    "Labrador Retriever": 2,
+    "Golden Retriever": 0,
+    "German Shepherd": 0,
+    "Poodle": (0, 1.0),                 # head at the right of the frame
+    "Dachshund": (1, 1.0),              # long dog, head at the right end
+    "Bulldog": 1,
+    "Beagle": 2,
+    "Rottweiler": 2,
+    "German Shorthaired Pointer": 7,        # the CC0 set all carry a burnt-in date stamp
+    "Yorkshire Terrier": 2,
+    "Boxer": 1,
+    "Cavalier King Charles Spaniel": 0,
     "Doberman Pinscher": 0,
-    "Australian Shepherd": 1,
-    "Great Dane": 3,                    # [0] is mostly brick wall at this crop
-    "Miniature Schnauzer": 0,
-    "Siberian Husky": 2,               # [1] is an eye close-up, not a breed shot
+    "Australian Shepherd": 3,
+    "Great Dane": 4,                    # [1] crops the ears off the top
+    "Miniature Schnauzer": 2,
+    "Siberian Husky": 2,
     "Bernese Mountain Dog": 1,
     "Cane Corso": 0,
     "Shih Tzu": 2,
-    "Boston Terrier": 0,
-    "Pomeranian": 1,
-    "Havanese": 3,
-    "English Springer Spaniel": 3,      # [1] has a handler standing behind the dog
-    "Shetland Sheepdog": 1,
-    "Cocker Spaniel": 0,
-    "Border Collie": 1,
-    "Chihuahua": 1,
-    "Basset Hound": 1,                  # no people in frame; [0] has walkers in the field
-    "Pembroke Welsh Corgi": 2,
-    "Vizsla": 2,
-    "Pug": 0,                           # [1] is cradled in someone's hand
-    "Australian Cattle Dog": 2,
-    "Maltese": 1,
-    "Weimaraner": 2,
-    "Collie": 0,
+    "Boston Terrier": 1,
+    "Pomeranian": 0,
+    "Havanese": 4,                      # [5] puts the dog in the bottom corner
+    "English Springer Spaniel": 0,      # [5] is too tight — loses the crown of the head
+    "Shetland Sheepdog": (2, 1.0),      # head at the right of the frame
+    "Cocker Spaniel": 2,
+    "Border Collie": 2,
+    "Chihuahua": 3,                     # [1] has a sunbather on the beach behind
+    "Basset Hound": 4,
+    "Pembroke Welsh Corgi": 0,              # [1] and [3] are a dog in a wheelchair cart
+    "Vizsla": 5,
+    "Pug": 1,
+    "Australian Cattle Dog": 4,
+    "Maltese": 5,                           # [2] and [3] are sculptures, not dogs
+    "Weimaraner": 1,
+    "Collie": 4,
     "Newfoundland": 1,
-    "Rhodesian Ridgeback": 1,
-    "Great Pyrenees": 2,
+    "Rhodesian Ridgeback": 2,
+    "Great Pyrenees": 6,
     "Mastiff": 1,
     "Akita": 2,
-    "Saint Bernard": 1,                 # [0] has a handler's legs at the edge
-    "Bloodhound": 0,                   # [3] is a surface-to-air missile
-    "Jack Russell Terrier": 2,
-    "Shiba Inu": 1,
-    "Pit Bull": 0,
-    "American Staffordshire Terrier": 1,  # [3] has sponsor boards behind it
+    "Saint Bernard": 3,                     # [4] and [5] are Victorian rescue illustrations
+    "Bloodhound": 3,
+    "Jack Russell Terrier": 4,
+    "Shiba Inu": 3,                         # the breed category is one photographer's dog-park series
+    "Pit Bull": 2,
+    "American Staffordshire Terrier": 0,
     "Staffordshire Bull Terrier": 1,
-    "Goldendoodle": 1,                  # [0] puts the dog too far off to read
-    "Labradoodle": 1,
-    "Plott Hound": 3,                   # [1] has a handler's arm across the corner
-    "Catahoula Leopard Dog": 2,
-    "Mountain Cur": 0,                 # only Commons image actually named as one
-    "Chinese Crested": 2,
+    "Goldendoodle": 2,                      # [0] is an annotated breed diagram with text labels
+    "Labradoodle": 5,
+    "Plott Hound": (0, 1.0),            # sitting at the right edge; centred, it loses its nose
+    "Catahoula Leopard Dog": 0,         # [1] shows none of the leopard coat
+    "Chinese Crested": 5,
+
+    # Mountain Cur is deliberately absent. Commons holds exactly two photos of
+    # the breed and both are CC BY-SA; Openverse's only permissive hit is a
+    # branded infographic, not a photograph. It falls through to the trait grid.
 }

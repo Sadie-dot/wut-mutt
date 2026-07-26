@@ -10,7 +10,7 @@ Commons etiquette (learned the hard way on the Lemon Pig catalog):
   - pace image downloads ~1s apart, back off on 429
   - the API endpoint itself is lenient; the file host is not
 """
-import json, sys, time, urllib.parse, urllib.request, pathlib
+import json, re, sys, time, urllib.parse, urllib.request, pathlib
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from breeds import BREEDS
@@ -18,13 +18,24 @@ from breeds import BREEDS
 API = "https://commons.wikimedia.org/w/api.php"
 UA = "WutMuttPhotoSourcing/1.0 (https://github.com/Sadie-dot/wut-mutt; sadief@gmail.com)"
 OUT = pathlib.Path(__file__).parent / "candidates"
-CANDIDATES_PER_BREED = 4
+CANDIDATES_PER_BREED = 6
+SEARCH_LIMIT = 60
 
-# CC0 / public domain / CC BY / CC BY-SA only. No NC, no ND, no "fair use".
+# CC0, public domain and CC BY only — ShareAlike is deliberately excluded.
+#
+# CC BY-SA is a free licence and costs nothing, but it carries two obligations
+# CC BY does not, and neither is worth carrying for decorative photography:
+# the square crop this app applies is arguably an adaptation, which would put
+# the cropped file under CC BY-SA in turn; and CC BY-SA 4.0 forbids applying
+# technological measures that restrict the granted rights, which is an
+# unresolved question against App Store DRM. Ruling the whole family out costs
+# two breeds of fifty-five and removes the question entirely.
 BAD = ("nc", "nd", "noncommercial", "fair", "nonfree", "gfdl-1.2")
 def license_ok(short):
     s = (short or "").lower()
     if not s:
+        return False
+    if "sa" in s.replace(" ", "").replace("-", "").replace("cc0", ""):
         return False
     if any(b in s.replace(" ", "").replace("-", "") for b in ("cc-by-nc", "ccbync", "nd")):
         return False
@@ -47,31 +58,81 @@ def get(params, tries=4):
             time.sleep(2 ** n)
     return {}
 
+# Commons titles are descriptive, so the ones with people in them usually say
+# so. This only skims off the obvious cases — every survivor is still looked at
+# on a contact sheet, because "Beagle Bailey" says nothing either way.
+PEOPLE = re.compile(r"\b(child|children|kid|kids|girl|boy|woman|women|man|men|"
+                    r"family|families|people|person|human|baby|toddler|owner|"
+                    r"couple|lady|ladies|gentleman|handler|wedding|selfie|"
+                    r"grandma|grandpa|mother|father|daughter|son)s?\b", re.I)
+
+def best_category(term):
+    """The Commons category most likely to be this breed's own."""
+    data = get({"action": "query", "list": "search", "srsearch": term,
+                "srnamespace": "14", "srlimit": "5"})
+    hits = [h["title"] for h in data.get("query", {}).get("search", [])]
+    want = term.lower().split()
+    for title in hits:                      # prefer a category naming the breed
+        body = title[9:].lower()
+        if all(w in body for w in want):
+            return title
+    return hits[0] if hits else None
+
+def category_files(cat, limit=200):
+    """File: members of a category, with the imageinfo we need."""
+    data = get({"action": "query", "list": "categorymembers", "cmtitle": cat,
+                "cmlimit": str(limit), "cmtype": "file"})
+    titles = [m["title"] for m in data.get("query", {}).get("categorymembers", [])]
+    pages = []
+    for i in range(0, len(titles), 25):
+        batch = get({"action": "query", "titles": "|".join(titles[i:i+25]),
+                     "prop": "imageinfo", "iiprop": "url|extmetadata|size",
+                     "iiurlwidth": "320"})
+        pages += batch.get("query", {}).get("pages", [])
+    return pages
+
 def candidates(term):
-    """Search File: namespace, return entries with an acceptable licence."""
+    """Permissive-licence candidates from the breed's category and from search.
+
+    Search alone is not enough. Commons ranks by relevance, and a category
+    where one contributor has uploaded two hundred photos of their own dog
+    under CC BY-SA will fill every slot with ShareAlike before a single CC BY
+    file appears — the Labradoodle category has forty usable permissive files
+    and a search for it returned none of them.
+    """
+    pages = []
+    cat = best_category(term)
+    if cat:
+        pages += category_files(cat)
     data = get({
         "action": "query", "generator": "search",
         "gsrsearch": f'filetype:bitmap {term}', "gsrnamespace": "6",
-        "gsrlimit": "30",
+        "gsrlimit": str(SEARCH_LIMIT),
         "prop": "imageinfo", "iiprop": "url|extmetadata|size",
         "iiurlwidth": "320",
     })
-    out = []
-    for page in data.get("query", {}).get("pages", []):
+    pages += data.get("query", {}).get("pages", [])
+
+    out, seen = [], set()
+    for page in pages:
+        title = page.get("title")
+        if not title or title in seen or not title.lower().endswith((".jpg", ".jpeg", ".png")):
+            continue
+        if PEOPLE.search(title[5:]):
+            continue
         ii = (page.get("imageinfo") or [{}])[0]
         meta = ii.get("extmetadata", {})
         short = meta.get("LicenseShortName", {}).get("value", "")
         if not license_ok(short):
             continue
-        if ii.get("width", 0) < 500 or ii.get("height", 0) < 500:
+        # The crop wants 620px on the short side; below that it upscales.
+        if min(ii.get("width", 0), ii.get("height", 0)) < 620:
             continue
-        artist = meta.get("Artist", {}).get("value", "")
-        # Artist arrives as HTML; strip tags crudely, it is reviewed by hand.
-        import re
-        artist = re.sub(r"<[^>]+>", "", artist).strip() or "Unknown"
-        artist = re.sub(r"\s+", " ", artist)[:80]
+        seen.add(title)
+        artist = re.sub(r"<[^>]+>", "", meta.get("Artist", {}).get("value", "")).strip()
+        artist = re.sub(r"\s+", " ", artist)[:80] or "Unknown"
         out.append({
-            "title": page["title"],
+            "title": title,
             "thumb": ii.get("thumburl"),
             "full": ii.get("url"),
             "descurl": ii.get("descriptionurl"),
@@ -79,9 +140,17 @@ def candidates(term):
             "artist": artist,
             "w": ii.get("width"), "h": ii.get("height"),
         })
-        if len(out) >= CANDIDATES_PER_BREED:
-            break
-    return out
+    # Files that name the breed first, then biggest short side. A breed
+    # category also collects photos where the dog is incidental — a vice
+    # president at a Christmas event, a vet's open day — and those are large
+    # enough to win on size alone.
+    words = [w for w in re.split(r"\W+", term.lower()) if len(w) > 2]
+    def rank(c):
+        body = c["title"][5:].lower()
+        named = sum(w in body for w in words)
+        return (-named, -min(c["w"], c["h"]))
+    out.sort(key=rank)
+    return out[:CANDIDATES_PER_BREED]
 
 def download(url, dest):
     for n in range(4):

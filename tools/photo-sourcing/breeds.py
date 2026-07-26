@@ -19,7 +19,9 @@ BREEDS = [
     ("Poodle",                    "Standard Poodle"),
     ("Dachshund",                 None),
     ("Bulldog",                   "English Bulldog dog breed"),
-    ("Beagle",                    None),
+    # Bare "Beagle" resolves to Category:Beagle conflict — the 1982 Argentina
+    # –Chile territorial dispute — and returns armoured vehicles.
+    ("Beagle",                    "Beagle dog"),
     ("Rottweiler",                None),
     ("German Shorthaired Pointer", None),
     ("Yorkshire Terrier",         None),
@@ -71,8 +73,10 @@ BREEDS = [
     # --- Seen in this app's own reveals ---
     ("Plott Hound",               "Plott Hound dog"),
     ("Catahoula Leopard Dog",     "Louisiana Catahoula Leopard Dog"),
-    # Bare "Mountain Cur" returns Madeira's mountains. Even qualified, Commons
-    # has almost nothing for this breed — see the note in PhotoCredits.
+    # Bare "Mountain Cur" returns Madeira's mountains — Curral das Freiras.
+    # Qualified, Commons has exactly two Mountain Curs and both are CC BY-SA,
+    # so this breed cannot be served under the permissive-only rule and falls
+    # through to the trait grid. Left here to document that it was looked for.
     ("Mountain Cur",              "Mountain Cur dog breed"),
     ("Chinese Crested",           "Chinese Crested Dog"),
 ]
