@@ -52,7 +52,12 @@ extension Color {
 
     // Row press state
     static let wmRowPressed = Color(hex: "#FFF0F6")
-    static let wmChevron    = Color(hex: "#D3B8A0")
+    // The breed rows' only standing "tap me" signal, so it has to be visible.
+    // The handoff's #D3B8A0 came out at 1.9:1 on the card — below the 3:1 WCAG
+    // asks of a non-text control, and a disclosure arrow nobody sees is a
+    // detail screen nobody opens. This muted raspberry measures 4.3:1 while
+    // staying quieter than the percentage it sits beside.
+    static let wmChevron    = Color(hex: "#B75C7E")
 }
 
 // Type ramp: Italiana (marquee), Playfair Display (workhorse),

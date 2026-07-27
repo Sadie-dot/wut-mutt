@@ -8,6 +8,10 @@ struct ResultsView: View {
     /// `celebrate` design prop — shows the "a very good dog" badge.
     var celebrate = true
 
+    /// Notches on the certainty gauge. Ten reads as a dial; the exact figure
+    /// was never on screen anyway — the label above it does that job.
+    private static let certaintyNotches = 10
+
     var body: some View {
         ZStack {
             Color.wmCream.ignoresSafeArea()
@@ -80,15 +84,23 @@ struct ResultsView: View {
         }
         .overlay(alignment: .bottomTrailing) {
             if celebrate {
+                // The badge keeps the handoff's placement — a tabloid sticker
+                // over the portrait is the right instinct for this app — but
+                // it was crossing the gilded ring bare, so the ring's gradient
+                // ran straight into raspberry and the overlap read as an
+                // accident rather than a choice. A cream knockout gives the
+                // sticker its own edge, and the ring now passes behind it.
                 Text("a very good dog")
                     .font(.playfair(15, bold: true, italic: true, relativeTo: .subheadline))
                     .foregroundColor(.wmCream)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 7)
                     .background(Capsule().fill(Color.wmAccent))
+                    .padding(3)
+                    .background(Capsule().fill(Color.wmCream))
                     .shadow(color: Color(hex: "#6E1E33").opacity(0.4), radius: 7, y: 4)
                     .rotationEffect(.degrees(-6))
-                    .offset(x: 14, y: -2)
+                    .offset(x: 17, y: 1)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -118,6 +130,14 @@ struct ResultsView: View {
                     .font(.playfair(16, bold: true, italic: true, relativeTo: .subheadline))
                     .foregroundColor(.wmAccent)
             }
+            // Ruled like a gauge, not filled like a share.
+            //
+            // This meter and the four breed bars below it were the same object
+            // — same pill, same track, one height apart — while measuring
+            // unrelated things: confidence in the whole reading versus one
+            // breed's slice of the mix. Five identical bars on the payoff
+            // screen read as five of the same quantity. Notching this one and
+            // giving it real height makes it a dial the eye sorts separately.
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.wmTrack)
@@ -126,9 +146,17 @@ struct ResultsView: View {
                         .fill(LinearGradient(colors: [.wmIceDeep, .wmAccent],
                                              startPoint: .leading, endPoint: .trailing))
                         .frame(width: geo.size.width * CGFloat(model.certainty) / 100)
+                    HStack(spacing: 0) {
+                        ForEach(1..<Self.certaintyNotches, id: \.self) { _ in
+                            Spacer()
+                            Rectangle().fill(Color.wmCard).frame(width: 2)
+                        }
+                        Spacer()
+                    }
                 }
+                .clipShape(Capsule())
             }
-            .frame(height: 10)
+            .frame(height: 14)
         }
         .padding(EdgeInsets(top: 16, leading: 18, bottom: 16, trailing: 18))
         .background(card)
