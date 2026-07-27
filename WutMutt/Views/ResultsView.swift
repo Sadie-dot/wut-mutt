@@ -8,10 +8,6 @@ struct ResultsView: View {
     /// `celebrate` design prop — shows the "a very good dog" badge.
     var celebrate = true
 
-    /// Notches on the certainty gauge. Ten reads as a dial; the exact figure
-    /// was never on screen anyway — the label above it does that job.
-    private static let certaintyNotches = 10
-
     var body: some View {
         ZStack {
             Color.wmCream.ignoresSafeArea()
@@ -24,9 +20,12 @@ struct ResultsView: View {
                         .fadeUp(delay: 0.1)
                     twistQuote
                         .fadeUp(delay: 0.2)
-                    certaintyCard
-                        .fadeUp(delay: 0.25)
+                    // Breeds first, then the dial. The cast is the answer; how
+                    // sure we are about it is the footnote, and a gauge reads
+                    // as a verdict on what precedes it rather than a preamble.
                     castCard
+                        .fadeUp(delay: 0.25)
+                    certaintyCard
                         .fadeUp(delay: 0.3)
                     actions
                         .fadeUp(delay: 0.35)
@@ -120,46 +119,22 @@ struct ResultsView: View {
     }
 
     private var certaintyCard: some View {
-        VStack(spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("HOW SURE ARE WE?")
-                    .font(.playfair(12, relativeTo: .caption))
-                    .kerning(3)
-                    .foregroundColor(.wmLabel)
-                Spacer()
-                Text(model.certaintyLabel)
-                    .font(.playfair(16, bold: true, italic: true, relativeTo: .subheadline))
-                    .foregroundColor(.wmAccent)
-            }
-            // Ruled like a gauge, not filled like a share.
-            //
-            // This meter and the four breed bars below it were the same object
-            // — same pill, same track, one height apart — while measuring
-            // unrelated things: confidence in the whole reading versus one
-            // breed's slice of the mix. Five identical bars on the payoff
-            // screen read as five of the same quantity. Notching this one and
-            // giving it real height makes it a dial the eye sorts separately.
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.wmTrack)
-                    // Blue → raspberry: hotter = more certain
-                    Capsule()
-                        .fill(LinearGradient(colors: [.wmIceDeep, .wmAccent],
-                                             startPoint: .leading, endPoint: .trailing))
-                        .frame(width: geo.size.width * CGFloat(model.certainty) / 100)
-                    HStack(spacing: 0) {
-                        ForEach(1..<Self.certaintyNotches, id: \.self) { _ in
-                            Spacer()
-                            Rectangle().fill(Color.wmCard).frame(width: 2)
-                        }
-                        Spacer()
-                    }
-                }
-                .clipShape(Capsule())
-            }
-            .frame(height: 14)
+        VStack(spacing: 4) {
+            Text("HOW SURE ARE WE?")
+                .font(.playfair(12, relativeTo: .caption))
+                .kerning(3)
+                .foregroundColor(.wmLabel)
+            CertaintyGauge(value: model.certainty)
+            // The dial has no numerals: the reading has always been the
+            // adjective, not the figure, and putting "87" on a face labelled
+            // "how sure" would invite a precision the guess doesn't have.
+            Text(model.certaintyLabel)
+                .font(.playfair(20, bold: true, italic: true, relativeTo: .title3))
+                .foregroundColor(.wmAccent)
+                .multilineTextAlignment(.center)
         }
-        .padding(EdgeInsets(top: 16, leading: 18, bottom: 16, trailing: 18))
+        .frame(maxWidth: .infinity)
+        .padding(EdgeInsets(top: 16, leading: 18, bottom: 18, trailing: 18))
         .background(card)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("How sure are we? \(model.certaintyLabel)")

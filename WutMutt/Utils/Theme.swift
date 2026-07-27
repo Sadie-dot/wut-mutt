@@ -28,6 +28,18 @@ extension Color {
     static let wmIceDeep  = Color(hex: "#59C2D6")
     static let wmIceLight = Color(hex: "#DFF9FF")
 
+    /// Waypoints for the certainty dial's ice → raspberry ramp, and the only
+    /// place either colour appears.
+    ///
+    /// Blended straight, those two ends average to #997099 — a dead gray-purple
+    /// that sat across the middle of the arc, bottoming out at 21% saturation.
+    /// These carry the ramp around the hue wheel instead of through the
+    /// desaturated middle of it, holding the floor at 30%. They lean warm on
+    /// purpose: routing through a true violet scores better still, but paints a
+    /// third hue across the top of a dial in an app that only owns two.
+    static let wmDialCool = Color(hex: "#7FA2DA")
+    static let wmDialWarm = Color(hex: "#C258A6")
+
     // Cream / pink
     static let wmCream  = Color(hex: "#FFF4EF")
     static let wmCard   = Color(hex: "#FFFDF9")

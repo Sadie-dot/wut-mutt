@@ -119,6 +119,146 @@ struct RibbonBadge: Shape {
     }
 }
 
+/// The certainty speedometer: a 240° dial whose needle sweeps up to the reading.
+///
+/// Confidence in the whole verdict is a different quantity from one breed's
+/// slice of the mix, and a dial says so at a glance — no linear bar on the
+/// screen can be mistaken for it. The nine cream ticks are the ten segments the
+/// flat meter had, and blue → raspberry still means hotter = more certain.
+///
+/// The full sweep, shrunk. 240° is the gesture that reads as a speedometer —
+/// half a turn reads as a progress arc — but at the radius that gesture wants
+/// on a dashboard it dominated a card that is only a footnote on the cast above
+/// it. Keeping the sweep and cutting the radius costs less than the reverse:
+/// the dial stays recognisable and gets narrower as well as shorter.
+struct CertaintyGauge: View {
+    /// 0…100.
+    var value: Int
+
+    private static let start = 150.0        // lower-left, sweeping clockwise
+    private static let sweep = 240.0        // to lower-right, 60° open at the foot
+    private static let radius: CGFloat = 62 // stroke centerline
+    private static let band: CGFloat = 11
+    private static let hub: CGFloat = 16
+    private static let segments = 10
+
+    /// Fraction of a full turn the dial occupies — what `trim` measures in.
+    private static let turn = CGFloat(sweep / 360)
+
+    /// Half the square the arc has to be drawn in to stay centered.
+    private static let half: CGFloat = radius + band / 2
+
+    /// How far below the dial's center anything is drawn.
+    ///
+    /// It depends on the sweep: at 180° the arc stops level with the center and
+    /// the hub is the lowest thing on the dial, while at 240° the two ends hang
+    /// below it. Derived rather than measured, so changing the sweep re-frames
+    /// the dial instead of stranding a hand-tuned constant.
+    private static let foot: CGFloat = {
+        let lowest = stride(from: start, through: start + sweep, by: 0.5)
+            .map { CGFloat(sin($0 * .pi / 180)) }.max() ?? 0
+        return max(hub / 2, radius * lowest + band / 2)
+    }()
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var swept = false
+
+    private var reading: CGFloat { swept ? CGFloat(value) / 100 : 0 }
+
+    /// Rotation that carries a 12-o'clock element to `fraction` along the dial.
+    private static func angle(_ fraction: CGFloat) -> Double {
+        start + sweep * Double(fraction) - 270
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .trim(from: 0, to: Self.turn)
+                .stroke(Color.wmTrack, style: StrokeStyle(lineWidth: Self.band))
+                .rotationEffect(.degrees(Self.start))
+                .frame(width: Self.radius * 2, height: Self.radius * 2)
+
+            // Blue → raspberry: hotter = more certain, by way of two waypoints
+            // that keep the middle of the ramp from going gray (see wmDialCool).
+            Circle()
+                .trim(from: 0, to: Self.turn * reading)
+                .stroke(AngularGradient(stops: [.init(color: .wmIceDeep,  location: 0),
+                                                .init(color: .wmDialCool, location: 0.28),
+                                                .init(color: .wmDialWarm, location: 0.60),
+                                                .init(color: .wmAccent,   location: 1)],
+                                        center: .center,
+                                        startAngle: .zero,
+                                        endAngle: .degrees(Self.sweep)),
+                        style: StrokeStyle(lineWidth: Self.band))
+                .rotationEffect(.degrees(Self.start))
+                .frame(width: Self.radius * 2, height: Self.radius * 2)
+
+            // Interior ticks only — a mark on either end would nick the band's
+            // own edge rather than divide anything.
+            ForEach(1..<Self.segments, id: \.self) { i in
+                Rectangle()
+                    .fill(Color.wmCard)
+                    .frame(width: 2, height: Self.band)
+                    .offset(y: -Self.radius)
+                    .rotationEffect(.degrees(Self.angle(CGFloat(i) / CGFloat(Self.segments))))
+            }
+
+            Needle(length: Self.radius - Self.band, base: Self.hub / 4, tail: Self.hub / 3)
+                .fill(Color.wmHeading)
+                .rotationEffect(.degrees(Self.angle(reading)))
+
+            Circle().fill(Color.wmHeading).frame(width: Self.hub, height: Self.hub)
+            Circle().fill(Color.wmCard).frame(width: 7, height: 7)
+        }
+        // A centered arc needs a square to be drawn in, but only the top half of
+        // that square holds anything. Reclaim the rest so the verdict sits
+        // against the dial rather than below its bounding box.
+        .frame(width: Self.half * 2, height: Self.half * 2)
+        .padding(.bottom, -(Self.half - Self.foot))
+        .background(sweepTrigger)
+        .onAppear { if reduceMotion { swept = true } }
+    }
+
+    /// Starts the sweep the first time the dial is actually on screen.
+    ///
+    /// The card sits below the breed list, so it is off the bottom of the
+    /// screen when results appear — and a `ScrollView` builds its children
+    /// eagerly, so `onAppear` fires down there in the dark. Triggering on
+    /// appearance would park the needle before anyone scrolled to it, which is
+    /// the whole point of the animation gone.
+    private var sweepTrigger: some View {
+        GeometryReader { geo in
+            Color.clear.onChange(of: geo.frame(in: .global).minY, initial: true) { _, top in
+                guard !swept, !reduceMotion, top < WMScreen.height - 100 else { return }
+                // Underdamped on purpose: a needle that overshoots and settles
+                // is the gesture the whole screen is built around.
+                withAnimation(.spring(response: 1.1, dampingFraction: 0.62).delay(0.15)) {
+                    swept = true
+                }
+            }
+        }
+    }
+
+    /// Tapered pointer drawn straight up from the frame's center, so rotating
+    /// about that center pivots it the way a needle pivots on its hub.
+    private struct Needle: Shape {
+        var length: CGFloat
+        /// Half-width where the needle meets the hub.
+        var base: CGFloat
+        /// How far the counterweight sits past the pivot.
+        var tail: CGFloat
+
+        func path(in rect: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: rect.midX, y: rect.midY - length))
+            p.addLine(to: CGPoint(x: rect.midX - base, y: rect.midY + tail))
+            p.addLine(to: CGPoint(x: rect.midX + base, y: rect.midY + tail))
+            p.closeSubpath()
+            return p
+        }
+    }
+}
+
 /// The gilded circular ring used for the results portrait and no-dog mugshot.
 struct GildedCircle<Content: View>: View {
     var diameter: CGFloat
