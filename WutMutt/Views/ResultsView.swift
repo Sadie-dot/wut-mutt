@@ -85,19 +85,20 @@ struct ResultsView: View {
         .overlay(alignment: .bottomTrailing) {
             if celebrate {
                 // The badge keeps the handoff's placement — a tabloid sticker
-                // over the portrait is the right instinct for this app — but
-                // it was crossing the gilded ring bare, so the ring's gradient
-                // ran straight into raspberry and the overlap read as an
-                // accident rather than a choice. A cream knockout gives the
-                // sticker its own edge, and the ring now passes behind it.
+                // over the portrait is the right instinct for this app. The
+                // pennant's notched ends already give it a silhouette the ring
+                // can't be confused with, so it carries no outline: an edge on
+                // top of the notches was one contour too many.
+                //
+                // The horizontal padding clears the notch, not the edge. The V
+                // bites ~21pt in at the midline, where the text sits, so 22pt
+                // left the outer glyphs a point shy of the point.
                 Text("a very good dog")
                     .font(.playfair(15, bold: true, italic: true, relativeTo: .subheadline))
                     .foregroundColor(.wmCream)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 36)
                     .padding(.vertical, 7)
-                    .background(Capsule().fill(Color.wmAccent))
-                    .padding(3)
-                    .background(Capsule().fill(Color.wmCream))
+                    .background(RibbonBadge().fill(Color.wmAccent))
                     .shadow(color: Color(hex: "#6E1E33").opacity(0.4), radius: 7, y: 4)
                     .rotationEffect(.degrees(-6))
                     .offset(x: 17, y: 1)

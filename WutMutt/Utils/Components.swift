@@ -92,6 +92,33 @@ enum StarFrame {
     static var height: CGFloat { WMScreen.height - topInset - bottomInset }
 }
 
+/// Award-ribbon pennant: a rectangle with a V bitten out of each end.
+///
+/// "a very good dog" is a rosette sentence, so the badge that carries it may as
+/// well be rosette-shaped — and a pennant is period-correct for a show staged
+/// as 1980s television.
+///
+/// The bite is deepest at the vertical midline, which is exactly where a single
+/// line of text sits — so callers must pad horizontally past `notch × height`,
+/// not merely past the edge, or the first and last glyph sit in the notch.
+struct RibbonBadge: Shape {
+    /// How deep the swallowtail cuts, as a fraction of the height.
+    var notch: CGFloat = 0.62
+
+    func path(in rect: CGRect) -> Path {
+        let n = min(rect.height * notch, rect.width / 2)
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX - n, y: rect.midY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX + n, y: rect.midY))
+        p.closeSubpath()
+        return p
+    }
+}
+
 /// The gilded circular ring used for the results portrait and no-dog mugshot.
 struct GildedCircle<Content: View>: View {
     var diameter: CGFloat
