@@ -57,9 +57,26 @@ enum ClaudeKeyStore {
 
 // MARK: - Verdict
 
+/// What the photo showed, separate from the breed read.
+///
+/// The analyzing screen's closing question is chosen against the animal in
+/// frame rather than against its breeds' typical builds, so a Great Dane puppy
+/// reads small and gets asked whether it's a wolfhound. Deriving this from the
+/// breed names would get that backwards.
+struct DogLook {
+    enum Size: String { case large, small, unclear }
+    enum Coat: String { case flat, fluffy }
+
+    let size: Size
+    let coat: Coat
+}
+
 /// What the studio came back with.
 enum BreedVerdict {
-    case dog(breeds: [Breed], certainty: Int)
+    /// `look` is nil when the studio didn't say — a proxy deployed before these
+    /// fields existed. The caller falls back to its original closing question
+    /// rather than guessing.
+    case dog(breeds: [Breed], certainty: Int, look: DogLook?)
     case notADog
     /// Couldn't get a real reading. Carries what to tell the viewer — the app
     /// never fills this gap with a fabricated episode.
@@ -249,7 +266,14 @@ struct BreedIdentifier {
                   size: b.size, energy: b.energy, drool: b.drool, floof: b.floof,
                   clues: b.clues, fact: b.fact, colorIndex: i)
         }
-        return .dog(breeds: Array(breeds), certainty: max(40, min(99, wire.certainty)))
+        // Size is what decides the question, so no size means no look at all —
+        // a missing coat alone falls back to flat rather than losing the read.
+        let look = wire.dogSize.flatMap(DogLook.Size.init(rawValue:)).map {
+            DogLook(size: $0, coat: wire.dogCoat.flatMap(DogLook.Coat.init(rawValue:)) ?? .flat)
+        }
+        return .dog(breeds: Array(breeds),
+                    certainty: max(40, min(99, wire.certainty)),
+                    look: look)
     }
 
     // MARK: Off-air copy
@@ -318,9 +342,11 @@ struct BreedIdentifier {
     Analyze this photo for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.
 
     Rules:
-    - If no real live dog is present, set isDog false, certainty 99, and breeds to an empty array.
+    - If no real live dog is present, set isDog false, certainty 99, breeds to an empty array, dogSize "unclear" and dogCoat "flat".
     - Otherwise give 3 or 4 breeds whose "pct" values are integers summing to exactly 100, most confident first.
     - "certainty" is 40-99: how confident the visual breed read is.
+    - "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small".
+    - "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.
     - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
     - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
     - "clues" are 3 short visual details seen in THIS photo.
@@ -345,9 +371,11 @@ struct BreedIdentifier {
             "properties": [
                 "isDog": ["type": "boolean"],
                 "certainty": ["type": "integer"],
+                "dogSize": ["type": "string", "enum": ["large", "small", "unclear"]],
+                "dogCoat": ["type": "string", "enum": ["flat", "fluffy"]],
                 "breeds": ["type": "array", "items": breed]
             ],
-            "required": ["isDog", "certainty", "breeds"],
+            "required": ["isDog", "certainty", "dogSize", "dogCoat", "breeds"],
             "additionalProperties": false
         ]
     }
@@ -410,6 +438,13 @@ private struct WirePayload: Decodable {
     let isDog: Bool
     let certainty: Int
     let breeds: [WireBreed]
+    /// Optional against the same schema that requires them, deliberately: a
+    /// proxy deployed before these fields existed omits them, and a reveal that
+    /// still works is worth more than a stricter contract. Nothing to
+    /// coordinate — an updated Worker's extra keys are ignored by older builds
+    /// in the other direction.
+    let dogSize: String?
+    let dogCoat: String?
 }
 
 private struct WireBreed: Decodable {

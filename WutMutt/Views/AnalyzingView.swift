@@ -41,7 +41,7 @@ struct AnalyzingView: View {
             VStack(spacing: 18) {
                 Hairline(width: 60)
 
-                Text(model.teasers[model.teaserIdx])
+                Text(model.currentTeaser)
                     .font(.playfair(24, bold: true, italic: true, relativeTo: .title2))
                     .foregroundColor(.wmCream)
                     .multilineTextAlignment(.center)

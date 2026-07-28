@@ -92,13 +92,43 @@ final class AppModel: ObservableObject {
 
     // Analyzing
     @Published var teaserIdx = 0
-    let teasers = [
-        "Ever since waking from…",
-        "A squirrel-induced coma…",
-        "The look in those puppy eyes hasn't been the same.",
-        "Both brain cells had one question…",
-        "Am I a chihuahua?"
-    ]
+
+    /// What put the dog under, rotating per reveal. All six start on a
+    /// consonant, so beat 2's "A …-induced" article holds for every one.
+    static let comaCauses = ["squirrel", "meatball", "bullfrog",
+                             "cheddar", "sausage", "squeaker"]
+
+    /// This episode's cause, fixed when the reveal starts — beat 2 plays at
+    /// 1.6s, long before there's a verdict to consult.
+    @Published var comaCause = AppModel.comaCauses[0]
+
+    /// The setup. One sentence in four parts, not four interchangeable lines —
+    /// beat 1 doesn't parse without beat 2, and beat 4 is the setup whose
+    /// payoff is `closing.question`. Shuffling these would produce word salad;
+    /// only the cause and the closing question vary.
+    var setup: [String] {
+        // U+2060 WORD JOINER after the hyphen. The line runs 286-300pt in a
+        // 282pt column whichever cause is drawn, so it always wraps — the
+        // question is only where. Left alone the engine takes the hyphen and
+        // strands "induced coma…" on its own line; forbidding that break sends
+        // it to the space instead, for "A meatball-induced" / "coma…".
+        //
+        // A word joiner rather than a non-breaking hyphen (U+2011): it carries
+        // no glyph, so it can't come out as a missing-character box if a face
+        // in the family doesn't cover that codepoint.
+        ["Ever since waking from…",
+         "A \(comaCause)-\u{2060}induced coma…",
+         "The look in those puppy eyes hasn't been the same.",
+         "Both brain cells had one question…"]
+    }
+
+    /// The fifth beat, chosen once the studio has actually seen the dog.
+    @Published var closing = AppModel.smallQuestions[0]
+
+    /// What's on screen now.
+    var currentTeaser: String {
+        teaserIdx < setup.count ? setup[teaserIdx] : closing.question
+    }
 
     // Episode data
     @Published var capturedImage: UIImage?
@@ -109,6 +139,104 @@ final class AppModel: ObservableObject {
     // Photo picker (shared by curtain Upload, camera ALBUM, no-dog Upload)
     @Published var pickerPresented = false
     @Published var pickedItem: PhotosPickerItem?
+
+    // MARK: The closing question
+
+    /// The analyzing screen's last beat, and the headline that answers it.
+    ///
+    /// The joke is proportion: the question is absurd against the dog actually
+    /// in frame, so a Great Dane is asked whether it's a chihuahua and a
+    /// chihuahua is asked whether it's a Great Dane. The results headline has to
+    /// answer whatever got asked, so all of it travels together.
+    /// The confirmations read "CHANNELING X" rather than "X VIBES CONFIRMED!"
+    /// because the share card's kicker is 12pt Playfair at 4pt kerning in 300pt
+    /// of card, and the longer form spent every one of them: Saint Bernard
+    /// overflowed outright at 331pt, and Rottweiler landed on exactly 300.
+    /// "CHANNELING X" tops out at 274pt, so the whole set has real headroom —
+    /// and the kicker scales with Dynamic Type, so headroom is the point.
+    struct ClosingQuestion {
+        let question: String        // "Am I a chihuahua?"
+        let denial: String          // "NOT A CHIHUAHUA"
+        let confirmation: String    // "CHANNELING CHIHUAHUA"
+        /// Lowercased needle for "did the mix actually contain this?" — Claude
+        /// returns "Yorkshire Terrier", never "Yorkie". nil never confirms.
+        let match: String?
+    }
+
+    /// Asked of a big dog.
+    static let smallQuestions = [
+        ClosingQuestion(question: "Am I a chihuahua?", denial: "NOT A CHIHUAHUA",
+                        confirmation: "CHANNELING CHIHUAHUA", match: "chihuahua"),
+        ClosingQuestion(question: "Am I a pug?", denial: "NOT A PUG",
+                        confirmation: "CHANNELING PUG", match: "pug"),
+        ClosingQuestion(question: "Am I a Yorkie?", denial: "NOT A YORKIE",
+                        confirmation: "CHANNELING YORKIE", match: "yorkshire"),
+        ClosingQuestion(question: "Am I a whippet?", denial: "NOT A WHIPPET",
+                        confirmation: "CHANNELING WHIPPET", match: "whippet")
+    ]
+
+    /// Asked of a little dog.
+    static let largeQuestions = [
+        ClosingQuestion(question: "Am I a Great Dane?", denial: "NOT A GREAT DANE",
+                        confirmation: "CHANNELING GREAT DANE", match: "dane"),
+        ClosingQuestion(question: "Am I a Rottweiler?", denial: "NOT A ROTTWEILER",
+                        confirmation: "CHANNELING ROTTWEILER", match: "rottweiler"),
+        ClosingQuestion(question: "Am I a Saint Bernard?", denial: "NOT A SAINT BERNARD",
+                        confirmation: "CHANNELING SAINT BERNARD", match: "bernard"),
+        ClosingQuestion(question: "Am I a wolfhound?", denial: "NOT A WOLFHOUND",
+                        confirmation: "CHANNELING WOLFHOUND", match: "wolfhound")
+    ]
+
+    /// Asked of a dog that won't be placed. The coat is inverted on purpose —
+    /// the flat-coated get asked about the curliest breed there is, the fluffy
+    /// about the smoothest.
+    static let poodleQuestion = ClosingQuestion(
+        question: "Am I a poodle?", denial: "NOT A POODLE",
+        confirmation: "CHANNELING POODLE", match: "poodle")
+    static let bulldogQuestion = ClosingQuestion(
+        question: "Am I a bulldog?", denial: "NOT A BULLDOG",
+        confirmation: "CHANNELING BULLDOG", match: "bulldog")
+
+    /// For an actual poodle, the only question left worth asking. `match` is nil
+    /// because no mix ever comes back human, so this one only ever denies.
+    static let humanQuestion = ClosingQuestion(
+        question: "Am I human?", denial: "NOT HUMAN",
+        confirmation: "CHANNELING HUMAN", match: nil)
+
+    /// Picks the closing beat against what the studio saw.
+    ///
+    /// Order matters. A poodle also satisfies the coat branch, and asking a
+    /// poodle whether it's a poodle is the one reading with no joke in it.
+    func closingQuestion(for look: DogLook?, breeds: [Breed]) -> ClosingQuestion {
+        if breeds.contains(where: { $0.name.localizedCaseInsensitiveContains("poodle") }) {
+            return Self.humanQuestion
+        }
+        // No look means a studio that predates the fields — ask what the app
+        // always asked rather than inventing a reading of the dog.
+        guard let look else { return Self.smallQuestions[0] }
+
+        switch (look.size, look.coat) {
+        case (.unclear, .flat):   return Self.poodleQuestion
+        case (.unclear, .fluffy): return Self.bulldogQuestion
+        case (.large, _):         return Self.rotate(Self.smallQuestions, key: "wm-question-idx")
+        case (.small, _):         return Self.rotate(Self.largeQuestions, key: "wm-question-idx")
+        }
+    }
+
+    /// Advances a persisted counter and hands back the next element, so two big
+    /// dogs in a row don't both get asked about a chihuahua — the trick
+    /// `starIdx` plays on the opening portrait. Rotation rather than random,
+    /// because random repeats, which is the whole thing this is meant to fix.
+    ///
+    /// Each pool keeps its own key: the question only advances on the pooled
+    /// branches, so sharing a counter with the coma cause would drift them into
+    /// step with each other.
+    private static func rotate<T>(_ pool: [T], key: String) -> T {
+        let defaults = UserDefaults.standard
+        let next = ((defaults.object(forKey: key) as? Int) ?? -1) + 1
+        defaults.set(next, forKey: key)
+        return pool[next % pool.count]
+    }
 
     // Opening-screen star: one of 5 cast portraits, advancing one per launch.
     struct Star {
@@ -152,10 +280,15 @@ final class AppModel: ObservableObject {
         [2: "two", 3: "three", 4: "four"][breeds.count] ?? String(breeds.count)
     }
 
+    /// Answers whatever the analyzing screen just asked. The question is chosen
+    /// to be absurd, so the denial is the usual outcome and a confirmation is
+    /// the rare surprise — a small dog asked about a Great Dane that turns out
+    /// to have one in the mix.
     var castHeadline: String {
-        breeds.contains { $0.name.localizedCaseInsensitiveContains("chihuahua") }
-            ? "EXCLUSIVE: CHIHUAHUA VIBES CONFIRMED!"
-            : "EXCLUSIVE: NOT A CHIHUAHUA"
+        guard let match = closing.match,
+              breeds.contains(where: { $0.name.localizedCaseInsensitiveContains(match) })
+        else { return "EXCLUSIVE: \(closing.denial)" }
+        return "EXCLUSIVE: \(closing.confirmation)"
     }
 
     /// Share-card verdict kicker — the cast headline without "EXCLUSIVE: ".
@@ -232,7 +365,10 @@ final class AppModel: ObservableObject {
             // Nothing configured in the simulator — play the canned episode so
             // the whole show stays demoable without credentials. This is the
             // ONLY path that fabricates a reading, and it can't reach a device.
-            runEpisode(with: image) { .dog(breeds: Breed.fallbackEpisode, certainty: 87) }
+            runEpisode(with: image) {
+                .dog(breeds: Breed.fallbackEpisode, certainty: 87,
+                     look: DogLook(size: .large, coat: .flat))
+            }
             #else
             keyEntryOpen = true
             #endif
@@ -247,13 +383,22 @@ final class AppModel: ObservableObject {
         startScan(with: image)
     }
 
-    /// The analyzing beat: five teasers over 8 seconds, running alongside
-    /// whatever is producing the verdict, advancing when both finish.
+    /// The analyzing beat: four setup teasers, then the question, running
+    /// alongside whatever is producing the verdict.
+    ///
+    /// The closing question can't be picked until the verdict lands, because it
+    /// is asked *about* the dog the verdict describes — so the beat holds on
+    /// setup line four, "Both brain cells had one question…", until the studio
+    /// answers. That line is a setup, so waiting there reads as suspense; the
+    /// old sequence held on the punchline instead, where a slow reveal looked
+    /// like a hang. The 8s floor is unchanged: 6.4s of setup, 1.6s of question.
     private func runEpisode(with image: UIImage,
                             verdict: @escaping @Sendable () async -> BreedVerdict) {
         capturedImage = image
         portraitImage = nil
         teaserIdx = 0
+        comaCause = Self.rotate(Self.comaCauses, key: "wm-coma-idx")
+        closing = Self.smallQuestions[0]
         shareOpen = false
         screen = .analyzing
 
@@ -262,22 +407,30 @@ final class AppModel: ObservableObject {
             guard let self else { return }
             async let pending = verdict()
 
-            // Teasers play once, 1.6s apiece, then hold on the last — the
-            // sequence itself is the 8s minimum runtime.
-            for i in 1..<teasers.count {
+            // Setup beats 2-4 on their marks; beat 1 is already up.
+            for i in 1..<self.setup.count {
                 try? await Task.sleep(nanoseconds: 1_600_000_000)
                 guard !Task.isCancelled else { return }
                 self.teaserIdx = i
             }
+            // Beat 4 gets its own beat, and holds past it if the studio is slow.
             try? await Task.sleep(nanoseconds: 1_600_000_000)
 
             let result = await pending
             guard !Task.isCancelled, self.screen == .analyzing else { return }
 
+            // Now the dog is known, so the question can be about this dog.
+            if case .dog(let breeds, _, let look) = result {
+                self.closing = self.closingQuestion(for: look, breeds: breeds)
+            }
+            self.teaserIdx = self.setup.count
+            try? await Task.sleep(nanoseconds: 1_600_000_000)
+            guard !Task.isCancelled, self.screen == .analyzing else { return }
+
             switch result {
             case .notADog:
                 self.screen = .nodog
-            case .dog(let breeds, let certainty):
+            case .dog(let breeds, let certainty, _):
                 self.breeds = breeds
                 self.certainty = certainty
                 self.cropPortrait(from: image)
@@ -305,7 +458,9 @@ final class AppModel: ObservableObject {
         case "offline":                     // lost the feed
             return .offAir(BreedIdentifier.offAir(for: URLError(.notConnectedToInternet)))
         case "dog":                         // the happy path, without spending a reveal
-            return .dog(breeds: Breed.fallbackEpisode, certainty: 87)
+            return .dog(breeds: Self.forcedBreeds, certainty: 87, look: Self.forcedLook)
+        case "nolook":                      // a proxy that predates dogSize/dogCoat
+            return .dog(breeds: Breed.fallbackEpisode, certainty: 87, look: nil)
         default:
             break
         }
@@ -313,6 +468,31 @@ final class AppModel: ObservableObject {
         do { return try await BreedIdentifier().identify(image) }
         catch { return .offAir(BreedIdentifier.offAir(for: error)) }
     }
+
+    #if DEBUG
+    /// `SIMCTL_CHILD_WM_FORCE_LOOK=<case>` alongside `WM_FORCE_VERDICT=dog`,
+    /// so every closing question is reachable without hunting for a photo of
+    /// the right dog.
+    private nonisolated static var forcedLook: DogLook {
+        switch ProcessInfo.processInfo.environment["WM_FORCE_LOOK"] {
+        case "small":  return DogLook(size: .small, coat: .flat)
+        case "flat":   return DogLook(size: .unclear, coat: .flat)
+        case "fluffy": return DogLook(size: .unclear, coat: .fluffy)
+        default:       return DogLook(size: .large, coat: .flat)
+        }
+    }
+
+    /// `WM_FORCE_BREED=<name>` renames the lead breed. Both the human question
+    /// and the "CHANNELING X" headline key off the mix rather than the look,
+    /// and that headline is the longest string either screen can hold.
+    private nonisolated static var forcedBreeds: [Breed] {
+        var breeds = Breed.fallbackEpisode
+        if let name = ProcessInfo.processInfo.environment["WM_FORCE_BREED"], !name.isEmpty {
+            breeds[0].name = name
+        }
+        return breeds
+    }
+    #endif
 
     // MARK: Portrait crop
 

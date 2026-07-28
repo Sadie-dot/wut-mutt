@@ -160,9 +160,11 @@ function anthropicRequest(imageBase64) {
   const prompt = `Analyze this photo for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.
 
 Rules:
-- If no real live dog is present, set isDog false, certainty 99, and breeds to an empty array.
+- If no real live dog is present, set isDog false, certainty 99, breeds to an empty array, dogSize "unclear" and dogCoat "flat".
 - Otherwise give 3 or 4 breeds whose "pct" values are integers summing to exactly 100, most confident first.
 - "certainty" is 40-99: how confident the visual breed read is.
+- "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small".
+- "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.
 - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
 - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
 - "clues" are 3 short visual details seen in THIS photo.
@@ -213,9 +215,14 @@ function verdictSchema() {
     properties: {
       isDog: { type: "boolean" },
       certainty: { type: "integer" },
+      // What the photo showed, for the analyzing screen's closing question.
+      // The app decodes these as optional, so a build newer than this Worker
+      // degrades to its original question rather than failing the reveal.
+      dogSize: { type: "string", enum: ["large", "small", "unclear"] },
+      dogCoat: { type: "string", enum: ["flat", "fluffy"] },
       breeds: { type: "array", items: breed },
     },
-    required: ["isDog", "certainty", "breeds"],
+    required: ["isDog", "certainty", "dogSize", "dogCoat", "breeds"],
     additionalProperties: false,
   };
 }
