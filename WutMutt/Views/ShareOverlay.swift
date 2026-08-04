@@ -256,6 +256,48 @@ struct ShareCardView: View {
     /// trimming skull and body at once.
     private static let photoHeight: CGFloat = 252
 
+    /// The billing's fixed vertical metrics, from the fonts themselves rather
+    /// than measured constants: the script line never shrinks, so its height
+    /// and the full-size name's are knowable up front, and they are what the
+    /// seam anchor needs to find the name inside the unit's total height.
+    /// The -2 is the billing VStack's own spacing.
+    /// The script's tracking: 0.7pt of air between glyphs a connected script
+    /// was never designed to have. Comped at 0 / 0.7 / 1.4 (and a 22pt size
+    /// variant) over the light coat: 0.7 opens the "nneling" pile-up enough
+    /// to parse without visibly snapping the joins, while 1.4 breaks the
+    /// script into separate glyphs — each one then wears its own outline rim,
+    /// and the seams read as damage. The 22pt route spreads by growing, which
+    /// just moves the crowding up a size and leans on the name. Don't push
+    /// tracking past ~1 here: the joins are the register.
+    ///
+    /// Both values take Debug-only launch overrides
+    /// (`SIMCTL_CHILD_WM_SCRIPT_KERN` / `_SIZE`) so future comps don't need a
+    /// rebuild per variant.
+    private static var scriptKern: CGFloat {
+        #if DEBUG
+        ProcessInfo.processInfo.environment["WM_SCRIPT_KERN"]
+            .flatMap(Double.init).map { CGFloat($0) } ?? 0.7
+        #else
+        0.7
+        #endif
+    }
+    private static var scriptSize: CGFloat {
+        #if DEBUG
+        ProcessInfo.processInfo.environment["WM_SCRIPT_SIZE"]
+            .flatMap(Double.init).map { CGFloat($0) } ?? 20
+        #else
+        20
+        #endif
+    }
+
+    private static let scriptHeight: CGFloat =
+        UIFont(name: "GreatVibes-Regular", size: scriptSize)?.lineHeight ?? 29
+    /// Where the name's midline sits below the seam when nothing shrinks —
+    /// the approved layout's own geometry (top edge 44 above the seam),
+    /// restated as the invariant to hold when something does.
+    private static let nameDropBelowSeam: CGFloat = scriptHeight - 2
+        + (UIFont(name: "PlayfairDisplay-BoldItalic", size: 40)?.lineHeight ?? 55) / 2 - 44
+
     // There is still no scrim. The two things that sit on the photo — the
     // spoiler sticker and the billing's top half — carry their own contrast,
     // one on a solid plate and one in an outline, so no wash has to darken
@@ -307,7 +349,19 @@ struct ShareCardView: View {
             // The field absorbs whatever slack the 4:5 frame leaves.
             .frame(maxHeight: .infinity)
             .background(PolkaBackground())
-            .overlay(alignment: .top) { seamBilling.offset(y: -44) }
+            // Anchored by the name, not by the unit's top edge. A fixed -44
+            // held the *top* still while `minimumScaleFactor` let the name's
+            // height vary, so a shrunk long name rode up with its baseline at
+            // the seam — mostly on the photo, weakening the seam-crossing on
+            // exactly the names that shrink. The guide solves for the point
+            // that keeps the name's midline at the same drop below the seam
+            // whatever height the name resolved to; at full size it comes out
+            // to the old 44 exactly, so short names land pixel-identical.
+            .overlay(alignment: .top) {
+                seamBilling.alignmentGuide(.top) { d in
+                    (d.height + Self.scriptHeight - 2) / 2 - Self.nameDropBelowSeam
+                }
+            }
             // Above the photo, so the billing can cross onto it and its
             // shadow falls on both sides of the seam.
             .zIndex(1)
@@ -436,8 +490,9 @@ struct ShareCardView: View {
     /// brindle alike where a naked fill needs a 132pt wash behind it.
     private var seamBilling: some View {
         VStack(spacing: -2) {
-            outlined(Text("Channeling…").font(.greatVibes(20)),
-                     fill: .wmIce, stroke: .wmHeading, width: 1.2)
+            outlined(Text("Channeling…").font(.greatVibes(Self.scriptSize))
+                        .kerning(Self.scriptKern),
+                     fill: .wmIce, stroke: .wmHeading, width: 1.65, core: 0.45)
             outlined(Text(model.shareStar)
                         .font(.playfair(40, bold: true, italic: true, relativeTo: .largeTitle)),
                      fill: .wmSpoilerYellow, stroke: .wmHeading, width: 1.5)
@@ -460,12 +515,31 @@ struct ShareCardView: View {
     /// around the compass. Offsets rather than a blur shadow because a blur is
     /// a halo, not an edge, and because this card renders twice — the copies
     /// land identically in the preview and the export.
-    private func outlined(_ text: Text, fill: Color, stroke: Color, width w: CGFloat) -> some View {
+    ///
+    /// `core` is the app icon's synthetic weight, borrowed at the icon's own
+    /// numbers: eight more copies in the *fill* colour dilate the glyph core,
+    /// faking a heavier Great Vibes. Thickness is what lets the ice read over
+    /// a light coat — its value sits at the fur's (1.9:1), so at hairline
+    /// width the cyan vanishes and only the dark rim survives, the hollow
+    /// look; at a fattened width the hue carries what the value can't. 0.45
+    /// is the ceiling the icon found at this same 20-per-tile scale — more
+    /// clogs the W's loops — and the outline width grows by the same amount,
+    /// because the rim is measured from the original glyph edge and the
+    /// dilated core would eat it otherwise.
+    private func outlined(_ text: Text, fill: Color, stroke: Color, width w: CGFloat,
+                          core: CGFloat = 0) -> some View {
         ZStack {
             ForEach(0..<8, id: \.self) { i in
                 let angle = CGFloat(i) * .pi / 4
                 text.foregroundColor(stroke)
                     .offset(x: cos(angle) * w, y: sin(angle) * w)
+            }
+            if core > 0 {
+                ForEach(0..<8, id: \.self) { i in
+                    let angle = CGFloat(i) * .pi / 4
+                    text.foregroundColor(fill)
+                        .offset(x: cos(angle) * core, y: sin(angle) * core)
+                }
             }
             text.foregroundColor(fill)
         }
@@ -533,10 +607,16 @@ struct ShareCardView: View {
         // builds from `billedName`, and it costs almost nothing now: the row
         // reserved two lines anyway, so the connector is the only new ink.
         //
-        // 12pt italic rather than the row's 11pt bold caps, because it is prose
-        // under a headline now and not a key.
+        // Italic rather than the row's 11pt bold caps, because it is prose
+        // under a headline now and not a key. 14pt, up from 12: the redesign
+        // grew the lead and left this line behind — 3.3:1 lead-to-cast on a
+        // card whose twist *is* the four-breed cast, with the best joke
+        // ("and a Guest Star") set as the quietest thing on it. Two points
+        // buys it back a billing's presence without joining the headline's
+        // register; the extra line height comes out of the field's slack,
+        // not the portrait.
         Text(model.shareOthers)
-            .font(.playfair(12, italic: true, relativeTo: .footnote))
+            .font(.playfair(14, italic: true, relativeTo: .footnote))
             .foregroundColor(.wmCream)
             .multilineTextAlignment(.center)
             .lineLimit(2)
@@ -544,7 +624,7 @@ struct ShareCardView: View {
             .padding(.horizontal, 18)
             // Two lines reserved whether they're used or not, so the card's
             // height doesn't depend on where a breed name happens to break.
-            .frame(height: 34)
+            .frame(height: 40)
             .accessibilityElement(children: .combine)
     }
 

@@ -348,8 +348,14 @@ final class AppModel: ObservableObject {
         guard breeds.count > 1 else { return "a purebred plot line" }
         let rest = breeds.dropFirst().map(\.billedName)
         if rest.count == 1 { return "with \(rest[0])" }
-        // Glue "and" to the last name with a non-breaking space so they wrap together.
-        return "with " + rest.dropLast().joined(separator: ", ") + ", and\u{00A0}" + rest.last!
+        // The whole closing unit is glued with non-breaking spaces, not just
+        // "and" to the word after it. Gluing only "and" moved the break one
+        // word later, which for the wildcard's "a Guest Star" billing ended a
+        // line on "and a" and orphaned "Guest Star" below it — the article
+        // stranded on the wrong side of the joke. The longest possible unit
+        // ("and American Staffordshire Terrier") still fits a line on its own.
+        let closer = "and \(rest.last!)".replacingOccurrences(of: " ", with: "\u{00A0}")
+        return "with " + rest.dropLast().joined(separator: ", ") + ", " + closer
     }
 
 
@@ -534,6 +540,16 @@ final class AppModel: ObservableObject {
         var breeds = Breed.fallbackEpisode
         if let name = ProcessInfo.processInfo.environment["WM_FORCE_BREED"], !name.isEmpty {
             breeds[0].name = name
+        }
+        // `WM_FORCE_CAST=<name>,<name>` renames the supporting cast in order
+        // (the wildcard keeps its slot), because the cast line's wrap depends
+        // on which names precede "and a Guest Star" and the fallback episode
+        // only ever exercises the one-line case.
+        if let cast = ProcessInfo.processInfo.environment["WM_FORCE_CAST"], !cast.isEmpty {
+            for (i, name) in cast.split(separator: ",").enumerated()
+            where i + 1 < breeds.count {
+                breeds[i + 1].name = String(name)
+            }
         }
         return breeds
     }
