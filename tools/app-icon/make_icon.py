@@ -8,11 +8,16 @@ ink at home-screen size, prescribing hand-tuned per-size assets. So this
 renders three recipes, each a full-bleed square with no rounded corners
 and no alpha (iOS applies the squircle mask itself):
 
-- **full** (1024 marketing): everything — polka field, tilted Polaroid,
-  silhouette, outlined script, the "spoiler…" flap whisper.
+- **full** (1024 marketing): polka field, tilted Polaroid, silhouette,
+  outlined script. The handoff's "spoiler…" flap whisper is dropped by
+  the user's call — the empty flap is what makes the paper a Polaroid,
+  and the whisper was one mark too many even at App Store size.
 - **medium** (60pt and 40pt slots): the handoff's own 60pt tile — no
   "spoiler…", the script's stroke thinned to ~5% of type size and nudged
-  right so the "?" dot separates from the ear.
+  right so the "?" dot separates from the ear. The script runs 20px at
+  the 60 scale rather than the handoff's 17 (the user's call, comped at
+  17/20/23): 20 reads clearly at arm's length, 23 starts to swallow the
+  tile again.
 - **small** (29pt and 20pt slots): silhouette + Polaroid only. At that
   size the script is smudge, and the mark carries the tile alone.
 
@@ -87,11 +92,7 @@ def full(px: float) -> str:
          font-family:'Great Vibes',cursive; font-size:{72*s}px; color:#A9F2FF;
          -webkit-text-stroke:{5*s}px #43081D; paint-order:stroke fill;
          text-shadow:0 {4*s}px {8*s}px rgba(67,8,29,0.5); line-height:1; white-space:nowrap;">Wut?</div>
-    <div style="position:relative; height:{32*s}px;">
-      <div style="position:absolute; right:{16*s}px; bottom:{5*s}px;
-           font-family:'Great Vibes',cursive; font-size:{18*s}px;
-           color:rgba(140,53,87,0.55); transform:rotate(-3deg);">spoiler…</div>
-    </div>
+    <div style="position:relative; height:{32*s}px;"></div>
   </div>
 </div>
 </body></html>"""
@@ -118,10 +119,10 @@ def medium(px: float) -> str:
            background:linear-gradient(0deg,rgba(20,6,13,0.30),transparent); z-index:1;"></div>
       {SILHOUETTE.format(w=30*s, h=30*s)}
     </div>
-    <div style="position:absolute; bottom:{8*s}px; left:50%;
+    <div style="position:absolute; bottom:{7*s}px; left:50%;
          transform:translateX(-46%) rotate(-5deg);
-         font-family:'Great Vibes',cursive; font-size:{17*s}px; color:#A9F2FF;
-         -webkit-text-stroke:{0.9*s}px #43081D; paint-order:stroke fill;
+         font-family:'Great Vibes',cursive; font-size:{20*s}px; color:#A9F2FF;
+         -webkit-text-stroke:{1.06*s}px #43081D; paint-order:stroke fill;
          text-shadow:0 {1*s}px {2*s}px rgba(67,8,29,0.5); line-height:1; white-space:nowrap;">Wut?</div>
     <div style="height:{8*s}px;"></div>
   </div>
