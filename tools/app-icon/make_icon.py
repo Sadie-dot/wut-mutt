@@ -127,11 +127,21 @@ def medium(px: float) -> str:
            background:linear-gradient(0deg,rgba(20,6,13,0.30),transparent); z-index:1;"></div>
       {SILHOUETTE.format(w=30*s, h=30*s)}
     </div>
+    <!-- Two stacked copies fake a heavier weight Great Vibes doesn't have:
+         the top copy strokes itself in its own fill, fattening the glyph
+         core by ~0.22px per side at the 60 scale, and the bottom copy
+         widens its plum stroke by the same amount so the visible rim stays
+         constant. 0.45 is the ceiling before the W's loops clog. -->
     <div style="position:absolute; bottom:{7*s}px; left:50%;
          transform:translateX(-46%) rotate(-5deg);
          font-family:'Great Vibes',cursive; font-size:{20*s}px; color:#FFD3E3;
-         -webkit-text-stroke:{1.06*s}px #43081D; paint-order:stroke fill;
+         -webkit-text-stroke:{1.51*s}px #43081D; paint-order:stroke fill;
          text-shadow:0 {1*s}px {2*s}px rgba(67,8,29,0.5); line-height:1; white-space:nowrap;">Wut?</div>
+    <div style="position:absolute; bottom:{7*s}px; left:50%;
+         transform:translateX(-46%) rotate(-5deg);
+         font-family:'Great Vibes',cursive; font-size:{20*s}px; color:#FFD3E3;
+         -webkit-text-stroke:{0.45*s}px #FFD3E3; paint-order:stroke fill;
+         line-height:1; white-space:nowrap;">Wut?</div>
     <div style="height:{8*s}px;"></div>
   </div>
 </div>
