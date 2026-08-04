@@ -85,12 +85,25 @@ key straight back into history, which is the thing you're avoiding.
   muzzle detail it discarded.
 - **Results portrait** — Vision crops the captured photo toward the dog's
   face before it lands in the gilded circle.
-- **Breed headshots** — placeholder behavior per the handoff: a fuzzy-matched
-  random photo from the public dog.ceo API (production should ship one curated
-  photo per breed). No image → the 2×2 trait grid fallback.
+- **Breed headshots** — 54 curated Wikimedia Commons photos bundled as
+  asset-catalog imagesets (`breed-*.imageset`), sourced by
+  `tools/photo-sourcing/` and generated into `PhotoCredits.swift` by
+  `build_assets.py` — edit the pipeline, not the generated file. Every photo
+  is CC0, public domain, or CC BY; **ShareAlike is excluded on purpose**,
+  since the detail screen's crop is arguably an adaptation. `BreedPhotos`
+  matches Claude's free-text breed name by rarity-weighted token score rather
+  than substring — "Terrier" is worth almost nothing across a dozen entries,
+  "Vizsla" alone is decisive — because a confidently wrong dog is worse than
+  none. A miss is a normal outcome ("Guest Star" has no breed behind it,
+  and the long tail outruns 54 photos): no image → the 2×2 trait grid, which
+  is a complete design in its own right. Mountain Cur ships photo-less for
+  exactly that reason — both of its Commons candidates are ShareAlike.
 - **Share** — the gossip card is a SwiftUI view rendered to an image
-  (`ImageRenderer` at 3×); every share-row target hands it to the system
-  share sheet.
+  (`ImageRenderer` at 3×). Each share-row target does its own thing with that
+  image: Messages opens `MFMessageComposeViewController` with it attached (and
+  the circle is hidden on a device that can't text), Save writes it to Photos
+  with add-only authorisation, Copy puts it on the pasteboard, More opens the
+  system share sheet. All four confirm themselves with a toast.
 - **Accessibility** — Dynamic Type via `relativeTo`, Reduce Motion disables
   every pulse/bob/zoom/pop, VoiceOver announcements on screen changes, the
   certainty meter exposes its percentage as an accessibility value, and the
@@ -103,7 +116,10 @@ key straight back into history, which is the thing you're avoiding.
 - Fonts: Italiana, Playfair Display, Great Vibes, Nunito — all under the
   [SIL Open Font License 1.1](https://openfontlicense.org), bundled as
   static TTFs from Google Fonts.
-- Breed reference photos at runtime: [dog.ceo](https://dog.ceo/dog-api/)
-  (Stanford Dogs dataset).
+- Breed reference photos: 54 stills from
+  [Wikimedia Commons](https://commons.wikimedia.org), each CC0, public domain,
+  or CC BY (2.0–4.0) — never ShareAlike. Every photographer is credited in the
+  app's own Image Credits screen, including the CC0 and public-domain ones
+  whose licence compels nothing.
 
 © 2026

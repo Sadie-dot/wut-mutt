@@ -10,13 +10,16 @@ struct PolkaBackground: View {
     var dotOpacity: Double = 0.20
     var colors: [Color] = [.wmRaspberryTop, .wmRaspberryMid, .wmRaspberry]
     var stops: [CGFloat] = [0, 0.55, 1]
+    /// Cream reads as a highlight on the raspberry set; on a light field the
+    /// dots have to go the other way to be seen at all.
+    var dotColor: Color = .wmCream
 
     var body: some View {
         ZStack {
             LinearGradient(stops: zip(colors, stops).map { Gradient.Stop(color: $0.0, location: $0.1) },
                            startPoint: .top, endPoint: .bottom)
             Canvas { ctx, size in
-                let dot = Color(hex: "#FFF4EF").opacity(dotOpacity)
+                let dot = dotColor.opacity(dotOpacity)
                 var y: CGFloat = 0
                 while y < size.height + 34 {
                     var x: CGFloat = 0
@@ -90,6 +93,32 @@ enum StarFrame {
 
     static var width: CGFloat { WMScreen.width - sideInset * 2 }
     static var height: CGFloat { WMScreen.height - topInset - bottomInset }
+}
+
+/// Five-pointed star, drawn point-up.
+///
+/// `innerRatio` is the waist: 0.382 is the strict pentagram, which comes out
+/// spindly at the sizes the cast strip uses. 0.45 keeps enough body for a
+/// 30pt star to still read as a star and to hold a flat fill.
+struct Star: Shape {
+    var pointCount: Int = 5
+    var innerRatio: CGFloat = 0.45
+
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let outer = min(rect.width, rect.height) / 2
+        let inner = outer * innerRatio
+        var path = Path()
+        for step in 0..<(pointCount * 2) {
+            let radius = step.isMultiple(of: 2) ? outer : inner
+            let angle = -CGFloat.pi / 2 + CGFloat(step) * .pi / CGFloat(pointCount)
+            let point = CGPoint(x: center.x + radius * cos(angle),
+                                y: center.y + radius * sin(angle))
+            if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
+        }
+        path.closeSubpath()
+        return path
+    }
 }
 
 /// Award-ribbon pennant: a rectangle with a V bitten out of each end.

@@ -92,7 +92,7 @@ struct ResultsView: View {
                 // The horizontal padding clears the notch, not the edge. The V
                 // bites ~21pt in at the midline, where the text sits, so 22pt
                 // left the outer glyphs a point shy of the point.
-                Text("a very good dog")
+                Text(model.shareBadge)
                     .font(.playfair(15, bold: true, italic: true, relativeTo: .subheadline))
                     .foregroundColor(.wmCream)
                     .padding(.horizontal, 36)
@@ -104,7 +104,7 @@ struct ResultsView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Your mutt's portrait\(celebrate ? " — a very good dog" : "")")
+        .accessibilityLabel("Your mutt's portrait\(celebrate ? " — \(model.shareBadge)" : "")")
     }
 
     private var twistQuote: some View {
@@ -225,15 +225,21 @@ struct BreedRow: View {
                         .font(.nunito(16, weight: .extraBold))
                         .foregroundColor(.wmChevron)
                 }
+                // Outlined like the covers' headline type, and for the same
+                // reason: three of the four data colours are pale enough to
+                // vanish against cream (yellow reads 1.3:1), so the edge is
+                // what makes the bar a shape. It measures 12.8:1 on the track
+                // and at least 3.2:1 against every fill.
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule().fill(Color.wmTrack)
                         Capsule()
                             .fill(breed.color)
+                            .overlay(Capsule().strokeBorder(Color.wmHeading, lineWidth: 1))
                             .frame(width: geo.size.width * CGFloat(breed.pct) / 100)
                     }
                 }
-                .frame(height: 6)
+                .frame(height: 8)
             }
             .padding(.vertical, 14)
             .contentShape(Rectangle())

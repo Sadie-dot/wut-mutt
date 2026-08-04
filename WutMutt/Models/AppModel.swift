@@ -18,12 +18,35 @@ struct Breed: Identifiable {
     var fact: String
     var colorIndex: Int = 0
 
-    /// Data colors assigned by list order (Mountain-Cur gold darkened to
-    /// #9A6E0F per the accessibility audit).
+    /// Data colors assigned by list order, straight off the spoiler covers:
+    /// the pink of the field, the yellow a featured couple's name is set in,
+    /// a show-title blue, a show-title green. A tabloid doesn't do tasteful
+    /// tone-on-tone, and a ramp of one hue read as muted next to the source.
+    ///
+    /// These are decorative emphasis, not a legend — every row states its own
+    /// breed and percentage, and no other screen reads meaning out of the
+    /// colour. That is what buys the freedom to be this loud: three of the
+    /// four are too light to carry information on their own, and the bars
+    /// borrow the covers' own fix by wearing an outline.
     static let palette: [Color] = [
-        Color(hex: "#D91F5C"), Color(hex: "#9A6E0F"),
-        Color(hex: "#E13A6F"), Color(hex: "#3EBFA5")
+        .wmAccent, .wmSpoilerYellow, .wmIceDeep, .wmSpoilerGreen
     ]
+
+    /// The wildcard the prompt lets Claude return in place of a fourth breed.
+    /// Kept here so the app can recognise it; the prompt's own copy of the
+    /// name lives in `BreedIdentifier` and `proxy/src/index.js`.
+    static let wildcardName = "Guest Star"
+
+    /// The name as it reads in a sentence. The wildcard names a role rather
+    /// than a breed, so it takes an article: "with Boxer, and a Guest Star".
+    /// Matched case-insensitively because the name comes back from Claude
+    /// rather than from us.
+    ///
+    /// Lives on `Breed` so every billing on the card goes through one place —
+    /// the cast line was built from raw `name` and quietly lost the article.
+    var billedName: String {
+        name.caseInsensitiveCompare(Breed.wildcardName) == .orderedSame ? "a \(name)" : name
+    }
     var color: Color { Breed.palette[colorIndex % Breed.palette.count] }
 
     /// Great Vibes hero name, auto-scaled to stay on one line.
@@ -52,7 +75,7 @@ struct Breed: Identifiable {
               clues: ["Deep chest, tucked waist", "Soulful wrinkly forehead", "Front paws crossed like royalty"],
               fact: "Boxers are famously puppy-brained: they are one of the slowest breeds to mature, staying goofy until about age three. Some never stop.",
               colorIndex: 2),
-        Breed(name: "A Special Guest", pct: 14,
+        Breed(name: Breed.wildcardName, pct: 14,
               tagline: "The long-lost twin, presumed missing",
               size: "Unknowable", energy: "Surprise", drool: "TBD", floof: "Classified",
               clues: ["A certain je ne sais quoi", "Refuses to be categorized", "Extra good for no reason"],
@@ -133,6 +156,19 @@ final class AppModel: ObservableObject {
     // Episode data
     @Published var capturedImage: UIImage?
     @Published var portraitImage: UIImage?      // face-centered crop for the gilded portrait
+
+    /// Where the dog is in `capturedImage`, normalized 0…1 with a **top-left**
+    /// origin (Vision's own boxes are bottom-left; this is already flipped).
+    ///
+    /// Vision finds this to build the portrait crop and the old code dropped it
+    /// on the floor. The share card needs it too: it gives half its area to the
+    /// photo, and without knowing where the subject is it can only centre-crop,
+    /// which puts a wall where the dog should be on any wide shot.
+    ///
+    /// `nil` means Vision didn't run or found nothing — including everywhere in
+    /// the simulator, where the detector can't create an inference context at
+    /// all. Consumers must have a centred fallback.
+    @Published var dogBox: CGRect?
     @Published var breeds: [Breed] = Breed.fallbackEpisode
     @Published var certainty: Int = 87
 
@@ -296,18 +332,26 @@ final class AppModel: ObservableObject {
         castHeadline.replacingOccurrences(of: "EXCLUSIVE: ", with: "")
     }
 
-    var shareTitle: String {
-        guard let lead = breeds.first else { return "" }
-        return "\(lead.name) — \(lead.pct)%"
-    }
+    /// The card bills its cast; it doesn't publish figures. A percentage that
+    /// leaves the app leaves the disclaimer behind with it, and "40%" pasted
+    /// into a group chat reads as a measurement rather than the juicy guess
+    /// this is. Same call the certainty dial already made by showing an
+    /// adjective instead of a number.
+    var shareStar: String { breeds.first?.name ?? "" }
+
+    /// The rosette every dog gets, on the results pennant and on the card's
+    /// yellow badge. One definition because it is now user-visible in two
+    /// places, and a line this app repeats had better repeat exactly.
+    var shareBadge: String { "a very good dog" }
 
     var shareOthers: String {
         guard breeds.count > 1 else { return "a purebred plot line" }
-        let rest = breeds.dropFirst().map(\.name)
+        let rest = breeds.dropFirst().map(\.billedName)
         if rest.count == 1 { return "with \(rest[0])" }
         // Glue "and" to the last name with a non-breaking space so they wrap together.
         return "with " + rest.dropLast().joined(separator: ", ") + ", and\u{00A0}" + rest.last!
     }
+
 
     // MARK: Camera permission
 
@@ -396,6 +440,7 @@ final class AppModel: ObservableObject {
                             verdict: @escaping @Sendable () async -> BreedVerdict) {
         capturedImage = image
         portraitImage = nil
+        dogBox = nil
         teaserIdx = 0
         comaCause = Self.rotate(Self.comaCauses, key: "wm-coma-idx")
         closing = Self.smallQuestions[0]
@@ -497,13 +542,33 @@ final class AppModel: ObservableObject {
     // MARK: Portrait crop
 
     /// Centers the gilded portrait on the dog's face using Vision's animal
-    /// detector; falls back to a center-square crop.
+    /// detector; falls back to a center-square crop. Publishes the dog's
+    /// bounding box alongside it, so the share card can aim its own crop
+    /// without paying for a second detection pass.
     private func cropPortrait(from image: UIImage) {
         Task.detached(priority: .userInitiated) { [weak self] in
-            let cropped = Self.faceCrop(image)
-            await MainActor.run { self?.portraitImage = cropped }
+            let found = Self.locateDog(image)
+            await MainActor.run {
+                self?.portraitImage = found.portrait
+                self?.dogBox = found.box ?? Self.forcedDogBox
+            }
         }
     }
+
+    #if DEBUG
+    /// `SIMCTL_CHILD_WM_FORCE_DOGBOX=x,y,w,h` (normalized, top-left origin)
+    /// stands in for a detection the simulator cannot perform — the animal
+    /// detector has no inference context here, so `dogBox` is otherwise always
+    /// nil and the card's aiming can only be exercised on a device.
+    static var forcedDogBox: CGRect? {
+        let parts = (ProcessInfo.processInfo.environment["WM_FORCE_DOGBOX"] ?? "")
+            .split(separator: ",").compactMap { Double($0) }
+        guard parts.count == 4 else { return nil }
+        return CGRect(x: parts[0], y: parts[1], width: parts[2], height: parts[3])
+    }
+    #else
+    static var forcedDogBox: CGRect? { nil }
+    #endif
 
     /// The dog, and the copy of the image Vision found it in.
     ///
@@ -555,13 +620,33 @@ final class AppModel: ObservableObject {
         return nil
     }
 
-    private nonisolated static func faceCrop(_ image: UIImage) -> UIImage {
-        guard let full = image.cgImage else { return image }
+    /// One detection pass, two answers: the square the gilded portrait wants,
+    /// and where the dog actually is so other layouts can aim for themselves.
+    ///
+    /// The box is normalized against the *inset* copy Vision answered on rather
+    /// than the original. The insets top out at 8px on a photo thousands wide —
+    /// under half a percent, and this box only steers a crop, it doesn't measure
+    /// anything — so it is left unmapped rather than risking an orientation
+    /// remap for a sub-pixel gain.
+    private nonisolated static func locateDog(_ image: UIImage)
+        -> (portrait: UIImage, box: CGRect?) {
+        guard let full = image.cgImage else { return (image, nil) }
         let found = findDog(full, .init(image.imageOrientation))
         let cg = found?.image ?? full
+        // Vision's origin is bottom-left; everything downstream of here is UIKit.
+        let box = found.map { f -> CGRect in
+            let b = f.animal.boundingBox
+            return CGRect(x: b.minX, y: 1 - b.maxY, width: b.width, height: b.height)
+        }
+        return (faceCrop(image, cg: cg, animal: found?.animal), box)
+    }
+
+    private nonisolated static func faceCrop(_ image: UIImage,
+                                             cg: CGImage,
+                                             animal: VNRecognizedObjectObservation?) -> UIImage {
         let w = CGFloat(cg.width), h = CGFloat(cg.height)
         var box: CGRect?
-        if let animal = found?.animal {
+        if let animal {
             // Vision boxes are normalized with a bottom-left origin. Favor the
             // upper part of the body box — that's where the face lives.
             let b = animal.boundingBox

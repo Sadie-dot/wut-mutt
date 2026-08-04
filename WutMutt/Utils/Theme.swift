@@ -62,6 +62,28 @@ extension Color {
     // Share card gold border
     static let wmGold = Color(hex: "#E0C88E")
 
+    /// Two colours lifted off the Soap Opera Magazine spoiler covers this app
+    /// is styled after — the yellow their featured couple's name is always set
+    /// in, and the green of a show title. (The third cover colour, a pale
+    /// headline blue, the app already owns as `wmIceDeep`.)
+    ///
+    /// Both are far too light to read as a shape on cream — 1.3:1 and 1.5:1 —
+    /// which is exactly the problem the covers solve by outlining their type.
+    /// The breed bars do the same, so these stay as loud as they are on the
+    /// magazine instead of being darkened into mud.
+    ///
+    /// The green is the one departure: the covers' lime sits at the same
+    /// lightness as the yellow and the two collapse into one colour for
+    /// red-blind viewers (ΔE 2.6). Deepening it to here restores the gap.
+    static let wmSpoilerYellow = Color(hex: "#FFD400")
+    static let wmSpoilerGreen  = Color(hex: "#5FAE30")
+
+    /// The red every cover runs its standing alert strip in, and the near-black
+    /// of the social bar under it. The cover red is a shade lighter; this one
+    /// is darkened just far enough to carry white type at 4.7:1.
+    static let wmAlertRed = Color(hex: "#DE1019")
+    static let wmBarBlack = Color(hex: "#141014")
+
     // Row press state
     static let wmRowPressed = Color(hex: "#FFF0F6")
     // The breed rows' only standing "tap me" signal, so it has to be visible.
