@@ -21,6 +21,14 @@ and no alpha (iOS applies the squircle mask itself):
 - **small** (29pt and 20pt slots): silhouette + Polaroid only. At that
   size the script is smudge, and the mark carries the tile alone.
 
+The script fill is #FFD3E3 — the designer's 12a revision ("light-pink
+script, plum outline"), replacing the original ice. Ice measured 1.0:1
+against the photo's own mid-band, so the letter interiors vanished over
+the sky and the outline did all the work; the pink keeps every value
+pair within ~7% of ice (chest 12.3:1, field spill 4.3:1, outline
+12.1:1) and separates from the sky by hue, so the word finally reads
+everywhere it lands.
+
 The one deliberate departure from the handoff's reference HTML: the
 script layer embeds the app's own bundled GreatVibes-Regular.ttf as a
 data URI instead of fetching Google Fonts, so the icon's "Wut?" can
@@ -89,7 +97,7 @@ def full(px: float) -> str:
     </div>
     <div style="position:absolute; bottom:{33*s}px; left:50%;
          transform:translateX(-52%) rotate(-5deg);
-         font-family:'Great Vibes',cursive; font-size:{72*s}px; color:#A9F2FF;
+         font-family:'Great Vibes',cursive; font-size:{72*s}px; color:#FFD3E3;
          -webkit-text-stroke:{5*s}px #43081D; paint-order:stroke fill;
          text-shadow:0 {4*s}px {8*s}px rgba(67,8,29,0.5); line-height:1; white-space:nowrap;">Wut?</div>
     <div style="position:relative; height:{32*s}px;"></div>
@@ -121,7 +129,7 @@ def medium(px: float) -> str:
     </div>
     <div style="position:absolute; bottom:{7*s}px; left:50%;
          transform:translateX(-46%) rotate(-5deg);
-         font-family:'Great Vibes',cursive; font-size:{20*s}px; color:#A9F2FF;
+         font-family:'Great Vibes',cursive; font-size:{20*s}px; color:#FFD3E3;
          -webkit-text-stroke:{1.06*s}px #43081D; paint-order:stroke fill;
          text-shadow:0 {1*s}px {2*s}px rgba(67,8,29,0.5); line-height:1; white-space:nowrap;">Wut?</div>
     <div style="height:{8*s}px;"></div>
