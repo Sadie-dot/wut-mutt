@@ -39,6 +39,10 @@ let cases: [(String, String?)] = [
     ("Poodle cross",                    "Poodle"),
     ("Goldendoodle",                    "Goldendoodle"),
     ("Labradoodle",                     "Labradoodle"),
+    ("Bernedoodle",                     "Bernedoodle"),
+    // One token, so it must not lean on the Bernese Mountain Dog's words
+    // in either direction.
+    ("Bernedoodle mix",                 "Bernedoodle"),
     ("Shih Tzu",                        "Shih Tzu"),
     ("Cavalier King Charles Spaniel",   "Cavalier King Charles Spaniel"),
     ("Cocker Spaniel",                  "Cocker Spaniel"),

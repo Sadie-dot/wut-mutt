@@ -76,6 +76,7 @@ let photoCredits: [PhotoCredit] = [
     PhotoCredit(imageName: "breed-staffordshire-bull-terrier", breed: "Staffordshire Bull Terrier", author: "claralieu", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Staffordshire_Bull_Terrier_03.jpg"),
     PhotoCredit(imageName: "breed-goldendoodle", breed: "Goldendoodle", author: "Sarahcg2021", license: "CC BY 4.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Petite_Standard_Goldendoodle_Cream.jpg"),
     PhotoCredit(imageName: "breed-labradoodle", breed: "Labradoodle", author: "Anton Porsche", license: "CC BY 4.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Labradoodle-braun.jpg"),
+    PhotoCredit(imageName: "breed-bernedoodle", breed: "Bernedoodle", author: "Missvain", license: "CC BY 4.0", sourceURL: "https://commons.wikimedia.org/wiki/File:2019_Laurent-Perrier_Pop-Up_in_Sonoma_-_Sarah_Stierch_06.jpg"),
     PhotoCredit(imageName: "breed-plott-hound", breed: "Plott Hound", author: "James Emery", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Plott_Hound.jpg"),
     PhotoCredit(imageName: "breed-catahoula-leopard-dog", breed: "Catahoula Leopard Dog", author: "Olgierd (Creative Commons licensed only)", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Louisiana_Catahoula_Leopard_dog_(48809112562).jpg"),
     PhotoCredit(imageName: "breed-chinese-crested", breed: "Chinese Crested", author: "Sheri Terris", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Chinese_Crested_Dog.jpg"),

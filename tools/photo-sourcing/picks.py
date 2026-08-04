@@ -72,6 +72,10 @@ PICKS = {
     "Plott Hound": (0, 1.0),            # sitting at the right edge; centred, it loses its nose
     "Catahoula Leopard Dog": 0,         # [1] shows none of the leopard coat
     "Chinese Crested": 5,
+    # Commons holds exactly two permissive Bernedoodles. [1] has a person's
+    # leg and hand in the frame and is 640px wide — under the crop, so it
+    # would upscale. [0] is head-forward at 3024x4032, native 3:4.
+    "Bernedoodle": 0,
 
     # Mountain Cur is deliberately absent. Commons holds exactly two photos of
     # the breed and both are CC BY-SA; Openverse's only permissive hit is a

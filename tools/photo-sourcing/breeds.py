@@ -69,6 +69,8 @@ BREEDS = [
     ("Staffordshire Bull Terrier", None),
     ("Goldendoodle",              None),
     ("Labradoodle",               None),
+    # Billed on a real user's dog 2026-08-04, so it has appeared in the wild.
+    ("Bernedoodle",               "Bernedoodle dog"),
 
     # --- Seen in this app's own reveals ---
     ("Plott Hound",               "Plott Hound dog"),
