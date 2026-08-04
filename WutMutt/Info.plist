@@ -32,6 +32,8 @@
 	<string>To find out wut, exactly, your mutt is.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Wut Mutt can reveal the breeds of a dog photo from your library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>To save your mutt's gossip card to your photo library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

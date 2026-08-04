@@ -72,6 +72,11 @@ Two things would flip this and require declaring **User Content → Photos or
 Videos**: caching or logging images in the Worker, or persisting a scan history
 on the device that syncs anywhere.
 
+The share row's Save target writes the gossip card to the user's own library
+under `NSPhotoLibraryAddUsageDescription`, which is not collection either — the
+card never leaves the device, and add-only authorisation cannot read the
+library back.
+
 ### Declare: Identifiers → Device ID
 
 - **Linked to the user's identity?** → **No**
