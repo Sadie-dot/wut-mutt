@@ -249,16 +249,17 @@ struct ShareCardView: View {
     /// The card is hard-pinned to 425 (see `body`), so anything over that clips
     /// instead of growing — this is the number that buys the field its slack.
     ///
-    /// 271 → 206 when the masthead moved down onto the field. The portrait
-    /// gives up ~65pt and gets rid of a 132pt scrim in the trade, so there is
-    /// more dog visible on the smaller photo than there was on the larger one.
-    private static let photoHeight: CGFloat = 206
+    /// 206 → 252 when the masthead stopped being a headline: the field now
+    /// holds only the cast line and the closer, and the height the 27pt
+    /// masthead was renting goes back to the dog. 340×252 is 1.35:1 — still
+    /// wider than a dog stands, but no longer the 1.65:1 letterbox that was
+    /// trimming skull and body at once.
+    private static let photoHeight: CGFloat = 252
 
-    // The scrim went with the masthead. It existed only to carry cream type
-    // over an unknown photo, and it was costing 132pt of dog — a third of the
-    // portrait under a 78% wash on a card whose whole premise is that the photo
-    // carries it. Nothing is drawn on the picture now, so nothing has to be
-    // rescued, and every point of it is the dog.
+    // There is still no scrim. The two things that sit on the photo — the
+    // spoiler sticker and the billing's top half — carry their own contrast,
+    // one on a solid plate and one in an outline, so no wash has to darken
+    // the dog on their behalf.
 
     var body: some View {
         // Three zones: the set, the field, the social bar. Everything else is
@@ -283,42 +284,33 @@ struct ShareCardView: View {
             }
             .frame(width: Self.layoutWidth, height: Self.photoHeight)
             .clipped()
-            // Slung across the seam, where a cover captions its inset —
-            // breaking the edge is what makes a callout look pasted on rather
-            // than parked.
-            // 10 and not 14: the badge still breaks the seam, but at 14 its
-            // bottom corner came down past the top of CHANNELING and the two
-            // crowded each other in the same corner of the field.
-            .overlay(alignment: .bottomLeading) {
-                verdictBadge.offset(x: 10, y: 10)
+            // The spoiler goes in a top corner of the photo, where a cover
+            // pastes its nastiest sticker — and above the reveal, so the card
+            // reads spoiler first, answer at the seam. It left the seam
+            // because the billing lives there now.
+            .overlay(alignment: .topTrailing) {
+                verdictBadge.offset(x: -10, y: 12)
             }
-            // Above the field, so the badge's shadow falls onto it.
-            .zIndex(1)
 
-            VStack(spacing: 2) {
-                masthead.padding(.bottom, 6)
-
-                channelingLabel
-                // Yellow on the pink field is how a cover bills its featured
-                // couple — 4.0:1 at the top of the gradient, which large type
-                // clears.
-                Text(model.shareStar)
-                    .font(.playfair(29, bold: true, italic: true, relativeTo: .title))
-                    .foregroundColor(.wmSpoilerYellow)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    // "American Staffordshire Terrier" is 30 characters and
-                    // still has to look like a headline.
-                    .minimumScaleFactor(0.7)
-
-                castStrip.padding(.top, 2)
+            VStack(spacing: 0) {
+                // The billing is an overlay, not a row — a row would sit *in*
+                // the field, and the whole point is that it crosses out of it.
+                // This padding is the room its lower half lands in.
+                castStrip.padding(.top, 36)
+                // The slack gathers here on purpose: billing and cast hold
+                // together at the seam, the closer sits down by the footer,
+                // and the field stops being an evenly spaced stack.
+                Spacer(minLength: 6)
+                closingLine.padding(.bottom, 10)
             }
             .frame(maxWidth: .infinity)
-            .padding(.top, 10)
-            .padding(.bottom, 6)
             // The field absorbs whatever slack the 4:5 frame leaves.
             .frame(maxHeight: .infinity)
             .background(PolkaBackground())
+            .overlay(alignment: .top) { seamBilling.offset(y: -44) }
+            // Above the photo, so the billing can cross onto it and its
+            // shadow falls on both sides of the seam.
+            .zIndex(1)
 
             // The covers' social bar. It also carries the one line this app
             // owes anyone who meets it here: the card travels without the
@@ -420,86 +412,82 @@ struct ShareCardView: View {
             .offset(x: slack.width / 2 - window.x, y: slack.height / 2 - window.y)
     }
 
-    /// The script announces, and what lands is the kind thing.
+    /// The billing, slung across the seam the way a cover pastes its featured
+    /// couple's name across the photo's edge.
     ///
-    /// The verdict held this slot for one round and it was the wrong tenant.
-    /// Putting "NOT A PUG" in the biggest type made the card's loudest claim a
-    /// joke about a breed the dog *isn't* — funny to someone who knows the app,
-    /// and to a stranger scrolling past, the headline news about a dog they've
-    /// never met. The negation went back to the tilted sticker it came from,
-    /// where a cover keeps its spoilers, and the warm line took the headline.
+    /// This is the card's headline now, and it earns the slot by being the
+    /// thing that varies: "a very good dog" held it for one round and it was a
+    /// constant — the biggest type on the card identical on every card the app
+    /// will ever make, with the two things that differ from dog to dog sitting
+    /// subordinate under it. Ten shared cards looked the same above the fold,
+    /// which is exactly where the "what did *yours* get" curiosity lives.
     ///
-    /// It also fixes the hierarchy underneath: with this at 27pt, the breed at
-    /// 29pt is finally the largest thing on the card, which is what anyone
-    /// sharing it actually wants to say.
+    /// Crossing the seam is not decoration either. With everything pulled off
+    /// the photo the card had quietly re-banded — photo strip, field strip,
+    /// footer strip — and the covers this card imitates are not bands, they
+    /// are one field with things pasted onto it. Pasting the headline over the
+    /// edge is what stitches the zones back into a single surface.
     ///
-    /// It stands on the field, not on the photo. For one round it sat over the
-    /// picture under a 132pt scrim, and there was no arrangement of it that
-    /// worked: in a full-bleed portrait the animal *is* the top of the frame,
-    /// so type up there is always on the dog, and raising it only finds more
-    /// dog. Aiming the crop to duck the head under it helped photos that had
-    /// headroom to spare and did nothing for a tight headshot. Moving it down
-    /// here costs the portrait ~65pt and gives back the whole scrim, which was
-    /// darkening more than that — so the photo is smaller and more of it is
-    /// actually visible.
-    private var masthead: some View {
-        VStack(spacing: 0) {
-            Text("The mutt is…")
-                .font(.greatVibes(21))
-                .foregroundColor(.wmIce)
-                // Great Vibes' line box runs ~1.23em; the design sets
-                // line-height 1, so trim the half-leading off both ends.
-                .padding(.vertical, -3)
-            Text(model.shareBadge)
-                .font(.playfair(27, bold: true, relativeTo: .title2))
-                .kerning(1)
-                .foregroundColor(.wmCream)
+    /// The script lead-in absorbs CHANNELING, which retires the caps label and
+    /// both of its rules — two more horizontals gone from a card whose failure
+    /// mode is horizontals. And the type can sit on the photo without a scrim
+    /// because it wears the app icon's own treatment: ice script and yellow
+    /// headline over a dark outline, which reads over a white coat and a dark
+    /// brindle alike where a naked fill needs a 132pt wash behind it.
+    private var seamBilling: some View {
+        VStack(spacing: -2) {
+            outlined(Text("Channeling…").font(.greatVibes(20)),
+                     fill: .wmIce, stroke: .wmHeading, width: 1.2)
+            outlined(Text(model.shareStar)
+                        .font(.playfair(40, bold: true, italic: true, relativeTo: .largeTitle)),
+                     fill: .wmSpoilerYellow, stroke: .wmHeading, width: 1.5)
+                // One line, however long the breed: a second line would land
+                // deep in the field and take the cast's room with it.
+                // "American Staffordshire Terrier" bottoms out at ~22pt —
+                // no longer huge, but still the largest thing on the card.
                 .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .padding(.horizontal, 14)
+                .minimumScaleFactor(0.55)
+                .padding(.horizontal, 12)
+        }
+        // A paste-up tilt, opposite the spoiler sticker's, so the two read as
+        // separately thrown rather than laid out on a grid.
+        .rotationEffect(.degrees(-2.5))
+        .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+    }
+
+    /// Cover type doesn't trust its background — it wears an outline. SwiftUI
+    /// has no text stroke, so this is the text drawn under itself eight ways
+    /// around the compass. Offsets rather than a blur shadow because a blur is
+    /// a halo, not an edge, and because this card renders twice — the copies
+    /// land identically in the preview and the export.
+    private func outlined(_ text: Text, fill: Color, stroke: Color, width w: CGFloat) -> some View {
+        ZStack {
+            ForEach(0..<8, id: \.self) { i in
+                let angle = CGFloat(i) * .pi / 4
+                text.foregroundColor(stroke)
+                    .offset(x: cos(angle) * w, y: sin(angle) * w)
+            }
+            text.foregroundColor(fill)
         }
     }
 
-    /// A standing head, not a stray line of text.
+    /// The old headline, kept whole and demoted to the sign-off.
     ///
-    /// Unruled, this word floats between the yellow badge above it and the
-    /// yellow star name below and reads as noise. Rules on *both* sides is the
-    /// obvious fix and it fails: the badge overhangs the seam on the left at
-    /// exactly this height, so the left rule comes out from under it looking
-    /// like a tail on the badge. One rule to the right balances instead —
-    /// yellow mass on the left, a thin line on the right, which is how the
-    /// covers balance anyway.
-    ///
-    /// Setting it in `wmIce` was the other candidate and it solves the wrong
-    /// half: hue separates it from the two yellows, but *value* was what was
-    /// missing, and ice renders at 3.9:1 here against cream's 4.5:1.
-    ///
-    /// Both rules, symmetrically — which is what this wanted in the first place.
-    /// One-sided was a workaround for the badge hanging into this corner of the
-    /// field at exactly this height; with the masthead moved down, the badge
-    /// went up to the seam and the corner is free. A lone rule with nothing left
-    /// to balance is just a stray line.
-    ///
-    /// `fixedSize` on the word is load-bearing: a flexible `Rectangle` in an
-    /// `HStack` is greedy, and without it the rules starve the text and
-    /// truncate it to "CHANN…".
-    private var channelingLabel: some View {
-        HStack(spacing: 10) {
-            rule
-            Text("CHANNELING")
-                .font(.playfair(11, relativeTo: .caption))
-                .kerning(5)
-                .foregroundColor(.wmCream)
-                .fixedSize()
-            rule
-        }
-        .padding(.horizontal, 40)
-    }
-
-    private var rule: some View {
-        Rectangle()
-            .fill(Color.wmCream.opacity(0.55))
-            .frame(height: 1)
+    /// "The mutt is… a very good dog" is the app's warmest sentence and it is
+    /// the same on every card, which is precisely why it closes instead of
+    /// opens: a constant makes a rotten headline and a fine motto. Sitting low
+    /// by the footer it also breaks the field's even stacking — billing and
+    /// cast hold together at the seam, this hangs back with the wordmark.
+    private var closingLine: some View {
+        (Text("The mutt is… ")
+            .font(.greatVibes(16))
+            .foregroundColor(.wmIce)
+         + Text(model.shareBadge)
+            .font(.playfair(14, bold: true, italic: true, relativeTo: .footnote))
+            .foregroundColor(.wmCream))
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .padding(.horizontal, 14)
     }
 
     /// The cast, as a row of stars in the results screen's own data colours.
@@ -583,7 +571,9 @@ struct ShareCardView: View {
             .padding(.vertical, 5)
             .background(Color.wmSpoilerYellow)
             .overlay(Rectangle().strokeBorder(Color.wmHeading, lineWidth: 1.5))
-            .rotationEffect(.degrees(-4))
+            // Tilted against the billing's -2.5 so the two pastes scatter
+            // instead of agreeing on a grid.
+            .rotationEffect(.degrees(3))
             .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
     }
 }
