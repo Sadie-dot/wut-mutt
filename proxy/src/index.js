@@ -169,7 +169,7 @@ Rules:
 - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
 - "clues" are 3 short visual details seen in THIS photo.
 - "fact" is a real, accurate, fun breed fact in 1-2 sentences. Never invent facts.
-- If the mix is uncertain, the last breed may be a wildcard named "A Special Guest".`;
+- If the mix is uncertain, the last breed may be a wildcard named "Guest Star".`;
 
   return {
     model: MODEL,

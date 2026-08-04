@@ -88,7 +88,7 @@ let cases: [(String, String?)] = [
     ("Mastiff",                         "Mastiff"),
 
     // Must NOT match anything:
-    ("A Special Guest",                 nil),
+    ("Guest Star",                      nil),
     ("Mixed Breed",                     nil),
     ("Xoloitzcuintli",                  nil),
     ("Norwegian Lundehund",             nil),

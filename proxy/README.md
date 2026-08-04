@@ -100,7 +100,7 @@ ORDER BY appearances DESC
 ```
 
 Filter `double1 = 0` for lead breeds only — those are the ones whose photo
-carries the detail screen. "a special guest" will appear in the results; it is
+carries the detail screen. "guest star" will appear in the results; it is
 the deliberate wildcard, not a breed, and needs no photo.
 
 ## Model

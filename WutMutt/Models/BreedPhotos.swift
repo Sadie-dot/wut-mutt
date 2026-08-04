@@ -10,7 +10,7 @@ import UIKit
 /// "German Shepherd Dog" and "German Shepherd", "Retriever (Golden)" and
 /// "Golden Retriever", "Pit Bull mix" and "American Pit Bull Terrier".
 ///
-/// A miss is a normal outcome, not a failure. "A Special Guest" is a deliberate
+/// A miss is a normal outcome, not a failure. "Guest Star" is a deliberate
 /// wildcard with no breed behind it, and the long tail of real breeds will
 /// always outrun 55 bundled photos. The detail screen falls back to the 2×2
 /// trait grid, which is a complete design in its own right.
