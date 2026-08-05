@@ -65,18 +65,22 @@ let cases: [(String, String?)] = [
     ("Staffy",                          "Staffordshire Bull Terrier"),
     ("Wiener Dog",                      "Dachshund"),
     ("Berner",                          "Bernese Mountain Dog"),
-    // Real breeds that are NOT in the set but share stock words with one that
-    // is. Each of these used to claim the wrong dog's portrait — the same bug
-    // Lemon Pig had when "mangosteen" opened Mango.
+    // Real breeds that once claimed the wrong dog's portrait through shared
+    // stock words — the same bug Lemon Pig had when "mangosteen" opened
+    // Mango. As of 2026-08-04 they carry their own photos, so each must match
+    // itself and nothing else. Bull Terrier is the one still refused: Commons
+    // has no permissive photo of an actual Bull Terrier, and the wrong answer
+    // here is the Staffordshire's portrait.
     ("Bull Terrier",                    nil),   // took Staffordshire Bull Terrier
-    ("Miniature Pinscher",              nil),   // took Doberman Pinscher
-    ("Tibetan Mastiff",                 nil),   // took Mastiff
-    ("American Bulldog",                nil),   // took Bulldog
-    ("Bearded Collie",                  nil),   // took Collie
-    ("Anatolian Shepherd",              nil),
-    ("Entlebucher Mountain Dog",        nil),
-    ("Black Mouth Cur",                 nil),
-    ("Field Spaniel",                   nil),
+    ("Miniature Pinscher",              "Miniature Pinscher"),
+    ("Tibetan Mastiff",                 "Tibetan Mastiff"),
+    ("American Bulldog",                "American Bulldog"),
+    ("Bearded Collie",                  "Bearded Collie"),
+    ("Anatolian Shepherd",              "Anatolian Shepherd"),
+    ("Anatolian Shepherd Dog",          "Anatolian Shepherd"),
+    ("Entlebucher Mountain Dog",        "Entlebucher Mountain Dog"),
+    ("Black Mouth Cur",                 "Black Mouth Cur"),
+    ("Field Spaniel",                   "Field Spaniel"),
     ("Cairn Terrier",                   nil),
 
     // …while the same-breed variants must still land:

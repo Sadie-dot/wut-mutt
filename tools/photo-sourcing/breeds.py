@@ -80,5 +80,24 @@ BREEDS = [
     # so this breed cannot be served under the permissive-only rule and falls
     # through to the trait grid. Left here to document that it was looked for.
     ("Mountain Cur",              "Mountain Cur dog breed"),
+
+    # --- Breeds the matcher used to refuse on purpose ---
+    # Each of these is a real breed that arrives from Claude and once falsely
+    # claimed a lookalike's portrait through shared stock words. Giving them
+    # their own photos turns those refusals into correct matches.
+    ("Miniature Pinscher",        None),
+    ("Tibetan Mastiff",           None),
+    ("American Bulldog",          "American Bulldog dog"),
+    ("Bearded Collie",            None),
+    ("Anatolian Shepherd",        "Anatolian Shepherd Dog"),
+    ("Entlebucher Mountain Dog",  None),
+    ("Black Mouth Cur",           "Black Mouth Cur dog"),
+    ("Field Spaniel",             None),
+    # Bull Terrier was searched 2026-08-04 and cannot be served: Commons'
+    # permissive candidates are three pit-bull-types that are not Bull
+    # Terriers, two paintings, and one antique photograph. Like Mountain Cur
+    # it falls through to the trait grid, and stays in the matcher's refusal
+    # tests. Left here to document that it was looked for.
+    ("Bull Terrier",              "Bull Terrier dog"),
     ("Chinese Crested",           "Chinese Crested Dog"),
 ]

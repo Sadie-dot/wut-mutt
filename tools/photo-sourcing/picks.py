@@ -77,6 +77,20 @@ PICKS = {
     # would upscale. [0] is head-forward at 3024x4032, native 3:4.
     "Bernedoodle": 0,
 
+    # The 2026-08-04 batch: the false-match breeds, given their own photos.
+    "Miniature Pinscher": 2,            # [0] is a tight face crop; [4] a painting
+    "Tibetan Mastiff": 0,               # the only candidate without a handler in frame
+    "American Bulldog": 4,              # walking at the camera; [1] is sepia, [2] eyes only
+    "Bearded Collie": 0,                # [1] and [4] are the same painting twice
+    "Anatolian Shepherd": 4,            # head-forward; [0] is bigger but side-on
+    "Entlebucher Mountain Dog": 2,      # head-forward; studio-green backdrop, judged acceptable
+    "Black Mouth Cur": 0,               # the cousin Mountain Cur never got: CC BY, sitting portrait
+    "Field Spaniel": 1,                 # fills the frame; [3] and [4] carry people
+
+    # Bull Terrier is deliberately absent: its permissive candidates are three
+    # pit-bull-types that are not Bull Terriers, two paintings, and one
+    # antique photograph. It keeps the trait grid and its refusal tests.
+
     # Mountain Cur is deliberately absent. Commons holds exactly two photos of
     # the breed and both are CC BY-SA; Openverse's only permissive hit is a
     # branded infographic, not a photograph. It falls through to the trait grid.

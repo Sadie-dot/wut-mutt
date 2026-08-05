@@ -46,9 +46,17 @@ enum BreedPhotos {
             // and "Yorkshire Terrier" are one word from being the same breed.
             let score = shared.reduce(0.0) { $0 + 1.0 / Double(documentFrequency[$1] ?? 1) }
 
+            // An exact token match short-circuits every rarity rule below: a
+            // breed whose whole name is stock words ("Bulldog", "Collie")
+            // must still match itself, however many cousins share its word.
+            // American Bulldog's arrival pushed "bulldog" into three entries,
+            // which silently took bare "Bulldog" past the ≤2 guard to nil.
+            let identical = shared.count == breed.count && shared.count == query.count
+
             // Require at least one word that belongs to essentially this breed
             // alone, so a lone shared "hound" or "mountain" can't carry a match.
-            guard shared.contains(where: { (documentFrequency[$0] ?? 1) <= 2 }) else { continue }
+            guard identical || shared.contains(where: { (documentFrequency[$0] ?? 1) <= 2 })
+            else { continue }
 
             // Every word of the shorter name should be accounted for. This is
             // what separates "Australian Shepherd" from "Australian Cattle
@@ -66,9 +74,7 @@ enum BreedPhotos {
             // photo is worse than none: the trait grid is a complete design,
             // and a confidently mislabelled dog is not.
             //
-            // An exact token match is exempt — a breed whose whole name is
-            // stock words ("Bulldog", "Collie") must still match itself.
-            let identical = shared.count == breed.count && shared.count == query.count
+            // An exact token match is exempt here too, per `identical` above.
             let decisive = shared.contains { !generic.contains($0) }
             guard identical || decisive else { continue }
 
