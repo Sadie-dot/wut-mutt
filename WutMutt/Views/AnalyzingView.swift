@@ -8,6 +8,15 @@ struct AnalyzingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var zoomed = false
 
+    /// The teaser pool, on the same Dynamic Type curve as the teaser's font.
+    /// It was a fixed 96, which held two lines at the default size and
+    /// silently starved the type everywhere above it — a height-starved Text
+    /// truncates mid-word, and "The look in those puppy eyes hasn't been the
+    /// sa…" is how a user's phone actually rendered it. Scaling the pool with
+    /// the type keeps the no-layout-jump guarantee at every size instead of
+    /// only the one the number was tuned at.
+    @ScaledMetric(relativeTo: .title2) private var teaserPool: CGFloat = 96
+
     var body: some View {
         let W = WMScreen.width
         let H = WMScreen.height
@@ -48,9 +57,14 @@ struct AnalyzingView: View {
                     .lineSpacing(4)
                     .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 6, y: 2)
                     .padding(.horizontal, 20)
-                    // Fixed-height pool prevents layout jumps between 1- and
-                    // 2-line teasers.
-                    .frame(height: 96)
+                    // Backstop for the accessibility range, where even the
+                    // scaled pool can meet a three-line teaser: shrink a
+                    // little before ever truncating — a cut-off tease is the
+                    // one thing this screen must not do.
+                    .minimumScaleFactor(0.85)
+                    // The pool prevents layout jumps between 1- and 2-line
+                    // teasers; scaled, not fixed — see `teaserPool`.
+                    .frame(height: teaserPool)
                     .frame(maxWidth: .infinity)
                     .shadowPool(opacity: 0.6, midOpacity: 0.45, radiusFraction: 0.9)
                     .accessibilityAddTraits(.updatesFrequently)

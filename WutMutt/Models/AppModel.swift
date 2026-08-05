@@ -118,7 +118,7 @@ final class AppModel: ObservableObject {
 
     /// What put the dog under, rotating per reveal. All six start on a
     /// consonant, so beat 2's "A …-induced" article holds for every one.
-    static let comaCauses = ["squirrel", "meatball", "bullfrog",
+    static let comaCauses = ["squirrel", "meatball", "kitten",
                              "cheddar", "sausage", "squeaker"]
 
     /// This episode's cause, fixed when the reveal starts — beat 2 plays at
