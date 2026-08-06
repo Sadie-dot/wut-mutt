@@ -303,6 +303,25 @@ final class AppModel: ObservableObject {
         let prev = defaults.object(forKey: "wm-star-idx") as? Int
         starIdx = prev.map { ($0 + 1) % Self.stars.count } ?? 0
         defaults.set(starIdx, forKey: "wm-star-idx")
+
+        #if DEBUG
+        // `SIMCTL_CHILD_WM_JUMP=1` with WM_FORCE_VERDICT set: launch directly
+        // on the verdict's screen — design comps skip the whole
+        // curtain → camera → analyzing drive.
+        if ProcessInfo.processInfo.environment["WM_JUMP"] != nil,
+           let forced = Self.forcedVerdict() {
+            switch forced {
+            case .notADog:
+                screen = .nodog
+            case .offAir(let info):
+                screen = .offAir(info)
+            case .dog(let breeds, let certainty, _):
+                self.breeds = breeds
+                self.certainty = certainty
+                screen = .results
+            }
+        }
+        #endif
     }
 
     // MARK: Derived episode copy
@@ -487,9 +506,6 @@ final class AppModel: ObservableObject {
                 self.cropPortrait(from: image)
                 self.screen = .results
             case .offAir(let info):
-                // A key the API turned away is worse than useless — drop it so
-                // the next reveal asks for a new one.
-                if info.needsNewKey { ClaudeKeyStore.clear() }
                 self.screen = .offAir(info)
             }
         }
@@ -497,28 +513,41 @@ final class AppModel: ObservableObject {
 
     private nonisolated static func identify(_ image: UIImage) async -> BreedVerdict {
         #if DEBUG
-        // Dev hooks: `SIMCTL_CHILD_WM_FORCE_VERDICT=<case> simctl launch`
-        // forces a path without needing to reproduce it for real.
+        if let forced = Self.forcedVerdict() { return forced }
+        #endif
+        do { return try await BreedIdentifier().identify(image) }
+        catch { return .offAir(BreedIdentifier.offAir(for: error)) }
+    }
+
+    #if DEBUG
+    /// Dev hooks: `SIMCTL_CHILD_WM_FORCE_VERDICT=<case> simctl launch` forces
+    /// a path without needing to reproduce it for real. Shared by identify()
+    /// and the WM_JUMP launch shortcut.
+    private nonisolated static func forcedVerdict() -> BreedVerdict? {
         switch ProcessInfo.processInfo.environment["WM_FORCE_VERDICT"] {
         case "nodog":                       // the prototype's teddy-bear shortcut
             return .notADog
-        case "offair":                      // daily cap spent
+        case "offair":                      // daily cap spent (message is app-owned)
             return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.api(
-                type: "rate_limit",
-                message: "The studio goes dark until tomorrow.\nEven soap stars need their rest.")))
+                type: "rate_limit", message: "")))
         case "offline":                     // lost the feed
             return .offAir(BreedIdentifier.offAir(for: URLError(.notConnectedToInternet)))
+        case "standby":                     // any server-side trouble that isn't the cap
+            return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.api(
+                type: "upstream_unavailable", message: "")))
+        case "refused":                     // Claude declined the photo
+            return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.refused))
+        case "badimage":                    // the capture couldn't be encoded
+            return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.badImage))
         case "dog":                         // the happy path, without spending a reveal
             return .dog(breeds: Self.forcedBreeds, certainty: 87, look: Self.forcedLook)
         case "nolook":                      // a proxy that predates dogSize/dogCoat
             return .dog(breeds: Breed.fallbackEpisode, certainty: 87, look: nil)
         default:
-            break
+            return nil
         }
-        #endif
-        do { return try await BreedIdentifier().identify(image) }
-        catch { return .offAir(BreedIdentifier.offAir(for: error)) }
     }
+    #endif
 
     #if DEBUG
     /// `SIMCTL_CHILD_WM_FORCE_LOOK=<case>` alongside `WM_FORCE_VERDICT=dog`,

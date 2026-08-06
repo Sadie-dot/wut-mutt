@@ -85,13 +85,23 @@ enum BreedVerdict {
 
 /// The copy for an off-air card, in the show's voice.
 struct OffAir: Equatable {
+    /// What the card invites, which is the real taxonomy: replay the same
+    /// take, walk back to the set, or shoot a fresh one because the photo
+    /// itself is what failed.
+    enum Action { case retry, home, newShot }
+
+    /// What fills the card's disc — each card gets its own set dressing.
+    /// `bare` drops the disc entirely: the wrap card's statement is a dark,
+    /// emptied set, and furniture would argue with it.
+    enum Centerpiece { case testPattern, snow, bare }
+
     let headline: String
     let kicker: String
     let message: String
-    /// False when trying again now can't possibly help (daily cap, bad key).
-    let retryable: Bool
-    /// The user's own key was rejected — reopen the key prompt.
-    var needsNewKey = false
+    let action: Action
+    var centerpiece: Centerpiece = .testPattern
+    /// The one word of dog signing off the bottom of the card.
+    var signOff: String = "MLEM"
 }
 
 enum BreedIdentifierError: LocalizedError {
@@ -280,6 +290,13 @@ struct BreedIdentifier {
 
     /// Turns a failure into something honest to put on screen. The one thing
     /// it never does is pretend the reveal succeeded.
+    ///
+    /// Four cards, bucketed by what the viewer can actually do: fix the
+    /// connection, come back tomorrow, wait out the studio's trouble, or
+    /// shoot a fresh take. Every server-side failure that isn't the daily
+    /// cap — outage, misconfiguration, a rejected key — lands on the same
+    /// stand-by card, because from the couch they're indistinguishable and
+    /// the remedy is identical.
     static func offAir(for error: Error) -> OffAir {
         if let urlError = error as? URLError {
             switch urlError.code {
@@ -287,52 +304,45 @@ struct BreedIdentifier {
                  .cannotConnectToHost, .cannotFindHost, .timedOut:
                 return OffAir(headline: "We've lost the feed.",
                               kicker: "TECHNICAL DIFFICULTIES",
-                              message: "Something has come between us and the studio.\nCheck your connection and we'll pick up\nright where we left off.",
-                              retryable: true)
+                              message: "Please check the connection\nin your secret lair.",
+                              action: .retry,
+                              centerpiece: .snow)
             default:
                 break
             }
         }
 
         switch error {
-        case BreedIdentifierError.api(let type, let message):
-            switch type {
-            case "rate_limit":
-                return OffAir(headline: "That's a wrap.",
-                              kicker: "TONIGHT'S EPISODE HAS ENDED",
-                              message: message, retryable: false)
-            case "invalid_key":
-                return OffAir(headline: "Cut!",
-                              kicker: "THE STUDIO REFUSED YOUR CREDENTIALS",
-                              message: "That Claude API key was turned away.\nCheck it and try again.",
-                              retryable: false, needsNewKey: true)
-            case "upstream_unavailable":
-                return OffAir(headline: "Please stand by.",
-                              kicker: "TECHNICAL DIFFICULTIES",
-                              message: message, retryable: true)
-            default:
-                return OffAir(headline: "Off the air.",
-                              kicker: "PLEASE STAND BY",
-                              message: message, retryable: false)
-            }
+        case BreedIdentifierError.api("rate_limit", _):
+            // The one by-design ending. The kicker carries the literal fact —
+            // the rest of the card is allowed its metaphor because that line
+            // does the explaining. (The proxy still sends a message with its
+            // 429; the app owns this copy now and doesn't display it.)
+            return OffAir(headline: "It's intermission time.",
+                          kicker: "YOU'VE USED ALL OF TODAY'S REVEALS",
+                          message: "Please come back tomorrow\nafter ice cream with your secret family.",
+                          action: .home,
+                          centerpiece: .bare,
+                          signOff: "BOOF")
 
         case BreedIdentifierError.refused:
             return OffAir(headline: "Cut!",
-                          kicker: "THE NETWORK OBJECTS",
-                          message: "Claude declined to analyze this photo.\nTry a different shot.",
-                          retryable: false)
+                          kicker: "THAT TAKE DIDN'T SURVIVE THE EDIT",
+                          message: "Claude declined to analyze this photo.\nSome takes stay on the cutting-room floor.",
+                          action: .newShot)
 
         case BreedIdentifierError.badImage:
             return OffAir(headline: "Cut!",
                           kicker: "THAT TAKE DIDN'T SURVIVE THE EDIT",
-                          message: "Something went wrong with that photo.\nLet's shoot it again.",
-                          retryable: true)
+                          message: "Something went wrong with that photo.\nIt never reached the editing bay.",
+                          action: .newShot)
 
         default:
             return OffAir(headline: "Please stand by.",
-                          kicker: "TECHNICAL DIFFICULTIES",
-                          message: "The reveal didn't make it to air.\nLet's try that take again.",
-                          retryable: true)
+                          kicker: "SOMETHING WENT WRONG",
+                          message: "Say goodbye to your evil twin,\nand give it another go.",
+                          action: .retry,
+                          signOff: "SNARF")
         }
     }
 
