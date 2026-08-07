@@ -503,7 +503,7 @@ struct SnapPill: View {
     }
 }
 
-/// Outlined ice pill ("Upload" / "Close").
+/// Outlined ice pill ("Album" / "Close").
 struct OutlinePill: View {
     var title: String
     var action: () -> Void
@@ -522,7 +522,10 @@ struct OutlinePill: View {
     }
 }
 
-/// The Snap-a-pic / Upload row (flex 1.4 : 1) shared by curtain and no-dog.
+/// The Snap-a-pic / Album row (flex 1.4 : 1) shared by the curtain, the
+/// twist screen, and the Reshoot! card. "Album" matches the camera screen's
+/// control of the same name — one diegetic word for the picker everywhere,
+/// instead of the set's only piece of tech-speak.
 struct SnapUploadRow: View {
     var width: CGFloat
     var onSnap: () -> Void
@@ -534,7 +537,7 @@ struct SnapUploadRow: View {
         HStack(spacing: gap) {
             SnapPill(title: "Snap a pic", action: onSnap)
                 .frame(width: snapW)
-            OutlinePill(title: "Upload", action: onUpload)
+            OutlinePill(title: "Album", action: onUpload)
         }
         .frame(width: width)
     }

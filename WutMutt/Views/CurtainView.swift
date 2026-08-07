@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Opening / permission screen: the show's title card, tonight's star in a
-/// gilded frame, and the Snap-a-pic / Upload pair. "Snap a pic" triggers the
-/// real iOS camera permission prompt; "Upload" goes straight to the photo
+/// gilded frame, and the Snap-a-pic / Album pair. "Snap a pic" triggers the
+/// real iOS camera permission prompt; "Album" goes straight to the photo
 /// picker (no camera permission needed).
 struct CurtainView: View {
     @EnvironmentObject private var model: AppModel

@@ -47,11 +47,16 @@ struct OffAirView: View {
                         switch offAir.centerpiece {
                         case .testPattern: TestPatternBars()
                         case .snow:        StaticSnow()
+                        case .cutTake:     CutTake(photo: model.capturedImage)
                         case .bare:        EmptyView()
                         }
                     }
                     .padding(.top, 2)
-                    .accessibilityHidden(true)
+                    // The bars and snow are set dressing; the cut take is the
+                    // viewer's own photo, which VoiceOver shouldn't pretend
+                    // isn't there.
+                    .accessibilityHidden(offAir.centerpiece != .cutTake)
+                    .accessibilityLabel("Your photo, hole-punched like a rejected negative")
                 }
 
                 Text(offAir.message)
@@ -80,9 +85,6 @@ struct OffAirView: View {
                             .frame(minHeight: 44)   // full tap target despite the quiet look
                     }
                 case .newShot:
-                    Text("Try a fresh take.")
-                        .font(.playfair(16, italic: true, relativeTo: .body))
-                        .foregroundColor(.wmCream)
                     SnapUploadRow(width: W - 72,
                                   onSnap: { model.requestCameraThenHome() },
                                   onUpload: { model.openPicker() })
@@ -141,6 +143,65 @@ private struct OffAirDisc<Content: View>: View {
                     .padding(-6)
             )
             .frame(width: 168, height: 168)
+    }
+}
+
+/// The rejected take: the viewer's own photo in the twist mugshot's grayscale,
+/// kill-punched the way a photo editor spikes a negative — holes through the
+/// frame, the archive's "this one never runs" mark. Falls back to a blank
+/// film-gray frame when the photo never made it this far — gray, not the
+/// set's deep raspberry, because black punches need a field they can
+/// register against.
+private struct CutTake: View {
+    var photo: UIImage?
+
+    var body: some View {
+        Group {
+            if let photo {
+                Image(uiImage: photo)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Color(white: 0.32)
+            }
+        }
+        .frame(width: 168, height: 168)
+        .saturation(0)
+        .contrast(1.05)
+        .overlay(KillPunches())
+    }
+}
+
+/// Two punched holes, a vertical-ish pair riding just off the subject's
+/// center — a handheld punch never hits the same spot twice, so they differ
+/// in size and drift sideways. Solid black with a whisper of rim light on
+/// the lower edge, so they read as absence with paper thickness, not
+/// stickers.
+private struct KillPunches: View {
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                punch(diameter: w * 0.27)
+                    .position(x: w * 0.40, y: h * 0.36)
+                punch(diameter: w * 0.24)
+                    .position(x: w * 0.46, y: h * 0.63)
+            }
+        }
+    }
+
+    private func punch(diameter: CGFloat) -> some View {
+        Circle()
+            .fill(Color.black)
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                    .blur(radius: 0.8)
+                    .mask(LinearGradient(colors: [.clear, .white],
+                                         startPoint: .top, endPoint: .bottom))
+            )
+            .frame(width: diameter, height: diameter)
     }
 }
 

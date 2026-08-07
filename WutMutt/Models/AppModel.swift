@@ -172,7 +172,7 @@ final class AppModel: ObservableObject {
     @Published var breeds: [Breed] = Breed.fallbackEpisode
     @Published var certainty: Int = 87
 
-    // Photo picker (shared by curtain Upload, camera ALBUM, no-dog Upload)
+    // Photo picker (one "Album" everywhere: curtain, camera, twist, Reshoot!)
     @Published var pickerPresented = false
     @Published var pickedItem: PhotosPickerItem?
 
@@ -310,6 +310,9 @@ final class AppModel: ObservableObject {
         // curtain → camera → analyzing drive.
         if ProcessInfo.processInfo.environment["WM_JUMP"] != nil,
            let forced = Self.forcedVerdict() {
+            // The twist mugshot and the Cut! disc both show `capturedImage`,
+            // which a direct jump never sets. Tonight's star stands in.
+            capturedImage = UIImage(named: Self.stars[starIdx].asset)
             switch forced {
             case .notADog:
                 screen = .nodog

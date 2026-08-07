@@ -38,7 +38,7 @@ struct ContentView: View {
             }
             Button("Not now", role: .cancel) {}
         } message: {
-            Text("Wut Mutt can't see your mutt. Allow camera access in Settings, or use Upload instead.")
+            Text("Wut Mutt can't see your mutt. Allow camera access in Settings, or use Album instead.")
         }
     }
 }

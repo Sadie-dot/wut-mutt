@@ -92,8 +92,10 @@ struct OffAir: Equatable {
 
     /// What fills the card's disc — each card gets its own set dressing.
     /// `bare` drops the disc entirely: the wrap card's statement is a dark,
-    /// emptied set, and furniture would argue with it.
-    enum Centerpiece { case testPattern, snow, bare }
+    /// emptied set, and furniture would argue with it. `cutTake` shows the
+    /// offending photo itself, grayscaled and grease-penciled like a take
+    /// marked for the cutting-room floor.
+    enum Centerpiece { case testPattern, snow, cutTake, bare }
 
     let headline: String
     let kicker: String
@@ -325,17 +327,16 @@ struct BreedIdentifier {
                           centerpiece: .bare,
                           signOff: "BOOF")
 
-        case BreedIdentifierError.refused:
-            return OffAir(headline: "Cut!",
-                          kicker: "THAT TAKE DIDN'T SURVIVE THE EDIT",
-                          message: "Claude declined to analyze this photo.\nSome takes stay on the cutting-room floor.",
-                          action: .newShot)
-
-        case BreedIdentifierError.badImage:
-            return OffAir(headline: "Cut!",
-                          kicker: "THAT TAKE DIDN'T SURVIVE THE EDIT",
-                          message: "Something went wrong with that photo.\nIt never reached the editing bay.",
-                          action: .newShot)
+        case BreedIdentifierError.refused, BreedIdentifierError.badImage:
+            // One card for both "the photo is the problem" failures — a
+            // refusal and an unreadable capture invite the same remedy, and
+            // the message names it plainly.
+            return OffAir(headline: "Reshoot!",
+                          kicker: "THAT PHOTO ISN'T WORKING",
+                          message: "Please try a new photo when the aliens\nfinally get bored of you.",
+                          action: .newShot,
+                          centerpiece: .cutTake,
+                          signOff: "BORK")
 
         default:
             return OffAir(headline: "Please stand by.",
