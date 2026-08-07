@@ -108,6 +108,9 @@ final class AppModel: ObservableObject {
     @Published var aiDisclosureOpen = false
     @Published var imageCreditsOpen = false
     @Published var cameraDeniedAlert = false
+    /// An off-air retry was refused because the device is clearly offline —
+    /// the card shows its "still no feed" beat while this is set.
+    @Published var retryDeniedOffline = false
 
     // Camera
     @Published var dogDetected = false
@@ -401,6 +404,7 @@ final class AppModel: ObservableObject {
         scanTask?.cancel()
         shareOpen = false
         dogDetected = false
+        retryDeniedOffline = false
         screen = .home
         #if targetEnvironment(simulator)
         // The simulator has no camera feed for Vision to watch; stand in for
@@ -449,8 +453,15 @@ final class AppModel: ObservableObject {
     }
 
     /// Re-runs the reveal on the photo we already have, for the off-air card.
+    /// When the device is clearly offline the retry refuses to replay the
+    /// analyzing theater — an inline beat on the card says so instead.
     func retryScan() {
         guard let image = capturedImage else { goHome(); return }
+        guard !FeedMonitor.shared.retryWouldFail else {
+            retryDeniedOffline = true
+            return
+        }
+        retryDeniedOffline = false
         startScan(with: image)
     }
 
@@ -468,6 +479,7 @@ final class AppModel: ObservableObject {
         capturedImage = image
         portraitImage = nil
         dogBox = nil
+        retryDeniedOffline = false
         teaserIdx = 0
         comaCause = Self.rotate(Self.comaCauses, key: "wm-coma-idx")
         closing = Self.smallQuestions[0]

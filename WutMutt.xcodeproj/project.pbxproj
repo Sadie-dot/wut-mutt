@@ -11,6 +11,7 @@
 		BB001002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002002 /* ContentView.swift */; };
 		BB001003 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002003 /* AppModel.swift */; };
 		BB001004 /* BreedIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002004 /* BreedIdentifier.swift */; };
+		BB001021 /* FeedMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002021 /* FeedMonitor.swift */; };
 		BB001005 /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002005 /* CameraController.swift */; };
 		BB001007 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002007 /* Theme.swift */; };
 		BB001008 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002008 /* Components.swift */; };
@@ -48,6 +49,7 @@
 		BB002002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB002003 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		BB002004 /* BreedIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedIdentifier.swift; sourceTree = "<group>"; };
+		BB002021 /* FeedMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMonitor.swift; sourceTree = "<group>"; };
 		BB002005 /* CameraController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
 		BB002007 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		BB002008 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 			children = (
 				BB002003 /* AppModel.swift */,
 				BB002004 /* BreedIdentifier.swift */,
+				BB002021 /* FeedMonitor.swift */,
 				BB002005 /* CameraController.swift */,
 				BB002019 /* BreedPhotos.swift */,
 				BB002020 /* PhotoCredits.swift */,
@@ -273,6 +276,7 @@
 				BB001002 /* ContentView.swift in Sources */,
 				BB001003 /* AppModel.swift in Sources */,
 				BB001004 /* BreedIdentifier.swift in Sources */,
+				BB001021 /* FeedMonitor.swift in Sources */,
 				BB001005 /* CameraController.swift in Sources */,
 				BB001007 /* Theme.swift in Sources */,
 				BB001008 /* Components.swift in Sources */,

@@ -42,6 +42,9 @@ Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launc
 - `WM_FORCE_VERDICT=offair` / `=offline` force two of the off-air cards (daily
   cap and lost feed). These need the proxy configured, since without one the
   simulator plays the demo episode instead.
+- `WM_FORCE_OFFLINE=1` makes the retry precheck treat the device as offline,
+  so the off-air cards' "still no feed" beat can be exercised in the
+  simulator (whose network is the Mac's).
 
 ## How it's put together
 

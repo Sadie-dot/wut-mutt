@@ -77,6 +77,14 @@ struct OffAirView: View {
                     SnapPill(title: "Try that photo again") { model.retryScan() }
                         .frame(width: W - 72)
                         .padding(.top, 10)
+                    // The precheck's inline beat: a retry tapped while the
+                    // device is clearly offline doesn't replay the analyzing
+                    // theater — the card answers in place instead.
+                    if model.retryDeniedOffline {
+                        Text("Still no feed from your secret lair.")
+                            .font(.playfair(13, italic: true, relativeTo: .footnote))
+                            .foregroundColor(.wmIce)
+                    }
                     Button { model.goHome() } label: {
                         Text("or go back to the camera")
                             .font(.playfair(15, italic: true, relativeTo: .subheadline))
