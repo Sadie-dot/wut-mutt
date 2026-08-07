@@ -64,15 +64,20 @@ the per-IP daily cap plus a spend limit set in the Anthropic Console.
 Failures return Anthropic's envelope shape with a `type` the app switches on,
 so a capped or unreachable studio never turns into an invented breed reading:
 
-| `error.type`          | HTTP | App shows                                    |
-|-----------------------|------|----------------------------------------------|
-| `rate_limit`          | 429  | "That's a wrap." — daily cap, back tomorrow   |
-| `upstream_config`     | 502  | "The show is off the air." — key/billing      |
-| `upstream_unavailable`| 503  | "Please stand by." — retryable                |
-| `unauthorized`        | 401  | Generic off-air card                          |
+| `error.type`          | HTTP | App shows                                       |
+|-----------------------|------|-------------------------------------------------|
+| `rate_limit`          | 429  | "It's intermission time." — daily cap, tomorrow |
+| `upstream_config`     | 502  | "Please stand by." — key/billing                |
+| `upstream_unavailable`| 503  | "Please stand by." — retryable                  |
+| `unauthorized`        | 401  | "Please stand by."                              |
 
-Upstream 4xx is deliberately remapped to 502 with our own wording: Anthropic's
-message can name the account or the key, and it isn't the viewer's problem.
+`rate_limit` is reserved for the viewer's own daily cap — the one by-design
+ending, and the app owns that card's copy, so the wire message is a formality.
+An upstream 429 (Anthropic throttling this account) is transient and reports
+as `upstream_unavailable`, not `rate_limit`: it must never claim "back
+tomorrow" for a hiccup that clears in seconds. Other upstream 4xx is
+deliberately remapped to 502 with our own wording: Anthropic's message can
+name the account or the key, and it isn't the viewer's problem.
 
 ## Breed logging
 

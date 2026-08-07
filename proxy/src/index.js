@@ -36,16 +36,15 @@ export default {
     }
 
     // Per-IP daily cap (skipped gracefully when no KV namespace is bound).
-    // The message is written in the show's voice — the app displays it.
+    // The message is a formality for anyone reading the wire — the app owns
+    // the intermission card's copy and never displays what's sent here.
     if (env.RATE_KV) {
       const ip = request.headers.get("cf-connecting-ip") || "unknown";
       const key = `rl:${rateSubject(ip)}:${new Date().toISOString().slice(0, 10)}`;
       const used = parseInt((await env.RATE_KV.get(key)) || "0", 10);
       const cap = parseInt(env.DAILY_CAP || "40", 10);
       if (used >= cap) {
-        return err("rate_limit",
-                   "The studio goes dark until tomorrow. Even soap stars need their rest.",
-                   429);
+        return err("rate_limit", "Daily reveal cap reached.", 429);
       }
       await env.RATE_KV.put(key, String(used + 1), { expirationTtl: 90000 });
     }
@@ -86,10 +85,12 @@ export default {
         headers: { "content-type": "application/json" },
       });
     }
+    // Upstream 429 is Anthropic throttling this account — transient, and
+    // nothing like the viewer's daily cap. Reporting it as rate_limit used
+    // to put the "come back tomorrow" card on a hiccup that clears in
+    // seconds; it belongs with the retryable outages instead.
     if (upstream.status === 429) {
-      return err("rate_limit",
-                 "The studio goes dark until tomorrow. Even soap stars need their rest.",
-                 429);
+      return err("upstream_unavailable", "The studio isn't answering. Try again in a moment.", 503);
     }
     // 401/403 (bad or revoked key) and 400 (bad request) are the developer's
     // problem, not the viewer's, and there is nothing they can do but wait.
