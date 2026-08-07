@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The shocking twist: Claude says that's not a dog. Dimmed set, grayscale
-/// mugshot of the offending photo, three-beat story, then back to the plot.
+/// mugshot of the offending photo in the results ring, the verdict in bold
+/// cream, a note of forgiveness, then back to the plot.
 struct NoDogView: View {
     @EnvironmentObject private var model: AppModel
 
@@ -34,18 +35,11 @@ struct NoDogView: View {
 
                 Hairline()
 
-                // Mugshot of the imposter. The photo circle sits 3pt oversized
-                // and offset toward the bottom-right (the prototype's
-                // content-box border overflow), so the gilded ring tapers from
-                // ~7pt at the top-left to nothing at the bottom-right.
-                ZStack {
-                    Circle()
-                        .fill(LinearGradient(
-                            stops: [.init(color: .wmIceLight, location: 0),
-                                    .init(color: .wmIce, location: 0.45),
-                                    .init(color: .wmIceDeep, location: 1)],
-                            startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 168, height: 168)
+                // Mugshot of the imposter, in the results portrait's own ring
+                // (the user's call after the prototype's tapering offset ring
+                // kept reading as a mistake). Grayscale stays on the photo
+                // alone so the ring keeps its ice.
+                GildedCircle(diameter: 168) {
                     Group {
                         if let image = model.capturedImage {
                             Image(uiImage: image)
@@ -55,41 +49,28 @@ struct NoDogView: View {
                             Color.wmDeep
                         }
                     }
-                    .frame(width: 162, height: 162)
-                    .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(Color.wmDeep, lineWidth: 3))
-                    // The prototype's grayscale filter covers the whole div,
-                    // border included — the raspberry border reads near-black.
                     .saturation(0)
                     .contrast(1.05)
-                    .offset(x: 3, y: 3)
                 }
-                .frame(width: 168, height: 168)
                 .padding(.top, -6)
-                .accessibilityLabel("Mugshot of our mystery guest")
+                .accessibilityLabel("Your photo, framed as the imposter's mugshot")
 
-                VStack(spacing: 12) {
-                    Text("OUR MYSTERY GUEST…")
-                        .font(.playfair(12, relativeTo: .caption))
-                        .kerning(4)
-                        .foregroundColor(.wmPink)
-                    // Line spacing set to the design's 1.6 / 1.5 line-heights.
-                    Text("May be a ghost… perhaps a crime lord…\nor even an interior decorator\nwho is also a heart surgeon.")
-                        .font(.playfair(16, italic: true, relativeTo: .body))
-                        .foregroundColor(.wmPink)
-                        .lineSpacing(6.5)
-                    Text("The story is out, and this imposter\nis not a mutt.")
-                        .font(.playfair(19, bold: true, italic: true, relativeTo: .title3))
-                        .foregroundColor(.wmCream)
-                        .lineSpacing(6.5)
-                        .padding(.bottom, -4)
-                }
+                // The verdict, in the old closer's bold cream — the one line
+                // of news on the screen keeps the loudest body dress.
+                Text("Clearly not a mutt")
+                    .font(.playfair(19, bold: true, italic: true, relativeTo: .title3))
+                    .foregroundColor(.wmCream)
+
+                // The underline carries the instruction's whole point — the
+                // photo the viewer just tried was, pointedly, not of a dog.
+                (Text("Please use a new photo ")
+                    + Text("of a dog").underline()
+                    + Text(".\nThen repress this memory."))
+                    .font(.playfair(16, italic: true, relativeTo: .body))
+                    .foregroundColor(.wmPink)
+                    .lineSpacing(6.5)
 
                 Hairline(width: 80)
-
-                Text("Try a new plot.")
-                    .font(.playfair(16, italic: true, relativeTo: .body))
-                    .foregroundColor(.wmCream)
 
                 SnapUploadRow(width: W - 72,
                               onSnap: { model.requestCameraThenHome() },
@@ -98,6 +79,17 @@ struct NoDogView: View {
             }
             .multilineTextAlignment(.center)
             .padding(.horizontal, 36)
+
+            // The sign-off: one word of dog closing the frame, same dress as
+            // the off-air cards' — this was the last card-style ending left
+            // over a dead band.
+            Text("BOOP")
+                .font(.playfair(12, relativeTo: .caption))
+                .kerning(5)
+                .foregroundColor(.wmPink)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 58)
+                .accessibilityHidden(true)
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()
