@@ -17,22 +17,18 @@ shocking-twist screen.
 Open `WutMutt.xcodeproj` in Xcode and run on an iOS simulator or device
 (iOS 17+, portrait iPhone only).
 
-Live breed reveals need Claude, and there are two ways to reach it:
-
-- **Proxy (shipping setup).** Deploy `proxy/` — a Cloudflare Worker holding
-  the Anthropic key server-side, with a per-IP daily cap — then put its URL
-  and app token in a git-ignored `WutMutt/Config/Secrets.local.xcconfig`.
-  The app ships no key and users never see a prompt. See
-  [proxy/README.md](proxy/README.md).
-- **Bring your own key (default on a fresh clone).** With no proxy
-  configured, the app prompts for an Anthropic API key on first reveal and
-  stores it in the device Keychain (`ClaudeKeyStore`).
+Live breed reveals reach Claude one way only: deploy `proxy/` — a Cloudflare
+Worker holding the Anthropic key server-side, with a per-IP daily cap — then
+put its URL and app token in a git-ignored
+`WutMutt/Config/Secrets.local.xcconfig`. The app ships no key, never stores
+one, and never asks a viewer for one. See [proxy/README.md](proxy/README.md).
 
 When a reveal can't happen, the app says so on an off-air card in the show's
-voice — the daily cap ("That's a wrap."), a dropped connection ("We've lost
-the feed."), a rejected key — rather than inventing a breed reading. The one
-place a canned episode still plays is the simulator with nothing configured
-at all, so the whole show stays demoable without credentials.
+voice — the daily cap ("It's intermission time."), a dropped connection
+("We've lost the feed.") — rather than inventing a breed reading. A device
+build with no proxy configured lands on the stand-by card the same honest
+way. The one place a canned episode still plays is the simulator with nothing
+configured, so the whole show stays demoable without credentials.
 
 **Privacy:** with the proxy configured, photos transit your Worker on the way
 to Anthropic. Say so in the app's privacy policy and App Store data
@@ -43,28 +39,9 @@ Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launc
 
 - `WM_FORCE_VERDICT=nodog` forces the "not a mutt" twist screen — the
   prototype's teddy-bear shortcut.
-- `WM_FORCE_VERDICT=offair` / `=offline` force the two off-air cards (daily
-  cap and lost feed). These need a backend configured, since without one the
+- `WM_FORCE_VERDICT=offair` / `=offline` force two of the off-air cards (daily
+  cap and lost feed). These need the proxy configured, since without one the
   simulator plays the demo episode instead.
-- `WM_CLAUDE_KEY` injects a Claude key without touching the Keychain. **Only
-  has an effect in bring-your-own-key mode** — with a proxy configured,
-  `IdentifyBackend.resolve()` picks the proxy first and this is ignored.
-
-⚠️  **Don't type a key inline.** `SIMCTL_CHILD_WM_CLAUDE_KEY=sk-ant-… xcrun …`
-writes the key to your shell history in plaintext, where it survives long after
-you've forgotten it. Keep it in a file outside the repo and expand it instead —
-history then records the substitution, not the value:
-
-```sh
-# one-time: create ~/.wutmutt-dev-key in an editor, containing just the key
-chmod 600 ~/.wutmutt-dev-key
-
-SIMCTL_CHILD_WM_CLAUDE_KEY="$(cat ~/.wutmutt-dev-key)" \
-  xcrun simctl launch <udid> com.wutmutt.app
-```
-
-Create the file in an editor rather than `echo`-ing into it — an `echo` puts the
-key straight back into history, which is the thing you're avoiding.
 
 ## How it's put together
 
@@ -78,8 +55,7 @@ key straight back into history, which is the thing you're avoiding.
 - **The scan** — five teasers × 1.6s set an 8-second minimum runtime while
   the Claude vision call (`BreedIdentifier`, `claude-sonnet-5`, thinking off,
   constrained with a JSON schema) runs concurrently; the screen advances when
-  both finish. The prompt and schema live in the Worker; `BreedIdentifier`
-  mirrors them for the bring-your-own-key path — keep the two in sync.
+  both finish. The prompt and schema live in the Worker, and only there.
   Photos go up at ≤1024px on the long edge, above the handoff's 640px budget:
   that was a browser-base64 workaround, and breed calls need the coat and
   muzzle detail it discarded.

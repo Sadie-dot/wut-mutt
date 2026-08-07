@@ -21,7 +21,6 @@
 		BB001013 /* BreedDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002013 /* BreedDetailView.swift */; };
 		BB001014 /* NoDogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002014 /* NoDogView.swift */; };
 		BB001015 /* ShareOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002015 /* ShareOverlay.swift */; };
-		BB001016 /* KeyEntryOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002016 /* KeyEntryOverlay.swift */; };
 		BB001017 /* OffAirView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002017 /* OffAirView.swift */; };
 		BB001018 /* CreditsOverlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002018 /* CreditsOverlays.swift */; };
 		BB001019 /* BreedPhotos.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB002019 /* BreedPhotos.swift */; };
@@ -59,7 +58,6 @@
 		BB002013 /* BreedDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedDetailView.swift; sourceTree = "<group>"; };
 		BB002014 /* NoDogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoDogView.swift; sourceTree = "<group>"; };
 		BB002015 /* ShareOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareOverlay.swift; sourceTree = "<group>"; };
-		BB002016 /* KeyEntryOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEntryOverlay.swift; sourceTree = "<group>"; };
 		BB002017 /* OffAirView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffAirView.swift; sourceTree = "<group>"; };
 		BB002018 /* CreditsOverlays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsOverlays.swift; sourceTree = "<group>"; };
 		BB002019 /* BreedPhotos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreedPhotos.swift; sourceTree = "<group>"; };
@@ -156,7 +154,6 @@
 				BB002013 /* BreedDetailView.swift */,
 				BB002014 /* NoDogView.swift */,
 				BB002015 /* ShareOverlay.swift */,
-				BB002016 /* KeyEntryOverlay.swift */,
 				BB002017 /* OffAirView.swift */,
 				BB002018 /* CreditsOverlays.swift */,
 			);
@@ -286,7 +283,6 @@
 				BB001013 /* BreedDetailView.swift in Sources */,
 				BB001014 /* NoDogView.swift in Sources */,
 				BB001015 /* ShareOverlay.swift in Sources */,
-				BB001016 /* KeyEntryOverlay.swift in Sources */,
 				BB001017 /* OffAirView.swift in Sources */,
 				BB001018 /* CreditsOverlays.swift in Sources */,
 				BB001019 /* BreedPhotos.swift in Sources */,

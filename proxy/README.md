@@ -51,9 +51,9 @@ git-ignored xcconfig so your Worker URL and token never get committed:
 
 `Secrets.local.xcconfig` is listed in the repo's `.gitignore`. The committed
 `Config.xcconfig` optionally includes it and defaults both values to empty, so
-a fresh clone (without the secrets file) builds cleanly in bring-your-own-key
-mode. When the values are present, the app routes through the proxy and the
-"Connect Claude" key prompt never appears.
+a fresh clone (without the secrets file) still builds cleanly — reveals then
+land on the stand-by card (and the simulator plays its demo episode). There
+is no bring-your-own-key fallback: the proxy is the only road to Claude.
 
 The `APP_TOKEN` in the app is a soft gate — it discourages casual abuse of the
 endpoint but, like any bundled string, is extractable. The real protection is

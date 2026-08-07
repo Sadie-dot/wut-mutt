@@ -107,7 +107,6 @@ final class AppModel: ObservableObject {
     @Published var shareOpen = false
     @Published var aiDisclosureOpen = false
     @Published var imageCreditsOpen = false
-    @Published var keyEntryOpen = false
     @Published var cameraDeniedAlert = false
 
     // Camera
@@ -432,20 +431,20 @@ final class AppModel: ObservableObject {
     // MARK: The scan — analyzing beat + Claude call
 
     func startScan(with image: UIImage) {
+        #if targetEnvironment(simulator)
+        // Nothing configured in the simulator — play the canned episode so
+        // the whole show stays demoable without credentials. This is the
+        // ONLY path that fabricates a reading, and it can't reach a device.
+        // A device build without proxy config runs the real call instead and
+        // lands on the stand-by card — a developer mistake, honestly reported.
         guard BreedIdentifier.hasCredentials else {
-            #if targetEnvironment(simulator)
-            // Nothing configured in the simulator — play the canned episode so
-            // the whole show stays demoable without credentials. This is the
-            // ONLY path that fabricates a reading, and it can't reach a device.
             runEpisode(with: image) {
                 .dog(breeds: Breed.fallbackEpisode, certainty: 87,
                      look: DogLook(size: .large, coat: .flat))
             }
-            #else
-            keyEntryOpen = true
-            #endif
             return
         }
+        #endif
         runEpisode(with: image) { await Self.identify(image) }
     }
 

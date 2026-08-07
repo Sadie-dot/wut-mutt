@@ -1,59 +1,12 @@
 import UIKit
-import Security
 
 // Live breed reveals via the Claude API (see the End Credits AI disclosure).
-// The photo goes to Claude — either through the developer-hosted Worker proxy
-// (which holds the API key) or, when no proxy is configured, directly with the
-// user's own key.
+// The photo goes to Claude through the developer-hosted Worker proxy, which
+// holds the API key so the app never ships or stores one. There is no
+// bring-your-own-key path — this app will never ask a viewer for an API key.
 //
 // Nothing here ever invents a breed reading. When the studio can't be reached,
 // the caller gets an `.offAir` verdict describing what actually happened.
-
-// MARK: - API key storage (Keychain)
-
-enum ClaudeKeyStore {
-    private static let service = "com.wutmutt.claude-api-key"
-
-    static var key: String? {
-        #if DEBUG
-        // Dev hook: `SIMCTL_CHILD_WM_CLAUDE_KEY=… simctl launch` for testing
-        // without touching the Keychain.
-        if let env = ProcessInfo.processInfo.environment["WM_CLAUDE_KEY"], !env.isEmpty {
-            return env
-        }
-        #endif
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        var item: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
-              let data = item as? Data,
-              let str = String(data: data, encoding: .utf8), !str.isEmpty else { return nil }
-        return str
-    }
-
-    static func save(_ key: String) {
-        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        SecItemDelete(base as CFDictionary)
-        var add = base
-        add[kSecValueData as String] = Data(trimmed.utf8)
-        SecItemAdd(add as CFDictionary, nil)
-    }
-
-    /// Drops a key the API has rejected, so the next reveal asks for a new one
-    /// instead of failing the same way forever.
-    static func clear() {
-        SecItemDelete(base as CFDictionary)
-    }
-
-    private static var base: [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service]
-    }
-}
 
 // MARK: - Verdict
 
@@ -124,64 +77,39 @@ enum BreedIdentifierError: LocalizedError {
 
 // MARK: - Backend selection
 
-/// How the app reaches Claude. When the Info.plist carries a proxy URL the app
-/// routes through the developer-hosted Worker (which holds the API key) and no
-/// per-user key is needed. Otherwise each user supplies their own key.
+/// How the app reaches Claude: the developer-hosted Worker proxy named in the
+/// Info.plist. `resolve()` returning nil means a build without proxy config —
+/// a developer mistake, not a state a viewer can cause or fix.
 enum IdentifyBackend {
     /// Developer-hosted proxy: the app ships no key, users just point and shoot.
     case proxy(url: URL, appToken: String?)
-    /// Bring-your-own-key: the user's key is read from the Keychain.
-    case directKey(String)
 
     static func resolve() -> IdentifyBackend? {
-        if let (url, token) = Self.proxyConfig {
-            return .proxy(url: url, appToken: token)
-        }
-        if let key = ClaudeKeyStore.key {
-            return .directKey(key)
-        }
-        return nil
-    }
-
-    private static var proxyConfig: (URL, String?)? {
         let info = Bundle.main.infoDictionary
         guard let raw = (info?["WMIdentifyProxyURL"] as? String)?
                 .trimmingCharacters(in: .whitespacesAndNewlines),
               !raw.isEmpty, let url = URL(string: raw) else { return nil }
         let token = (info?["WMIdentifyAppToken"] as? String)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        return (url, (token?.isEmpty == false) ? token : nil)
+        return .proxy(url: url, appToken: (token?.isEmpty == false) ? token : nil)
     }
-
-    /// Whether the "Connect Claude" key prompt should ever appear. A configured
-    /// proxy never prompts.
-    static var usesProxy: Bool { proxyConfig != nil }
 }
 
 // MARK: - Identifier
 
 struct BreedIdentifier {
 
-    /// Whether a reveal can even be attempted — a proxy is configured, or the
-    /// user has stored a key.
+    /// Whether a reveal can even be attempted — a proxy is configured.
     static var hasCredentials: Bool { IdentifyBackend.resolve() != nil }
 
     func identify(_ image: UIImage) async throws -> BreedVerdict {
-        guard let backend = IdentifyBackend.resolve() else {
+        guard case .proxy(let url, let appToken)? = IdentifyBackend.resolve() else {
             throw BreedIdentifierError.notConfigured
         }
         guard let jpeg = downscaledJPEG(image) else { throw BreedIdentifierError.badImage }
-        let imageBase64 = jpeg.base64EncodedString()
-
-        let request: URLRequest
-        switch backend {
-        case .proxy(let url, let appToken):
-            request = proxyRequest(url: url, appToken: appToken, imageBase64: imageBase64)
-        case .directKey(let key):
-            request = directRequest(apiKey: key, imageBase64: imageBase64)
-        }
-
-        return try await send(request, backend: backend)
+        let request = proxyRequest(url: url, appToken: appToken,
+                                   imageBase64: jpeg.base64EncodedString())
+        return try await send(request)
     }
 
     // MARK: Requests
@@ -196,44 +124,15 @@ struct BreedIdentifier {
         return request
     }
 
-    /// Talks to the Anthropic API directly with the user's own key. Mirrors the
-    /// proxy's model, prompt, and schema — keep the two in sync.
-    private func directRequest(apiKey: String, imageBase64: String) -> URLRequest {
-        var request = URLRequest(url: URL(string: "https://api.anthropic.com/v1/messages")!)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 60
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "model": "claude-sonnet-5",
-            "max_tokens": 2500,
-            "system": "You identify dog breeds from photos for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.",
-            // Thinking is on by default and shares the max_tokens budget with
-            // the response; a schema-constrained photo read doesn't need it.
-            "thinking": ["type": "disabled"],
-            "output_config": ["format": ["type": "json_schema", "schema": Self.verdictSchema]],
-            "messages": [[
-                "role": "user",
-                "content": [
-                    ["type": "image",
-                     "source": ["type": "base64", "media_type": "image/jpeg", "data": imageBase64]],
-                    ["type": "text", "text": Self.prompt]
-                ]
-            ]]
-        ])
-        return request
-    }
-
     // MARK: Pipeline
 
-    private func send(_ request: URLRequest, backend: IdentifyBackend) async throws -> BreedVerdict {
+    private func send(_ request: URLRequest) async throws -> BreedVerdict {
         let (data, response) = try await URLSession.shared.data(for: request)
 
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
             let envelope = try? JSONDecoder().decode(APIErrorEnvelope.self, from: data)
             throw BreedIdentifierError.api(
-                type: envelope?.error.type ?? Self.errorType(for: http.statusCode, backend: backend),
+                type: envelope?.error.type ?? Self.errorType(for: http.statusCode),
                 message: envelope?.error.message ?? Self.genericFailure(status: http.statusCode))
         }
 
@@ -256,15 +155,14 @@ struct BreedIdentifier {
         #endif
     }
 
-    /// When the response body isn't our envelope — a direct-to-Anthropic call,
-    /// or an edge error — classify by status so the app still says the right
-    /// thing. A rejected key on the BYOK path is the one worth naming.
-    private static func errorType(for status: Int, backend: IdentifyBackend) -> String {
-        switch (status, backend) {
-        case (401, .directKey), (403, .directKey): return "invalid_key"
-        case (429, _):                             return "rate_limit"
-        case (500...599, _):                       return "upstream_unavailable"
-        default:                                   return "upstream_config"
+    /// When the response body isn't the proxy's envelope — an edge error page —
+    /// classify by status so the app still says the right thing. A bare 429 can
+    /// only be the daily cap: the Worker reports upstream throttling as 503.
+    private static func errorType(for status: Int) -> String {
+        switch status {
+        case 429:        return "rate_limit"
+        case 500...599:  return "upstream_unavailable"
+        default:         return "upstream_config"
         }
     }
 
@@ -345,50 +243,6 @@ struct BreedIdentifier {
                           action: .retry,
                           signOff: "SNARF")
         }
-    }
-
-    // MARK: Prompt + schema (mirrors proxy/src/index.js)
-
-    private static let prompt = """
-    Analyze this photo for Wut Mutt, a playful dog-breed app themed as a 1980s TV soap opera.
-
-    Rules:
-    - If no real live dog is present, set isDog false, certainty 99, breeds to an empty array, dogSize "unclear" and dogCoat "flat".
-    - Otherwise give 3 or 4 breeds whose "pct" values are integers summing to exactly 100, most confident first.
-    - "certainty" is 40-99: how confident the visual breed read is.
-    - "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small".
-    - "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.
-    - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
-    - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
-    - "clues" are 3 short visual details seen in THIS photo.
-    - "fact" is a real, accurate, fun breed fact in 1-2 sentences. Never invent facts.
-    - If the mix is uncertain, the last breed may be a wildcard named "Guest Star".
-    """
-
-    private static var verdictSchema: [String: Any] {
-        let str: [String: Any] = ["type": "string"]
-        let breed: [String: Any] = [
-            "type": "object",
-            "properties": [
-                "name": str, "pct": ["type": "integer"], "tagline": str,
-                "size": str, "energy": str, "drool": str, "floof": str,
-                "clues": ["type": "array", "items": str], "fact": str
-            ],
-            "required": ["name", "pct", "tagline", "size", "energy", "drool", "floof", "clues", "fact"],
-            "additionalProperties": false
-        ]
-        return [
-            "type": "object",
-            "properties": [
-                "isDog": ["type": "boolean"],
-                "certainty": ["type": "integer"],
-                "dogSize": ["type": "string", "enum": ["large", "small", "unclear"]],
-                "dogCoat": ["type": "string", "enum": ["flat", "fluffy"]],
-                "breeds": ["type": "array", "items": breed]
-            ],
-            "required": ["isDog", "certainty", "dogSize", "dogCoat", "breeds"],
-            "additionalProperties": false
-        ]
     }
 
     /// Downscale to ≤1024px on the long edge and recompress until the base64
