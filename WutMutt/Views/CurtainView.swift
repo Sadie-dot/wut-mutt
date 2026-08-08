@@ -28,6 +28,10 @@ struct CurtainView: View {
                     .font(.playfair(14, italic: true, relativeTo: .subheadline))
                     .kerning(4)
                     .foregroundColor(.wmPink)
+                    // The wordmark's own ground shadow: the tagline sits in
+                    // the glow's brightest band and measured 4.29:1 bare —
+                    // under the small-text floor its 14pt is held to.
+                    .shadow(color: Color.wmDeep.opacity(0.75), radius: 2, y: 1)
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .offset(y: 58)
