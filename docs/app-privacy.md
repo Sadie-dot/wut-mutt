@@ -31,17 +31,15 @@ Three things happen server-side that bear on privacy:
 The two are deliberately never joined: `logBreeds()` writes no IP, and the
 rate-limit key contains no breed data. If that ever changes, this file is wrong.
 
-Bring-your-own-key builds bypass the Worker entirely — the photo goes straight
-from the device to Anthropic, so neither the rate limit nor the breed count
-applies. **This does not happen in the App Store build.** `IdentifyBackend
-.resolve()` prefers the proxy whenever `WMIdentifyProxyURL` is present in
-Info.plist, and a release build has it, so the key prompt is unreachable — it is
-not a fallback when the proxy fails either. A proxy failure produces the off-air
-screen, never a request for the user's key. The prompt exists only for someone
-building from source without `Secrets.local.xcconfig`.
+The proxy is the only road to Claude — the bring-your-own-key path was removed
+outright (commit `769b643`), taking the Keychain store and the key prompt with
+it. A build without proxy config doesn't fall back to anything: reveals land on
+the stand-by card on a device, and the simulator plays its canned demo episode
+without any network call.
 
 That means the App Privacy answers below describe the only path a store user can
-take; there is no second configuration to declare for.
+take; there is no second configuration to declare for, and no user-supplied API
+key ever exists to worry about.
 
 ---
 
