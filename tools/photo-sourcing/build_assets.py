@@ -66,6 +66,11 @@ def clean_artist(raw):
             s = m.group(1).strip()
             break
     s = re.sub(TRAILERS, "", s, flags=re.IGNORECASE).strip(" .,;")
+    # Flickr display names sometimes carry licensing boilerplate as a trailing
+    # parenthetical — "Olgierd (Creative Commons licensed only)". That's a
+    # statement about the account, not part of anyone's name.
+    s = re.sub(r"\s*\([^()]*(?:licen[cs]e|creative commons)[^()]*\)$", "", s,
+               flags=re.IGNORECASE).strip()
     # Commons templates sometimes render twice: "Unknown author Unknown author".
     s = re.sub(r"^(.+?)(?:\s+\1)+$", r"\1", s).strip()
     if s.lower() in ("unknown author", "author unknown", "not provided"):
@@ -125,6 +130,14 @@ def write_imageset(name, img):
 def swift_escape(s):
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
+# Hand-curated attributions where the Commons artist field can't be unwrapped
+# by rule. The Black Mouth Cur's field fuses the uploader's username with the
+# photographer's name ("Jwschulze Steve Howard"); the human name is the
+# attribution.
+ARTIST_OVERRIDES = {
+    "File:Howard Line Southern Black Mouth Cur (Male).jpg": "Steve Howard",
+}
+
 def main():
     index = json.loads((fc.OUT / "index.json").read_text())
     order = [name for name, _ in BREEDS]
@@ -155,7 +168,8 @@ def main():
         size = write_imageset(slug(name),
                               crop_frame(Image.open(dest).convert("RGB"), focus))
         total += size
-        rows.append((slug(name), name, info["artist"], info["license"], info["descurl"]))
+        artist = ARTIST_OVERRIDES.get(cands[i]["title"], info["artist"])
+        rows.append((slug(name), name, artist, info["license"], info["descurl"]))
         print(f"  {name:34} {size // 1024:4d} KB  {info['license']}")
 
     # Drop imagesets for breeds that are no longer picked, so a breed removed

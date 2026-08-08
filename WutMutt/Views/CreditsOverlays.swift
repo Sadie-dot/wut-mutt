@@ -16,7 +16,11 @@ private struct CreditsScaffold<Content: View>: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "#2B0616").opacity(0.94)
+            // Solid, not dimmed-through: at any transparency the curtain's
+            // bright marks ghost into the content — its cream pills and footer
+            // links landed right in the credits' Close zone, one real pill
+            // among three phantoms.
+            Color(hex: "#2B0616")
 
             VStack(spacing: 0) {
                 // No backdrop-tap dismissal: this overlay is full-bleed, so
@@ -143,7 +147,7 @@ struct ImageCreditsOverlay: View {
                     .font(.playfair(15, relativeTo: .body))
                     .foregroundColor(.wmCream)
                     .lineSpacing(12.75)
-                Text("Star portraits are AI-generated artwork,\nart-directed in Figma. No real dogs were dramatized.")
+                Text("The dogs pictured on the opening screen.\nStar portraits are AI-generated artwork,\nart-directed in Figma. No real dogs were dramatized.")
                     .font(.nunito(12, weight: .bold))
                     .foregroundColor(Color.wmCream.opacity(0.75))
                     .lineSpacing(4)
@@ -153,12 +157,17 @@ struct ImageCreditsOverlay: View {
                 creditsBody("Reference photos are bundled with the app from Wikimedia Commons, under Creative Commons and public-domain licences. Tap any entry to open the original.")
 
                 VStack(spacing: 0) {
-                    ForEach(photoCredits) { credit in
+                    // Alphabetical at display time — the data keeps the
+                    // pipeline's catalog order, but a reader hunting one
+                    // breed among 63 needs a predictable shelf.
+                    ForEach(photoCredits.sorted {
+                        $0.breed.localizedCaseInsensitiveCompare($1.breed) == .orderedAscending
+                    }) { credit in
                         if let url = URL(string: credit.sourceURL) {
-                            Link(destination: url) { creditRow(credit) }
+                            Link(destination: url) { creditRow(credit, linked: true) }
                                 .accessibilityHint("Opens the original photo on Wikimedia Commons")
                         } else {
-                            creditRow(credit)
+                            creditRow(credit, linked: false)
                         }
                     }
                 }
@@ -169,14 +178,24 @@ struct ImageCreditsOverlay: View {
 
     /// Breed over photographer and licence. Every entry is credited, including
     /// the public-domain ones — see the note in PhotoCredits.swift.
-    private func creditRow(_ credit: PhotoCredit) -> some View {
+    private func creditRow(_ credit: PhotoCredit, linked: Bool) -> some View {
         VStack(spacing: 1) {
             Text(credit.breed)
                 .font(.nunito(13, weight: .bold))
                 .foregroundColor(.wmCream)
-            Text("\(credit.author) · \(credit.license)")
-                .font(.nunito(11, weight: .semiBold))
-                .foregroundColor(Color.wmCream.opacity(0.62))
+            HStack(spacing: 4) {
+                Text("\(credit.author) · \(credit.license)")
+                    .font(.nunito(11, weight: .semiBold))
+                    .foregroundColor(Color.wmCream.opacity(0.62))
+                if linked {
+                    // The tappability hint the intro sentence can't carry 63
+                    // rows deep. VoiceOver already has the per-row hint.
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(Color.wmCream.opacity(0.4))
+                        .accessibilityHidden(true)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 7)
