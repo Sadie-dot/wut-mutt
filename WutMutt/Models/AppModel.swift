@@ -76,8 +76,8 @@ struct Breed: Identifiable {
               fact: "Boxers are famously puppy-brained: they are one of the slowest breeds to mature, staying goofy until about age three. Some never stop.",
               colorIndex: 2),
         Breed(name: Breed.wildcardName, pct: 14,
-              tagline: "The long-lost twin, presumed missing",
-              size: "Unknowable", energy: "Surprise", drool: "TBD", floof: "Classified",
+              tagline: "The fabulous mystery in the family tree",
+              size: "Perfect", energy: "Dreamy", drool: "Effortless", floof: "Inspired",
               clues: ["A certain je ne sais quoi", "Refuses to be categorized", "Extra good for no reason"],
               fact: "Every great mutt keeps a little mystery. Studies show mixed-breed dogs often live longer than purebreds — the mystery is good for them.",
               colorIndex: 3)

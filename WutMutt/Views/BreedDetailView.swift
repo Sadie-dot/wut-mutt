@@ -63,9 +63,11 @@ struct BreedDetailView: View {
                     .font(.playfair(12, bold: true, relativeTo: .caption))
                     .kerning(4)
                     .foregroundColor(.wmCream)
-                // Trailing no-break space gives Great Vibes' swashes (the
-                // 'd' curl) room before the fit-to-width bounds clip them.
-                Text(breed.name + "\u{00A0}")
+                // No-break spaces on both ends give Great Vibes' swashes room
+                // before the fit-to-width bounds clip them: the trailing one
+                // for the 'd' curl, the leading one for capital G's sweep
+                // ("Guest Star", "Golden Retriever" lost the G's tail).
+                Text("\u{00A0}" + breed.name + "\u{00A0}")
                     .font(.greatVibes(breed.heroNameSize))
                     .foregroundColor(.wmIce)
                     .lineLimit(1)
