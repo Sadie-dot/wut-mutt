@@ -88,4 +88,5 @@ let photoCredits: [PhotoCredit] = [
     PhotoCredit(imageName: "breed-black-mouth-cur", breed: "Black Mouth Cur", author: "Steve Howard", license: "CC BY 4.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Howard_Line_Southern_Black_Mouth_Cur_(Male).jpg"),
     PhotoCredit(imageName: "breed-field-spaniel", breed: "Field Spaniel", author: "Peter", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Black_Field_Spaniel.jpg"),
     PhotoCredit(imageName: "breed-chinese-crested", breed: "Chinese Crested", author: "Sheri Terris", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Chinese_Crested_Dog.jpg"),
+    PhotoCredit(imageName: "breed-guest-star", breed: "Guest Star", author: "Sonse", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Dog_during_Sunset_on_Praia_de_Carcavelos_%E2%80%A2_Carcavelos_beach_(50662756677).jpg"),
 ]

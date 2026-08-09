@@ -94,4 +94,11 @@ PICKS = {
     # Mountain Cur is deliberately absent. Commons holds exactly two photos of
     # the breed and both are CC BY-SA; Openverse's only permissive hit is a
     # branded infographic, not a photograph. It falls through to the trait grid.
+
+    # The wildcard, user-cast 2026-08-08. Deliberately breaks criteria 2 and 3:
+    # the dog faces away in full silhouette and no breed is readable — that is
+    # the role. A Guest Star with a recognisable face would contradict every
+    # dossier line it appears beside ("Refuses to be categorized"). Tiny
+    # walkers on the far shoreline pass criterion 1 at polaroid size.
+    "Guest Star": 0,
 }

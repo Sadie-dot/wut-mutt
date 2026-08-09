@@ -64,7 +64,7 @@ Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launc
   muzzle detail it discarded.
 - **Results portrait** — Vision crops the captured photo toward the dog's
   face before it lands in the gilded circle.
-- **Breed headshots** — 54 curated Wikimedia Commons photos bundled as
+- **Breed headshots** — 64 curated Wikimedia Commons photos bundled as
   asset-catalog imagesets (`breed-*.imageset`), sourced by
   `tools/photo-sourcing/` and generated into `PhotoCredits.swift` by
   `build_assets.py` — edit the pipeline, not the generated file. Every photo
@@ -73,10 +73,11 @@ Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launc
   matches Claude's free-text breed name by rarity-weighted token score rather
   than substring — "Terrier" is worth almost nothing across a dozen entries,
   "Vizsla" alone is decisive — because a confidently wrong dog is worse than
-  none. A miss is a normal outcome ("Guest Star" has no breed behind it,
-  and the long tail outruns 54 photos): no image → the 2×2 trait grid, which
-  is a complete design in its own right. Mountain Cur ships photo-less for
-  exactly that reason — both of its Commons candidates are ShareAlike.
+  none. A miss is a normal outcome (the long tail outruns 64 photos): no
+  image → the 2×2 trait grid, which is a complete design in its own right.
+  Mountain Cur ships photo-less for exactly that reason — both of its Commons
+  candidates are ShareAlike. Even "Guest Star" has a cast photo: a beach
+  silhouette — a dog whose breed can't be read, which is the role.
 - **Share** — the gossip card is a SwiftUI view rendered to an image
   (`ImageRenderer` at 3×). Each share-row target does its own thing with that
   image: Messages opens `MFMessageComposeViewController` with it attached (and
@@ -95,7 +96,7 @@ Dev shortcuts (Debug builds only) — `SIMCTL_CHILD_<VAR>=… xcrun simctl launc
 - Fonts: Italiana, Playfair Display, Great Vibes, Nunito — all under the
   [SIL Open Font License 1.1](https://openfontlicense.org), bundled as
   static TTFs from Google Fonts.
-- Breed reference photos: 54 stills from
+- Breed reference photos: 64 stills from
   [Wikimedia Commons](https://commons.wikimedia.org), each CC0, public domain,
   or CC BY (2.0–4.0) — never ShareAlike. Every photographer is credited in the
   app's own Image Credits screen, including the CC0 and public-domain ones

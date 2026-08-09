@@ -100,4 +100,13 @@ BREEDS = [
     # tests. Left here to document that it was looked for.
     ("Bull Terrier",              "Bull Terrier dog"),
     ("Chinese Crested",           "Chinese Crested Dog"),
+
+    # --- The wildcard ---
+    # Not a breed: the prompt's uncertain-mix wildcard ("Guest Star") that
+    # Claude bills when it won't name a fourth breed. Cast by the user
+    # 2026-08-08 from a themed search (mysterious silhouette / fun surfing
+    # comps): a black silhouette dog on Praia de Carcavelos — a dog whose
+    # breed literally cannot be read, which is the whole role. The candidate
+    # was hand-inserted into index.json rather than searched by this term.
+    ("Guest Star",                "dog silhouette sunset beach"),
 ]

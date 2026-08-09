@@ -95,8 +95,11 @@ let cases: [(String, String?)] = [
     ("Collie",                          "Collie"),
     ("Mastiff",                         "Mastiff"),
 
+    // The wildcard has its own cast photo as of 2026-08-08 (the Carcavelos
+    // silhouette) — it self-matches like any billed name now.
+    ("Guest Star",                      "Guest Star"),
+
     // Must NOT match anything:
-    ("Guest Star",                      nil),
     ("Mixed Breed",                     nil),
     ("Xoloitzcuintli",                  nil),
     ("Norwegian Lundehund",             nil),
