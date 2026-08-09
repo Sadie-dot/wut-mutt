@@ -20,9 +20,14 @@ struct BreedDetailView: View {
     var body: some View {
         ZStack {
             Color.wmCream.ignoresSafeArea()
-            ScrollView {
-                VStack(spacing: 0) {
-                    hero
+            // The hero is pinned, the dossier scrolls under it — the credits
+            // scaffold's own pattern. The back chevron is this screen's only
+            // exit on a hard-cut state machine, so it must never scroll away;
+            // pinning the whole hero also keeps the kicker and script title
+            // from sliding under the status bar mid-scroll.
+            VStack(spacing: 0) {
+                hero
+                ScrollView {
                     VStack(spacing: 16) {
                         traitsSection
                         typecastingCard
@@ -154,14 +159,19 @@ struct BreedDetailView: View {
     }
 
     private func traitCard(_ label: String, _ value: String, compact: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        // Claude returns ratings in whatever case it fancies ("large" one
+        // episode, "Large" the next); normalize the first letter at display
+        // so two dossiers never differ typographically. First letter only —
+        // multi-word values like "Short & sleek" keep their own shape.
+        let displayValue = value.prefix(1).uppercased() + value.dropFirst()
+        return VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .font(.playfair(12, relativeTo: .caption))
                 .kerning(2)
                 .foregroundColor(.wmLabel)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
-            Text(value)
+            Text(displayValue)
                 .font(.playfair(compact ? 17 : 19, bold: true, relativeTo: .body))
                 .foregroundColor(.wmHeading)
                 .lineLimit(2)

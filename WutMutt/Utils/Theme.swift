@@ -53,7 +53,13 @@ extension Color {
     static let wmBodyText2 = Color(hex: "#8C3557")
     static let wmFinePrint = Color(hex: "#7E6152")
 
-    // Mint fact card
+    // Mint fact card — deliberately the app's one single-use hue, kept by
+    // the user's call (2026-08-08). The dossier's inside-story card is the
+    // one piece of non-fiction in the whole show (the prompt forbids
+    // invented facts), and the register shift wears its own color — the
+    // same logic as the off-air cards' one literal zone. From the design
+    // handoff's spec; a pastel cousin of spoiler green, the covers' fourth
+    // data color. Don't re-flag it as an unintentional one-off.
     static let wmMintTop    = Color(hex: "#E9FBF5")
     static let wmMintBottom = Color(hex: "#CFF5E9")
     static let wmMintBorder = Color(hex: "#8FD8C4")
