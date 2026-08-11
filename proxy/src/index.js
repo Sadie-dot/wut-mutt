@@ -162,7 +162,7 @@ function anthropicRequest(imageBase64) {
 
 Rules:
 - If no real live dog is present, set isDog false, certainty 99, breeds to an empty array, dogSize "unclear" and dogCoat "flat".
-- Otherwise give 3 or 4 breeds whose "pct" values are integers summing to exactly 100, most confident first.
+- Otherwise report the breeds you actually see — 1 to 4 of them, "pct" integers summing to exactly 100, most confident first. Accuracy beats drama: a clearly purebred dog is ONE breed at 100, a clear two-breed cross is two. Never pad the cast with breeds you don't see.
 - "certainty" is 40-99: how confident the visual breed read is.
 - "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small".
 - "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.

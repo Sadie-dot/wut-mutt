@@ -108,9 +108,17 @@ struct ResultsView: View {
     }
 
     private var twistQuote: some View {
-        (Text("“In a twist no one saw coming…\nfur baby was ")
-         + Text("\(model.breedCountWord) breeds").bold().foregroundColor(.wmAccent)
-         + Text(" all along.”"))
+        // A cast of one gets its own twist — "1 breeds all along" is the
+        // grammar the accuracy-first prompt would otherwise produce. The
+        // word is "fancy", not "purebred": the user keeps registry language
+        // out of the storyline — the show's voice does not do kennel clubs.
+        (model.breeds.count == 1
+         ? (Text("“In a twist no one saw coming…\nfur baby was ")
+            + Text("fancy").bold().foregroundColor(.wmAccent)
+            + Text(" all along.”"))
+         : (Text("“In a twist no one saw coming…\nfur baby was ")
+            + Text("\(model.breedCountWord) breeds").bold().foregroundColor(.wmAccent)
+            + Text(" all along.”")))
             .font(.playfair(16, italic: true, relativeTo: .body))
             .foregroundColor(.wmBodyText2)
             .multilineTextAlignment(.center)

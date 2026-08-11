@@ -369,7 +369,9 @@ final class AppModel: ObservableObject {
     var shareBadge: String { "a very good dog" }
 
     var shareOthers: String {
-        guard breeds.count > 1 else { return "a purebred plot line" }
+        // The solo act still gets a costar. No registry language in the
+        // storyline (the results blurb says "fancy"); the card says this.
+        guard breeds.count > 1 else { return "and a snack" }
         let rest = breeds.dropFirst().map(\.billedName)
         if rest.count == 1 { return "with \(rest[0])" }
         // The whole closing unit is glued with non-breaking spaces, not just
@@ -555,6 +557,10 @@ final class AppModel: ObservableObject {
             return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.badImage))
         case "dog":                         // the happy path, without spending a reveal
             return .dog(breeds: Self.forcedBreeds, certainty: 87, look: Self.forcedLook)
+        case "purebred":                    // the accuracy-first single-breed verdict
+            var lead = Breed.fallbackEpisode[0]
+            lead.pct = 100
+            return .dog(breeds: [lead], certainty: 96, look: Self.forcedLook)
         case "nolook":                      // a proxy that predates dogSize/dogCoat
             return .dog(breeds: Breed.fallbackEpisode, certainty: 87, look: nil)
         default:
