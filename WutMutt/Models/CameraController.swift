@@ -109,12 +109,13 @@ extension CameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
         lastDetection = Date()
 
         let request = VNRecognizeAnimalsRequest()
+        let classify = VNClassifyImageRequest()
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .right)
-        try? handler.perform([request])
+        try? handler.perform([request, classify])
 
         let found = (request.results ?? []).contains {
             DogSubject.isDog($0) && DogSubject.isCentered($0)
-        }
+        } || DogSubject.classifiedDog(classify.results ?? [])
         if found {
             DispatchQueue.main.async { [weak self] in
                 guard let self, !self.dogInFrame else { return }
@@ -147,6 +148,27 @@ enum DogSubject {
 
     static func isCentered(_ obs: VNRecognizedObjectObservation) -> Bool {
         region.contains(CGPoint(x: obs.boundingBox.midX, y: obs.boundingBox.midY))
+    }
+
+    /// The close-up rescue. A face filling the frame is invisible to the
+    /// object detector — measured on real nose-boop photos: zero observations,
+    /// so no threshold or region tweak can help — but unmistakable to the
+    /// image classifier, which answers "what is this a picture of" without
+    /// having to localize anything. 0.35 splits the measured cases with room
+    /// on both sides: a real face shot classified dog at 0.62, while a busy
+    /// overhead scene whose dog was incidental scored 0.11 and should stay
+    /// gated. No bounding box comes with a classification, and none is
+    /// needed: a frame that classifies as "dog" has the dog as its subject,
+    /// which is what the center check exists to establish. The portrait
+    /// crop's dogBox stays detection-only and falls back to its centered
+    /// crop, exactly as it already does when Vision finds nothing.
+    static let classifierFloor: VNConfidence = 0.35
+
+    static func classifiedDog(_ observations: [VNClassificationObservation]) -> Bool {
+        observations.contains {
+            ($0.identifier == "dog" || $0.identifier == "canine")
+                && $0.confidence > classifierFloor
+        }
     }
 
     /// The observation the portrait should crop to. Prefers a confident,
