@@ -8,6 +8,26 @@ struct AnalyzingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var zoomed = false
 
+    /// How far to shift the filled backdrop so the dog sits centered — the
+    /// slack between the filled image and the screen, spent toward the box's
+    /// middle and clamped at the edges. Zero until the box arrives, and zero
+    /// slack on an axis means the photo is shown whole there already.
+    private func aimOffset(for image: UIImage, W: CGFloat, H: CGFloat) -> CGSize {
+        // The head pose is the aim when it exists — centering a long dog's
+        // BOX centers the body and pushes the head off-frame (the cushion
+        // crime scene proved it). The box's middle is the fallback.
+        guard let target = model.dogFocus
+            ?? model.dogBox.map({ CGPoint(x: $0.midX, y: $0.midY) })
+        else { return .zero }
+        let iw = image.size.width, ih = image.size.height
+        guard iw > 0, ih > 0 else { return .zero }
+        let scale = max(W / iw, H / ih)
+        let dw = iw * scale, dh = ih * scale
+        let dx = min(max(-(target.x - 0.5) * dw, -(dw - W) / 2), (dw - W) / 2)
+        let dy = min(max(-(target.y - 0.5) * dh, -(dh - H) / 2), (dh - H) / 2)
+        return CGSize(width: dx, height: dy)
+    }
+
     /// The teaser pool, on the same Dynamic Type curve as the teaser's font.
     /// It was a fixed 96, which held two lines at the default size and
     /// silently starved the type everywhere above it — a height-starved Text
@@ -25,9 +45,40 @@ struct AnalyzingView: View {
             Color.wmRaspberry
 
             if let image = model.capturedImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
+                if model.tightShot {
+                    // The capture is already a face. The fill-and-push that
+                    // makes a normal photo cinematic turns a nose-boop into
+                    // abstract fur — the classifier rescue admits shots the
+                    // detector can't even see a whole dog in — so show the
+                    // whole face instead, letterboxed on a blur of itself.
+                    // No push-in: a face this close needs no help looming.
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: W, height: H)
+                        .clipped()
+                        .blur(radius: 26)
+                        .saturation(0.85)
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: W, height: H)
+                        .saturation(0.85)
+                        .contrast(1.05)
+                } else {
+                    // The fill is aimed, not centered: same philosophy as the
+                    // share card — spend the fill's slack bringing the dog to
+                    // the middle, clamped so no edge ever pulls into frame. A
+                    // face at the photo's edge otherwise gets lopped by the
+                    // center crop (a device reveal caught exactly that).
+                    let aim = aimOffset(for: image, W: W, H: H)
+                    ZStack {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: W, height: H)
+                            .offset(aim)
+                    }
                     .frame(width: W, height: H)
                     .clipped()
                     .scaleEffect(zoomed && !reduceMotion ? 1.12 : 1,
@@ -35,6 +86,7 @@ struct AnalyzingView: View {
                     .animation(.easeOut(duration: 14), value: zoomed)
                     .saturation(0.85)
                     .contrast(1.05)
+                }
             }
 
             // Heavy raspberry vignette
@@ -82,6 +134,17 @@ struct AnalyzingView: View {
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()
+        // The tight-shot verdict and the aim box arrive a beat after the
+        // screen does (the Vision pass runs with the episode). The mode swap
+        // crossfades quickly; the aim glides — a slow easeInOut pan toward
+        // the dog reads as a camera move beside the 14s push-in, where a
+        // quick correction would read as a glitch. Scoped to those values.
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.45),
+                   value: model.tightShot)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 2.2),
+                   value: model.dogBox)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 2.2),
+                   value: model.dogFocus)
         .onAppear { zoomed = true }
     }
 }

@@ -171,6 +171,17 @@ final class AppModel: ObservableObject {
     /// the simulator, where the detector can't create an inference context at
     /// all. Consumers must have a centred fallback.
     @Published var dogBox: CGRect?
+    /// The capture is already a close-up: the animal detector couldn't see a
+    /// whole dog, but saliency found a frame-dominating subject — the
+    /// signature of the shots the REVEAL gate's classifier rescue admits.
+    /// The analyzing backdrop switches from cinematic fill-and-push (which
+    /// turns a nose-boop into abstract fur) to whole-face-on-blur when set.
+    @Published var tightShot = false
+    /// Where the dog's head is (normalized, top-left origin), from animal
+    /// body pose — the aim point that beats the box: centering the box of a
+    /// long horizontal dog centers the body and shoves the head off-frame,
+    /// which is exactly what a device reveal of a cushion-murder scene did.
+    @Published var dogFocus: CGPoint?
     @Published var breeds: [Breed] = Breed.fallbackEpisode
     @Published var certainty: Int = 87
 
@@ -481,12 +492,20 @@ final class AppModel: ObservableObject {
         capturedImage = image
         portraitImage = nil
         dogBox = nil
+        dogFocus = nil
+        tightShot = false
         retryDeniedOffline = false
         teaserIdx = 0
         comaCause = Self.rotate(Self.comaCauses, key: "wm-coma-idx")
         closing = Self.smallQuestions[0]
         shareOpen = false
         screen = .analyzing
+        // The portrait pass is local Vision, independent of the studio call,
+        // so it runs with the episode rather than after the verdict: the
+        // analyzing backdrop needs its answer — is this capture already a
+        // tight shot? — in its first moments, and the results portrait
+        // simply arrives earlier.
+        cropPortrait(from: image)
 
         scanTask?.cancel()
         scanTask = Task { [weak self] in
@@ -519,7 +538,6 @@ final class AppModel: ObservableObject {
             case .dog(let breeds, let certainty, _):
                 self.breeds = breeds
                 self.certainty = certainty
-                self.cropPortrait(from: image)
                 self.screen = .results
             case .offAir(let info):
                 self.screen = .offAir(info)
@@ -616,9 +634,22 @@ final class AppModel: ObservableObject {
             await MainActor.run {
                 self?.portraitImage = found.portrait
                 self?.dogBox = found.box ?? Self.forcedDogBox
+                self?.dogFocus = found.focus
+                self?.tightShot = found.tight || Self.forcedTight
             }
         }
     }
+
+    #if DEBUG
+    /// `SIMCTL_CHILD_WM_FORCE_TIGHT=1` comps the analyzing screen's tight-shot
+    /// backdrop — like the dog box, the real signal needs inference the
+    /// simulator doesn't have.
+    private static var forcedTight: Bool {
+        ProcessInfo.processInfo.environment["WM_FORCE_TIGHT"] != nil
+    }
+    #else
+    private static var forcedTight: Bool { false }
+    #endif
 
     #if DEBUG
     /// `SIMCTL_CHILD_WM_FORCE_DOGBOX=x,y,w,h` (normalized, top-left origin)
@@ -664,8 +695,7 @@ final class AppModel: ObservableObject {
     /// therefore dead in the simulator and the portrait is always the
     /// center-square fallback, which also means the retry can only be
     /// confirmed on a device.
-    private nonisolated static func findDog(_ cg: CGImage,
-                                            _ orientation: CGImagePropertyOrientation)
+    private nonisolated static func findDog(_ cg: CGImage)
         -> (image: CGImage, animal: VNRecognizedObjectObservation)? {
         for inset in [0, 1, 3, 8] {
             let candidate = inset == 0 ? cg : cg.cropping(to: CGRect(
@@ -673,7 +703,7 @@ final class AppModel: ObservableObject {
                 width: cg.width - inset * 2, height: cg.height - inset * 2))
             guard let candidate else { continue }
             let request = VNRecognizeAnimalsRequest()
-            let handler = VNImageRequestHandler(cgImage: candidate, orientation: orientation)
+            let handler = VNImageRequestHandler(cgImage: candidate, orientation: .up)
             // Picking the subject the same way the REVEAL gate does, so a shot
             // with more than one dog portraits the one that lit the button
             // rather than whichever observation Vision happened to return first.
@@ -688,38 +718,117 @@ final class AppModel: ObservableObject {
     /// One detection pass, two answers: the square the gilded portrait wants,
     /// and where the dog actually is so other layouts can aim for themselves.
     ///
-    /// The box is normalized against the *inset* copy Vision answered on rather
-    /// than the original. The insets top out at 8px on a photo thousands wide —
-    /// under half a percent, and this box only steers a crop, it doesn't measure
-    /// anything — so it is left unmapped rather than risking an orientation
-    /// remap for a sub-pixel gain.
+    /// Everything runs on an upright copy of the photo, rendered once, so
+    /// Vision's boxes, the crop math, and the published `dogBox` share one
+    /// coordinate space. The old path handed Vision the EXIF orientation but
+    /// applied the display-space box to the unoriented pixels — correct for
+    /// exported, orientation-normalized files and wrong for photos stored
+    /// rotated, which is most iPhone originals. #9's device test caught it:
+    /// the porch reveal centered the railing instead of the dog, while the
+    /// same photo aimed perfectly once exported. (The inset copies stay
+    /// unmapped: 8px on a photo thousands wide steers a crop by nothing.)
+    ///
+    /// When the whole detection ladder comes up empty — the close-up case the
+    /// REVEAL gate's classifier rescue exists for — attention saliency aims
+    /// the crop instead: it boxes "the subject" without needing to know it's
+    /// a dog, and on the measured nose-boop photo its box framed the face.
     private nonisolated static func locateDog(_ image: UIImage)
-        -> (portrait: UIImage, box: CGRect?) {
-        guard let full = image.cgImage else { return (image, nil) }
-        let found = findDog(full, .init(image.imageOrientation))
+        -> (portrait: UIImage, box: CGRect?, focus: CGPoint?, tight: Bool) {
+        guard let full = uprightCG(image) else { return (image, nil, nil, false) }
+        let found = findDog(full)
         let cg = found?.image ?? full
+        let salient = found == nil ? salientSubject(full) : nil
+        let aim = found?.animal.boundingBox ?? salient
+        let head = headPoint(cg)
         // Vision's origin is bottom-left; everything downstream of here is UIKit.
-        let box = found.map { f -> CGRect in
-            let b = f.animal.boundingBox
-            return CGRect(x: b.minX, y: 1 - b.maxY, width: b.width, height: b.height)
-        }
-        return (faceCrop(image, cg: cg, animal: found?.animal), box)
+        let box = aim.map { CGRect(x: $0.minX, y: 1 - $0.maxY,
+                                   width: $0.width, height: $0.height) }
+        let focus = head.map { CGPoint(x: $0.x, y: 1 - $0.y) }
+        // Tight, two ways in: a detected dog whose box dominates the frame,
+        // or no detection at all with a frame-dominating salient subject —
+        // AND no head pose. Pose is the tiebreaker the sleeping sprawl
+        // demanded: that wide scene is detector-blind with a big salient
+        // region (dog plus dog bed), which reads exactly like a nose-boop
+        // to the first two tests — but pose sees its head plainly, and a
+        // frame whose facial structure resolves at normal scale is not an
+        // extreme close-up. True boops fail pose (verified: the nose-boop
+        // photo returns none), so they letterbox; the sprawl keeps its
+        // cinematic fill and pans to the head instead. The 0.55 sits in a
+        // measured gap: normal shots run 0.11–0.44 (the porch reveal's
+        // confident dog: 0.44) while detectable face-fills run 0.60–0.80.
+        let animalArea = found.map { $0.animal.boundingBox.width * $0.animal.boundingBox.height } ?? 0
+        let tight = animalArea > 0.55
+            || (found == nil && head == nil
+                && (salient.map { $0.width * $0.height > 0.25 } ?? false))
+        return (faceCrop(image, cg: cg, aim: aim, head: head), box, focus, tight)
+    }
+
+    /// The head's centroid from animal body pose, in Vision's bottom-left
+    /// normalized space — nose, eyes, and ear-tops above 0.3 confidence,
+    /// averaged. Pose out-sees the box detector on hard framings (it found
+    /// the sleeping-sprawl head the detector returned nothing for), and a
+    /// head point beats any box heuristic at saying where the face is:
+    /// the box's "upper part" is spine, not face, on a lying-down dog.
+    private nonisolated static func headPoint(_ cg: CGImage) -> CGPoint? {
+        let request = VNDetectAnimalBodyPoseRequest()
+        let handler = VNImageRequestHandler(cgImage: cg, orientation: .up)
+        guard (try? handler.perform([request])) != nil,
+              let obs = request.results?.first else { return nil }
+        let joints: [VNAnimalBodyPoseObservation.JointName] =
+            [.nose, .leftEye, .rightEye, .leftEarTop, .rightEarTop]
+        let points = joints.compactMap { try? obs.recognizedPoint($0) }
+            .filter { $0.confidence > 0.3 }
+        guard points.count >= 2 else { return nil }
+        let x = points.map(\.x).reduce(0, +) / CGFloat(points.count)
+        let y = points.map(\.y).reduce(0, +) / CGFloat(points.count)
+        return CGPoint(x: x, y: y)
+    }
+
+    /// The photo with its EXIF orientation baked into the pixels, so every
+    /// consumer works in the same space. One full-size render, off the main
+    /// actor, and only when the orientation isn't already .up.
+    private nonisolated static func uprightCG(_ image: UIImage) -> CGImage? {
+        if image.imageOrientation == .up { return image.cgImage }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let size = image.size
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }.cgImage
+    }
+
+    /// Where the subject is when the animal detector says nothing — the
+    /// attention-saliency box, in Vision's bottom-left normalized space.
+    private nonisolated static func salientSubject(_ cg: CGImage) -> CGRect? {
+        let request = VNGenerateAttentionBasedSaliencyImageRequest()
+        let handler = VNImageRequestHandler(cgImage: cg, orientation: .up)
+        guard (try? handler.perform([request])) != nil else { return nil }
+        return request.results?.first?.salientObjects?.first?.boundingBox
     }
 
     private nonisolated static func faceCrop(_ image: UIImage,
                                              cg: CGImage,
-                                             animal: VNRecognizedObjectObservation?) -> UIImage {
+                                             aim: CGRect?,
+                                             head: CGPoint? = nil) -> UIImage {
         let w = CGFloat(cg.width), h = CGFloat(cg.height)
         var box: CGRect?
-        if let animal {
-            // Vision boxes are normalized with a bottom-left origin. Favor the
-            // upper part of the body box — that's where the face lives.
-            let b = animal.boundingBox
-            let rect = CGRect(x: b.minX * w, y: (1 - b.maxY) * h,
-                              width: b.width * w, height: b.height * h)
+        if let aim {
+            // Vision boxes are normalized with a bottom-left origin.
+            let rect = CGRect(x: aim.minX * w, y: (1 - aim.maxY) * h,
+                              width: aim.width * w, height: aim.height * h)
             let side = min(max(rect.width, rect.height * 0.6) * 1.15, min(w, h))
-            box = CGRect(x: rect.midX - side / 2, y: rect.minY - side * 0.08,
-                         width: side, height: side)
+            if let head {
+                // Center the square on the head pose, seated a little high —
+                // eyes at the upper third composes a portrait.
+                box = CGRect(x: head.x * w - side / 2,
+                             y: (1 - head.y) * h - side * 0.38,
+                             width: side, height: side)
+            } else {
+                // No pose: favor the upper part of the subject box — right
+                // for a standing or sitting dog, the best guess available.
+                box = CGRect(x: rect.midX - side / 2, y: rect.minY - side * 0.08,
+                             width: side, height: side)
+            }
         }
         var crop = box ?? CGRect(x: 0, y: 0, width: min(w, h), height: min(w, h))
             .offsetBy(dx: (w - min(w, h)) / 2, dy: (h - min(w, h)) / 4)
@@ -727,7 +836,7 @@ final class AppModel: ObservableObject {
         crop.origin.y = min(max(0, crop.origin.y), h - crop.height)
         crop = crop.intersection(CGRect(x: 0, y: 0, width: w, height: h))
         guard let cut = cg.cropping(to: crop) else { return image }
-        return UIImage(cgImage: cut, scale: image.scale, orientation: image.imageOrientation)
+        return UIImage(cgImage: cut, scale: image.scale, orientation: .up)
     }
 
     // MARK: VoiceOver
