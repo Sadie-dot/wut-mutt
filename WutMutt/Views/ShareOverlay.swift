@@ -106,6 +106,13 @@ struct ShareOverlay: View {
         .ignoresSafeArea()
         .overlay(alignment: .bottom) { toastView }
         .zIndex(30)
+        // The modal contract every other overlay honors: VoiceOver stays
+        // inside (the results screen behind is not readable), and the
+        // two-finger-Z escape scrub dismisses — the backdrop tap is
+        // invisible to VoiceOver, and the Close pill shouldn't be the
+        // only accessible way out.
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape) { model.shareOpen = false }
         .onAppear {
             if reduceMotion { popped = true }
             else { withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { popped = true } }

@@ -740,6 +740,8 @@ final class AppModel: ObservableObject {
         case .results:   message = "The results are in: \(breeds.first?.name ?? "") leads the cast."
         case .nodog:     message = "Shocking twist: that is not a dog."
         case .home:      message = "Camera. Fit your dog in the frame."
+        case .detail(let idx) where breeds.indices.contains(idx):
+            message = "Character dossier: \(breeds[idx].name)."
         case .offAir(let info):
             message = "\(info.headline) \(info.message.replacingOccurrences(of: "\n", with: " "))"
         default:         message = nil
