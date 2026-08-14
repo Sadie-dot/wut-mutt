@@ -10,7 +10,7 @@ The catalog matters: UIImage(named:) resolves extensionless names against the
 compiled catalog, so an imageset entry Just Works where a loose .jpg needs the
 bundle-path dance. The simulator stand-in learned that the hard way.
 """
-import html, json, pathlib, re, shutil, sys, time, urllib.parse, urllib.request
+import hashlib, html, json, pathlib, re, shutil, sys, time, urllib.parse, urllib.request
 from PIL import Image
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
@@ -158,7 +158,13 @@ def main():
         if not info or not info["url"]:
             print(f"  SKIP {name} — no render URL")
             continue
-        dest = HERE / "full" / f"{slug(name)}.jpg"
+        # Cache keyed by the picked file, not just the breed: a slug-only key
+        # survives a pick CHANGE and silently re-crops the stale photo while
+        # the credits row moves to the new one — a misattribution factory.
+        # (Caught live: the Poodle recast cropped the old show portrait under
+        # the new photographer's name.) Old slug-only files just orphan.
+        tag = hashlib.md5(cands[i]["title"].encode()).hexdigest()[:8]
+        dest = HERE / "full" / f"{slug(name)}-{tag}.jpg"
         dest.parent.mkdir(exist_ok=True)
         if not dest.exists():
             if not fc.download(info["url"], dest):

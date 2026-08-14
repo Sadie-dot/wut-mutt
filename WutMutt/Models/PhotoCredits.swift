@@ -29,7 +29,7 @@ let photoCredits: [PhotoCredit] = [
     PhotoCredit(imageName: "breed-labrador-retriever", breed: "Labrador Retriever", author: "Rob Hanson", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Labrador_Retriever_chocolate_Hershey_sit.jpg"),
     PhotoCredit(imageName: "breed-golden-retriever", breed: "Golden Retriever", author: "Johan Spaedtke", license: "CC0", sourceURL: "https://commons.wikimedia.org/wiki/File:Golden_Retriever_adult.jpg"),
     PhotoCredit(imageName: "breed-german-shepherd", breed: "German Shepherd", author: "Hans Kemperman", license: "CC0", sourceURL: "https://commons.wikimedia.org/wiki/File:German-shepherd-4040871920.jpg"),
-    PhotoCredit(imageName: "breed-poodle", breed: "Poodle", author: "John Leslie", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Standard_Poodle_portrait.jpg"),
+    PhotoCredit(imageName: "breed-poodle", breed: "Poodle", author: "Belinda Hankins Miller", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Standard_Poodle_black_lying_down.jpg"),
     PhotoCredit(imageName: "breed-dachshund", breed: "Dachshund", author: "Tony Alter", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Dachshund_2.jpg"),
     PhotoCredit(imageName: "breed-bulldog", breed: "Bulldog", author: "Koala91", license: "CC0", sourceURL: "https://commons.wikimedia.org/wiki/File:Mini_Olde_English_Bulldog_1.jpg"),
     PhotoCredit(imageName: "breed-beagle", breed: "Beagle", author: "Mustang Joe", license: "CC0", sourceURL: "https://commons.wikimedia.org/wiki/File:Beagle_Bailey.jpg"),

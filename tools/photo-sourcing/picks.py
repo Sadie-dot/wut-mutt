@@ -22,7 +22,11 @@ PICKS = {
     "Labrador Retriever": 2,
     "Golden Retriever": 0,
     "German Shepherd": 0,
-    "Poodle": (0, 1.0),                 # head at the right of the frame
+    "Poodle": 3,                        # [0]'s show portrait has ring-side
+                                        # people blurred in the background —
+                                        # a user caught them on the dossier.
+                                        # [3] is the black standard in grass,
+                                        # camera-forward, nobody in frame.
     "Dachshund": (1, 1.0),              # long dog, head at the right end
     "Bulldog": 1,
     "Beagle": 2,
