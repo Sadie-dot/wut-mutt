@@ -163,6 +163,8 @@ function anthropicRequest(imageBase64) {
 Rules:
 - If no real live dog is present, set isDog false, certainty 99, breeds to an empty array, dogSize "unclear" and dogCoat "flat".
 - Otherwise report the breeds you actually see — 1 to 4 of them, "pct" integers summing to exactly 100, most confident first. Accuracy beats drama: a clearly purebred dog is ONE breed at 100, a clear two-breed cross is two. Never pad the cast with breeds you don't see.
+- Named crosses are real answers: when the dog reads as a recognizable designer cross (Labradoodle, Goldendoodle, Bernedoodle, Cockapoo, Maltipoo, and kin), bill the cross by name as the lead rather than splitting it into its parents. A parent breed may still appear in the supporting cast when its traits show through.
+- Names are billing: keep them plain — "Standard Poodle", never "Poodle (Standard)". No parentheses, no "Mix" suffixes, no qualifiers inside a breed name.
 - "certainty" is 40-99: how confident the visual breed read is.
 - "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small".
 - "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.

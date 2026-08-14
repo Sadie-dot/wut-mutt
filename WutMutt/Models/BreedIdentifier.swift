@@ -166,13 +166,27 @@ struct BreedIdentifier {
         }
     }
 
+    /// Claude sometimes bills baroque names — "Poodle (Standard)", "Sheepdog
+    /// Mix (Old English Sheepdog type)" — which wrap the results row to three
+    /// lines and truncate the share card's one-line billing. The prompt now
+    /// forbids them at the source; this normalizes whatever arrives anyway,
+    /// once, where Breed is born — every surface and the photo matcher
+    /// inherit the plain name.
+    private static func plainName(_ raw: String) -> String {
+        raw.replacingOccurrences(of: #"\s*\([^)]*\)"#, with: "",
+                                 options: .regularExpression)
+            .replacingOccurrences(of: #"\s+"#, with: " ",
+                                  options: .regularExpression)
+            .trimmingCharacters(in: .whitespaces)
+    }
+
     private func parse(_ data: Data) throws -> BreedVerdict {
         guard let wire = try? JSONDecoder().decode(WirePayload.self, from: data) else {
             throw BreedIdentifierError.api(type: nil, message: "Couldn't read the studio's answer.")
         }
         guard wire.isDog, !wire.breeds.isEmpty else { return .notADog }
         let breeds = wire.breeds.prefix(4).enumerated().map { i, b in
-            Breed(name: b.name, pct: b.pct, tagline: b.tagline,
+            Breed(name: Self.plainName(b.name), pct: b.pct, tagline: b.tagline,
                   size: b.size, energy: b.energy, drool: b.drool, floof: b.floof,
                   clues: b.clues, fact: b.fact, colorIndex: i)
         }
