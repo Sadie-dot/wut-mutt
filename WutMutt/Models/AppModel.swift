@@ -182,6 +182,11 @@ final class AppModel: ObservableObject {
     /// long horizontal dog centers the body and shoves the head off-frame,
     /// which is exactly what a device reveal of a cushion-murder scene did.
     @Published var dogFocus: CGPoint?
+    /// The look pass has answered (however it answered). Until this flips,
+    /// the analyzing backdrop shows only the blurred fill — committing to
+    /// sharp fill or letterbox before the verdict exists meant flashing the
+    /// wrong mode for the first half-second of every tight shot.
+    @Published var lookFinished = false
     @Published var breeds: [Breed] = Breed.fallbackEpisode
     @Published var certainty: Int = 87
 
@@ -494,6 +499,7 @@ final class AppModel: ObservableObject {
         dogBox = nil
         dogFocus = nil
         tightShot = false
+        lookFinished = false
         retryDeniedOffline = false
         teaserIdx = 0
         comaCause = Self.rotate(Self.comaCauses, key: "wm-coma-idx")
@@ -636,6 +642,7 @@ final class AppModel: ObservableObject {
                 self?.dogBox = found.box ?? Self.forcedDogBox
                 self?.dogFocus = found.focus
                 self?.tightShot = found.tight || Self.forcedTight
+                self?.lookFinished = true
             }
         }
     }

@@ -6,12 +6,34 @@ import SwiftUI
 struct AnalyzingView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var zoomed = false
+    /// Push triggers, one per sharp rendering. Since the backdrop opens on
+    /// the blur, BOTH sharp renderings are inserted after the screen
+    /// appears — a shared appear-time flag would materialize them pre-zoomed
+    /// at their final scale with no visible travel (each branch found this
+    /// out separately on device). Each rendering's own onAppear starts its
+    /// journey at its own insertion.
+    @State private var fillZoomed = false
+    @State private var tightZoomed = false
 
-    /// How far to shift the filled backdrop so the dog sits centered — the
-    /// slack between the filled image and the screen, spent toward the box's
-    /// middle and clamped at the edges. Zero until the box arrives, and zero
-    /// slack on an axis means the photo is shown whole there already.
+    /// Where the subject should land on screen. Not the geometric middle:
+    /// the teaser block owns the bottom third, so a subject aimed at true
+    /// center can end up under the caption (a curled-up sleeper's head did
+    /// exactly that on device). The stage sits where the vignette and the
+    /// push-in anchor already point — about a third down.
+    private static let stage = CGPoint(x: 0.5, y: 0.36)
+
+    /// How far to shift the filled backdrop so the dog sits on the stage —
+    /// the slack between the filled image and the screen, spent toward the
+    /// aim point and clamped at the edges. Zero until the box arrives, and
+    /// zero slack on an axis means the photo is shown whole there already.
+    ///
+    /// Known and accepted (the user's call, 2026-08-13): landscape captures
+    /// bind on height, so vertical slack is zero and a head low in the
+    /// photo sits low on screen, dimmed under the caption band. Buying
+    /// vertical room out of the push-in's 1.12 was considered and declined —
+    /// the pan and the push run on different clocks, and an eager offset
+    /// could expose a content edge for the vignette to (mostly) hide.
+    /// Portrait captures, the common case, aim on both axes.
     private func aimOffset(for image: UIImage, W: CGFloat, H: CGFloat) -> CGSize {
         // The head pose is the aim when it exists — centering a long dog's
         // BOX centers the body and pushes the head off-frame (the cushion
@@ -23,8 +45,10 @@ struct AnalyzingView: View {
         guard iw > 0, ih > 0 else { return .zero }
         let scale = max(W / iw, H / ih)
         let dw = iw * scale, dh = ih * scale
-        let dx = min(max(-(target.x - 0.5) * dw, -(dw - W) / 2), (dw - W) / 2)
-        let dy = min(max(-(target.y - 0.5) * dh, -(dh - H) / 2), (dh - H) / 2)
+        let dx = min(max((Self.stage.x - 0.5) * W - (target.x - 0.5) * dw,
+                         -(dw - W) / 2), (dw - W) / 2)
+        let dy = min(max((Self.stage.y - 0.5) * H - (target.y - 0.5) * dh,
+                         -(dh - H) / 2), (dh - H) / 2)
         return CGSize(width: dx, height: dy)
     }
 
@@ -45,13 +69,13 @@ struct AnalyzingView: View {
             Color.wmRaspberry
 
             if let image = model.capturedImage {
-                if model.tightShot {
-                    // The capture is already a face. The fill-and-push that
-                    // makes a normal photo cinematic turns a nose-boop into
-                    // abstract fur — the classifier rescue admits shots the
-                    // detector can't even see a whole dog in — so show the
-                    // whole face instead, letterboxed on a blur of itself.
-                    // No push-in: a face this close needs no help looming.
+                // The opening shot is always the blur: the look pass hasn't
+                // answered yet, and committing to sharp fill or letterbox
+                // before it does meant flashing the wrong mode for tight
+                // shots. The blur stays up as the letterbox's backing; for
+                // normal shots it dissolves into the aimed fill — the
+                // picture resolving mid-analysis, which is the beat anyway.
+                if !model.lookFinished || model.tightShot {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
@@ -59,13 +83,25 @@ struct AnalyzingView: View {
                         .clipped()
                         .blur(radius: 26)
                         .saturation(0.85)
+                        .transition(.opacity)
+                }
+                if model.lookFinished, model.tightShot {
+                    // The capture is already a face — the classifier rescue
+                    // admits shots the detector can't see a whole dog in.
+                    // Letterboxed whole, with the same slow push-in as the
+                    // fill (1.12; subtler cuts read as static on device).
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()
                         .frame(width: W, height: H)
+                        .scaleEffect(tightZoomed && !reduceMotion ? 1.12 : 1)
+                        .animation(.easeOut(duration: 14), value: tightZoomed)
                         .saturation(0.85)
                         .contrast(1.05)
-                } else {
+                        .transition(.opacity)
+                        .onAppear { tightZoomed = true }
+                }
+                if model.lookFinished, !model.tightShot {
                     // The fill is aimed, not centered: same philosophy as the
                     // share card — spend the fill's slack bringing the dog to
                     // the middle, clamped so no edge ever pulls into frame. A
@@ -81,11 +117,13 @@ struct AnalyzingView: View {
                     }
                     .frame(width: W, height: H)
                     .clipped()
-                    .scaleEffect(zoomed && !reduceMotion ? 1.12 : 1,
+                    .scaleEffect(fillZoomed && !reduceMotion ? 1.12 : 1,
                                  anchor: .init(x: 0.55, y: 0.28))
-                    .animation(.easeOut(duration: 14), value: zoomed)
+                    .animation(.easeOut(duration: 14), value: fillZoomed)
                     .saturation(0.85)
                     .contrast(1.05)
+                    .transition(.opacity)
+                    .onAppear { fillZoomed = true }
                 }
             }
 
@@ -136,16 +174,18 @@ struct AnalyzingView: View {
         .ignoresSafeArea()
         // The tight-shot verdict and the aim box arrive a beat after the
         // screen does (the Vision pass runs with the episode). The mode swap
-        // crossfades quickly; the aim glides — a slow easeInOut pan toward
-        // the dog reads as a camera move beside the 14s push-in, where a
-        // quick correction would read as a glitch. Scoped to those values.
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.45),
+        // is a slow dissolve (explicit .opacity transitions on both
+        // renderings — a 0.45s swap still read as a pop on device); the aim
+        // glides — a slow easeInOut pan toward the dog reads as a camera
+        // move beside the 14s push-in. Scoped to those values.
+        .animation(reduceMotion ? nil : .easeInOut(duration: 1.0),
                    value: model.tightShot)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 1.0),
+                   value: model.lookFinished)
         .animation(reduceMotion ? nil : .easeInOut(duration: 2.2),
                    value: model.dogBox)
         .animation(reduceMotion ? nil : .easeInOut(duration: 2.2),
                    value: model.dogFocus)
-        .onAppear { zoomed = true }
     }
 }
 
