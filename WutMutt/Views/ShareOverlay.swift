@@ -457,10 +457,23 @@ struct ShareCardView: View {
         // anyway. The masthead moved off the photo instead, which fixes it for
         // every photo rather than the ones with headroom to spare, and lets
         // this go back to simply centring the dog.
-        let box = model.dogBox
+        // The head leads the aim when pose found one — centering the BOX of
+        // a tall or long dog centers the torso and crops the skull at the
+        // slot's edge (a device card did exactly that). When pose found
+        // nothing (fluffy close-ups defeat it), the box fallback aims at the
+        // box's UPPER band, not its middle: heads live at the top of a
+        // seated or standing dog's box — faceCrop's own pre-pose heuristic —
+        // and a chest-centered crop is how a second device card lost a
+        // skull. Heads seat at 0.42 of the slot (portrait composition,
+        // consistent with the dossier crop and the analyzing stage). With
+        // no box at all the clamp collapses to the centred crop.
+        let focus = model.dogFocus
+        let target = focus ?? model.dogBox.map {
+            CGPoint(x: $0.midX, y: $0.minY + $0.height * 0.15)
+        }
         let wanted = CGPoint(
-            x: (box?.midX ?? 0.5) * filled.width - slot.width / 2,
-            y: (box?.midY ?? 0.5) * filled.height - slot.height / 2)
+            x: (target?.x ?? 0.5) * filled.width - slot.width / 2,
+            y: (target?.y ?? 0.5) * filled.height - slot.height * 0.42)
         let window = CGPoint(x: min(max(wanted.x, 0), slack.width),
                              y: min(max(wanted.y, 0), slack.height))
 
