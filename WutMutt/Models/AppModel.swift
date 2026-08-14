@@ -349,7 +349,7 @@ final class AppModel: ObservableObject {
 
     var certaintyLabel: String {
         certainty >= 80 ? "Devastatingly sure"
-        : certainty >= 60 ? "Reasonably scandalized" : "Merely suspicious"
+        : certainty >= 60 ? "Life-altering epiphany" : "Merely suspicious"
     }
 
     var breedCountWord: String {
@@ -580,7 +580,8 @@ final class AppModel: ObservableObject {
         case "badimage":                    // the capture couldn't be encoded
             return .offAir(BreedIdentifier.offAir(for: BreedIdentifierError.badImage))
         case "dog":                         // the happy path, without spending a reveal
-            return .dog(breeds: Self.forcedBreeds, certainty: 87, look: Self.forcedLook)
+            return .dog(breeds: Self.forcedBreeds, certainty: Self.forcedCertainty,
+                        look: Self.forcedLook)
         case "purebred":                    // the accuracy-first single-breed verdict
             var lead = Breed.fallbackEpisode[0]
             lead.pct = 100
@@ -604,6 +605,13 @@ final class AppModel: ObservableObject {
         case "fluffy": return DogLook(size: .unclear, coat: .fluffy)
         default:       return DogLook(size: .large, coat: .flat)
         }
+    }
+
+    /// `WM_FORCE_CERTAINTY=<40-99>` sets the dial, so every band's label can
+    /// be comped without hunting for a dog of exactly that ambiguity (or
+    /// spending reveals — the day this was added, the cap was already spent).
+    private nonisolated static var forcedCertainty: Int {
+        min(99, max(40, Int(ProcessInfo.processInfo.environment["WM_FORCE_CERTAINTY"] ?? "") ?? 87))
     }
 
     /// `WM_FORCE_BREED=<name>` renames the lead breed. Both the human question
