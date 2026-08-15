@@ -74,7 +74,16 @@ PICKS = {
     "Goldendoodle": 2,                      # [0] is an annotated breed diagram with text labels
     "Labradoodle": 5,
     "Plott Hound": (0, 1.0),            # sitting at the right edge; centred, it loses its nose
-    "Catahoula Leopard Dog": 0,         # [1] shows none of the leopard coat
+    "Catahoula Leopard Dog": 0,         # [1] shows none of the leopard coat.
+                                        # Kept through the 2026-08-15 humans
+                                        # audit, the user's call: the far
+                                        # tent-line specks are illegible at
+                                        # dossier size (the Guest Star
+                                        # precedent), and every alternative
+                                        # trades worse — [2][3][5] have real
+                                        # people in frame, [4] is people-free
+                                        # but lacks the merle that makes the
+                                        # breed recognisable.
     "Chinese Crested": 5,
     # Commons holds exactly two permissive Bernedoodles. [1] has a person's
     # leg and hand in the frame and is 640px wide — under the crop, so it
