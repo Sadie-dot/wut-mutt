@@ -635,8 +635,17 @@ struct ShareCardView: View {
         // buys it back a billing's presence without joining the headline's
         // register; the extra line height comes out of the field's slack,
         // not the portrait.
+        //
+        // 15 bold as of 2026-08-15 (comped 14 / 15-bold / 16-bold on
+        // renders; 16 arm-wrestles the closer for rank). Mint green was
+        // measured and rejected first: no tint beats cream's value on this
+        // field — the palest mint loses ~0.8:1 of contrast and spoiler
+        // green craters to 2:1. The two-line reservation still holds the
+        // longest cast at this size, verified via WM_FORCE_CAST with
+        // "Catahoula Leopard Dog, American Staffordshire Terrier" — the
+        // glued closing unit survives at the line break.
         Text(model.shareOthers)
-            .font(.playfair(14, italic: true, relativeTo: .footnote))
+            .font(.playfair(15, bold: true, italic: true, relativeTo: .footnote))
             .foregroundColor(.wmCream)
             .multilineTextAlignment(.center)
             .lineLimit(2)
