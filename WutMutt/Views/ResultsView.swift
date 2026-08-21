@@ -164,6 +164,21 @@ struct ResultsView: View {
                     model.screen = .detail(index)
                 }
             }
+
+            // What the numbers mean, said where the numbers are. A percent
+            // sign borrows DNA-test authority the figure doesn't have —
+            // Claude reports how much of each breed is VISIBLE, not
+            // ancestry. The user's line: "swapped baby" is the soap trope
+            // for mystery parentage, so the gag itself carries the
+            // ancestry-unknown subtext while the footer's "Not a DNA test"
+            // keeps the literal job.
+            Text("How much of each breed our swapped baby manifests.")
+                .font(.playfair(12, italic: true, relativeTo: .caption))
+                .foregroundColor(.wmLabel)
+                .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
+                .padding(.top, 10)
+                .padding(.bottom, 8)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 6)

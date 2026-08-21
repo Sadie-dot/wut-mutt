@@ -114,7 +114,7 @@ struct AIDisclosureOverlay: View {
             }
 
             CreditsSection(heading: "THE BREED RESULTS") {
-                creditsBody("Wut Mutt uses Claude live, in the app, to guess breeds from your photo and write everything on each breed's card — the tagline, clues, and fun fact — on the fly. Results are an educated guess for entertainment — not veterinary, genetic, or dramatic advice. Breed facts have not been independently fact-checked.")
+                creditsBody("Wut Mutt uses Claude live, in the app, to guess breeds from your photo and write everything on each breed's card — the tagline, clues, and fun fact — on the fly. The percentages describe how much of each breed shows in the photo, not ancestry — no photo can tell you that. Results are an educated guess for entertainment — not veterinary, genetic, or dramatic advice. Breed facts have not been independently fact-checked.")
             }
 
             // Deliberately repeated from Image Credits. Someone auditing what is
