@@ -55,7 +55,7 @@ BOILERPLATE = [
 
 # Clauses that trail the name once the wrapper is off.
 TRAILERS = (r"(?:\s+(?:and released under|released under|\.?\s*Photo uploaded"
-            r"|licen[cs]ed under)\b.*|\s*https?://\S*)$")
+            r"|licen[cs]ed under)\b.*|,\s*phot\.?$|\s*https?://\S*)$")
 
 def clean_artist(raw):
     s = html.unescape(re.sub(r"<[^>]+>", " ", raw or ""))
@@ -95,13 +95,25 @@ def render_url(title):
         "artist": clean_artist(meta.get("Artist", {}).get("value", "")),
     }
 
-def crop_frame(img, focus=0.5):
+def crop_frame(img, focus=0.5, band=None):
     """Anchor top, take the widest 3:4 that fits, positioned by `focus`.
 
     `focus` is where the dog is across the frame, 0 left to 1 right. Centre is
     right for most photographs and wrong for the ones where the subject sits
     off to one side — a dog lying with its head at the edge loses the head.
+
+    `band` is (top, bottom) as fractions of the source height: keep only that
+    horizontal band before fitting the 3:4. This exists for sources where the
+    full frame cannot work — the detail screen shows the top ~88% of the
+    bundle at default type, so a dog spanning ears-at-35% to toes-at-94% loses
+    its toes whatever `focus` does. A band turns the pick into a deliberate
+    head-and-chest portrait that ends on clean body, not half a paw. Choose
+    bottoms that read as intentional at every Dynamic Type size: large type
+    heightens the photo area until the whole bundle shows.
     """
+    if band:
+        w, h = img.size
+        img = img.crop((0, int(h * band[0]), w, int(h * band[1])))
     w, h = img.size
     want = CROP_W / CROP_H
     if w / h > want:                       # too wide: trim the sides
@@ -136,6 +148,10 @@ def swift_escape(s):
 # attribution.
 ARTIST_OVERRIDES = {
     "File:Howard Line Southern Black Mouth Cur (Male).jpg": "Steve Howard",
+    # The 1863 print credits its maker in letterpress caps ("L. CREMIÈRE,
+    # PHOT"). The trailer rule drops the ", PHOT"; the caps are the plate's
+    # typography, not the name's spelling.
+    'File:01. Bull and Terrier, Paris 1863. "Rose".png': "L. Cremière",
 }
 
 def main():
@@ -148,9 +164,16 @@ def main():
             print(f"  skip {name} — no pick")
             continue
         cands = index.get(name, [])
-        # A pick is an index, or (index, focus) when the dog is off-centre.
+        # A pick is an index, (index, focus) when the dog is off-centre, or
+        # (index, focus, top, bottom) to zoom into a vertical band first.
         pick = PICKS[name]
-        i, focus = pick if isinstance(pick, tuple) else (pick, 0.5)
+        band = None
+        if isinstance(pick, tuple):
+            i, focus = pick[0], pick[1]
+            if len(pick) == 4:
+                band = (pick[2], pick[3])
+        else:
+            i, focus = pick, 0.5
         if i >= len(cands):
             print(f"  SKIP {name} — pick [{i}] out of range")
             continue
@@ -172,7 +195,7 @@ def main():
                 continue
             time.sleep(1.0)
         size = write_imageset(slug(name),
-                              crop_frame(Image.open(dest).convert("RGB"), focus))
+                              crop_frame(Image.open(dest).convert("RGB"), focus, band))
         total += size
         artist = ARTIST_OVERRIDES.get(cands[i]["title"], info["artist"])
         rows.append((slug(name), name, artist, info["license"], info["descurl"]))

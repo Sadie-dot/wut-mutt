@@ -100,9 +100,14 @@ PICKS = {
     "Black Mouth Cur": 0,               # the cousin Mountain Cur never got: CC BY, sitting portrait
     "Field Spaniel": 1,                 # fills the frame; [3] and [4] carry people
 
-    # Bull Terrier is deliberately absent: its permissive candidates are three
-    # pit-bull-types that are not Bull Terriers, two paintings, and one
-    # antique photograph. It keeps the trait grid and its refusal tests.
+    # Refused from 2026-08-04 to 2026-08-20 — the first search found nothing
+    # that was actually a Bull Terrier. [6] arrived from a re-worded search
+    # after Bull-and-Terrier joined the catalog: a modern public-domain
+    # portrait, unmistakably the egg-headed breed. The full frame can't work
+    # in the polaroid (ears at 35%, toes at 94% — the display's top-88% window
+    # cannot hold both), so the band zooms to a head-and-chest portrait that
+    # ends on clean body rather than half a paw.
+    "Bull Terrier": (6, 0.55, 0.31, 0.88),
 
     # Mountain Cur is deliberately absent. Commons holds exactly two photos of
     # the breed and both are CC BY-SA; Openverse's only permissive hit is a
@@ -114,4 +119,12 @@ PICKS = {
     # dossier line it appears beside ("Refuses to be categorized"). Tiny
     # walkers on the far shoreline pass criterion 1 at polaroid size.
     "Guest Star": 0,
+
+    # The ancestor, user-cast 2026-08-16. An 1863 albumen print breaks the
+    # criteria knowingly: the grain and sepia ARE the point — the billing is
+    # an extinct type, and the photograph says so at a glance. The chain and
+    # studded collar are the dog's own gear. Landscape plate with the head at
+    # the left edge — centred, the muzzle is cut off (the Plott Hound's
+    # problem, mirrored).
+    "Bull-and-Terrier": (0, 0.15),
 }

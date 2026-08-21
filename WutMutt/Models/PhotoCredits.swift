@@ -87,6 +87,8 @@ let photoCredits: [PhotoCredit] = [
     PhotoCredit(imageName: "breed-entlebucher-mountain-dog", breed: "Entlebucher Mountain Dog", author: "adam w", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Crufts_2019-_NEC,_Birmingham-_08-March_2019_-_33455424448.jpg"),
     PhotoCredit(imageName: "breed-black-mouth-cur", breed: "Black Mouth Cur", author: "Steve Howard", license: "CC BY 4.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Howard_Line_Southern_Black_Mouth_Cur_(Male).jpg"),
     PhotoCredit(imageName: "breed-field-spaniel", breed: "Field Spaniel", author: "Peter", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Black_Field_Spaniel.jpg"),
+    PhotoCredit(imageName: "breed-bull-terrier", breed: "Bull Terrier", author: "RaulCostas", license: "Public domain", sourceURL: "https://commons.wikimedia.org/wiki/File:Bull_terrier_ingl%C3%A9s.jpg"),
     PhotoCredit(imageName: "breed-chinese-crested", breed: "Chinese Crested", author: "Sheri Terris", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Chinese_Crested_Dog.jpg"),
     PhotoCredit(imageName: "breed-guest-star", breed: "Guest Star", author: "Sonse", license: "CC BY 2.0", sourceURL: "https://commons.wikimedia.org/wiki/File:Dog_during_Sunset_on_Praia_de_Carcavelos_%E2%80%A2_Carcavelos_beach_(50662756677).jpg"),
+    PhotoCredit(imageName: "breed-bull-and-terrier", breed: "Bull-and-Terrier", author: "L. Cremière", license: "CC0", sourceURL: "https://commons.wikimedia.org/wiki/File:01._Bull_and_Terrier,_Paris_1863._%22Rose%22.png"),
 ]

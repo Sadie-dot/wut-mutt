@@ -93,11 +93,11 @@ BREEDS = [
     ("Entlebucher Mountain Dog",  None),
     ("Black Mouth Cur",           "Black Mouth Cur dog"),
     ("Field Spaniel",             None),
-    # Bull Terrier was searched 2026-08-04 and cannot be served: Commons'
-    # permissive candidates are three pit-bull-types that are not Bull
-    # Terriers, two paintings, and one antique photograph. Like Mountain Cur
-    # it falls through to the trait grid, and stays in the matcher's refusal
-    # tests. Left here to document that it was looked for.
+    # Searched 2026-08-04 and judged unservable — that query surfaced only
+    # pit-bull-types, paintings and antiques. Re-worded searches on 2026-08-20
+    # (prompted by Bull-and-Terrier's arrival) found real candidates after
+    # all; the user cast the public-domain modern portrait, appended to the
+    # index by hand as [6].
     ("Bull Terrier",              "Bull Terrier dog"),
     ("Chinese Crested",           "Chinese Crested Dog"),
 
@@ -109,4 +109,13 @@ BREEDS = [
     # breed literally cannot be read, which is the whole role. The candidate
     # was hand-inserted into index.json rather than searched by this term.
     ("Guest Star",                "dog silhouette sunset beach"),
+
+    # --- The ancestor ---
+    # Also not a breed: the extinct 19th-century type the prompt bills when a
+    # bully-cluster read isn't clear enough to name a living sibling (the
+    # humility rule of 2026-08-16). Cast by the user from a themed search:
+    # "Rose", photographed by Léon Cremière at the Paris dog exposition of
+    # May 1863 — an actual Victorian photograph of an actual bull-and-terrier.
+    # Hand-inserted into index.json like the Guest Star.
+    ("Bull-and-Terrier",          "bull and terrier 1863"),
 ]

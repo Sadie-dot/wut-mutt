@@ -27,6 +27,19 @@ enum BreedPhotos {
 
     /// Exposed for the credits screen and for tests.
     static func credit(for name: String) -> PhotoCredit? {
+        // A verbatim catalog name always means itself. This exists for the one
+        // pair tokens cannot tell apart: "Bull-and-Terrier" (the 1863 ancestor
+        // the prompt bills by exactly this spelling) and "Bull Terrier" (a
+        // modern breed with no permissive photo) collapse to the same token
+        // set once "and" is dropped as noise, so only the raw spelling — the
+        // hyphens and the "and" — can route them apart.
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let exact = photoCredits.first(where: {
+            $0.breed.caseInsensitiveCompare(trimmed) == .orderedSame
+        }) {
+            return exact
+        }
+
         let query = queryTokens(of: name)
         guard !query.isEmpty else { return nil }
 
@@ -139,6 +152,15 @@ enum BreedPhotos {
         "collie rough": "Collie",
         "collie smooth": "Collie",
         "collie scotch": "Collie",
+        // "and" is a noise word, so "Bull Terrier" and "Bull-and-Terrier"
+        // tokenize identically — but they are different dogs a century apart,
+        // each with its own photo. This pin routes the modern name to the
+        // modern breed before the exact-token short-circuit can hand it the
+        // 1863 ancestor. (Before Bull Terrier had a photo, the same entry
+        // worked as a refusal: the lookup found no catalog row and fell to
+        // the trait grid.)
+        "bull terrier": "Bull Terrier",
+        "bull english terrier": "Bull Terrier",
     ]
 
     /// Nicknames and rival spellings, mapped onto the words the catalog uses.

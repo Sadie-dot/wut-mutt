@@ -71,7 +71,17 @@ let cases: [(String, String?)] = [
     // itself and nothing else. Bull Terrier is the one still refused: Commons
     // has no permissive photo of an actual Bull Terrier, and the wrong answer
     // here is the Staffordshire's portrait.
-    ("Bull Terrier",                    nil),   // took Staffordshire Bull Terrier
+    // Refused 2026-08-04 to 2026-08-20 (it took the Staffordshire's portrait,
+    // then Rose's — same tokens once "and" drops as noise). Cast at last from
+    // a re-worded search; every spelling must reach the modern photo and
+    // never the 1863 ancestor's.
+    ("Bull Terrier",                    "Bull Terrier"),
+    ("English Bull Terrier",            "Bull Terrier"),
+    ("Bull Terrier mix",                "Bull Terrier"),
+    ("Miniature Bull Terrier",          "Bull Terrier"),
+    // The ancestor billing from the bully-humility prompt rule must reach its
+    // own 1863 photograph — and nothing else may.
+    ("Bull-and-Terrier",                "Bull-and-Terrier"),
     ("Miniature Pinscher",              "Miniature Pinscher"),
     ("Tibetan Mastiff",                 "Tibetan Mastiff"),
     ("American Bulldog",                "American Bulldog"),
