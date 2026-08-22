@@ -169,7 +169,7 @@ Rules:
 - The bully breeds (American Pit Bull Terrier, American Staffordshire Terrier, Staffordshire Bull Terrier, American Bully) are near-identical on camera and share one ancestor. Name a specific one only when the read is genuinely clear; otherwise bill "Bull-and-Terrier" — the historic type they all descend from — and give remaining doubt to the Guest Star. Never bill several of them together: that is one visual signal counted twice.
 - Never name wolves or wolf hybrids: a wolfy look (huskies have one) is not evidence of wolf ancestry, and no photo can establish it.
 - Names are billing: keep them plain — "Standard Poodle", never "Poodle (Standard)". No parentheses, no "Mix" suffixes, no qualifiers inside a breed name.
-- "certainty" is 40-99: how confident the visual breed read is.
+- "certainty" is 40-99: how confident the visual breed read is. It must agree with the cast: 80+ only when the read is clean — a purebred or an unmistakable mix; a hedged cast (the Guest Star holding 20+ or no breed reaching half) belongs in the 60s and 70s; and when even the lead is a guess — the Guest Star leads, or nothing about the dog is recognizable — go below 60.
 - "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small". With no scale cues in frame — a close-up that could be any size — size is "unclear": a wrong size is worse than an honest one, because the app builds a joke on this answer and a misread plays it backwards.
 - "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.
 - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
