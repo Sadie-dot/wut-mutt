@@ -101,6 +101,11 @@ struct CurtainView: View {
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()
+        // Five independently pinned layers on one stage: at accessibility
+        // sizes they grow into each other (the AX5 audit had the tagline
+        // over the curtain and the footer links stealing taps aimed at
+        // "Snap a pic"), so the whole screen takes the staged cap.
+        .stagedType()
     }
 }
 

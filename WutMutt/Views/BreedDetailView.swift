@@ -8,6 +8,7 @@ struct BreedDetailView: View {
 
     @State private var railHeight: CGFloat = 0
     private let polaroidFlap: CGFloat = 34
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var breed: Breed {
         model.breeds.indices.contains(breedIndex) ? model.breeds[breedIndex] : model.breeds[0]
@@ -84,6 +85,11 @@ struct BreedDetailView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(EdgeInsets(top: 64, leading: 26, bottom: 32, trailing: 26))
+        // The hero is the pinned header over a scrolling dossier: whatever
+        // it grows to, the dossier loses, and at AX5 the squeeze truncated
+        // the tagline mid-sentence (2026-08-22 audit). Pinned chrome takes
+        // the staged cap; the dossier below keeps scaling and re-stacks.
+        .stagedType()
         .background(
             ZStack(alignment: .topTrailing) {
                 LinearGradient.wmHero
@@ -104,7 +110,23 @@ struct BreedDetailView: View {
 
     @ViewBuilder
     private var traitsSection: some View {
-        if let headshot {
+        if let headshot, typeSize.isAccessibilitySize {
+            // At accessibility sizes the side-by-side rail starves — a third
+            // of the screen can't hold "ENERGY: Very high" and the audit saw
+            // "EN…" over "Boun / cy". Polaroid goes full-width on top, and
+            // the traits take the no-photo path's full-label cards, one per
+            // row so no column can pinch them.
+            let contentW = WMScreen.width - 44
+            VStack(spacing: 10) {
+                polaroid(headshot, paperWidth: contentW,
+                         paperHeight: 280 + 7 + polaroidFlap)
+                    .padding(.bottom, 8)
+                traitCard("SIZE", breed.size, compact: false)
+                traitCard("ENERGY", breed.energy, compact: false)
+                traitCard("DROOL LEVEL", breed.drool, compact: false)
+                traitCard("FLOOF FACTOR", breed.floof, compact: false)
+            }
+        } else if let headshot {
             // Polaroid headshot (2/3) + stacked trait rail (1/3)
             let contentW = WMScreen.width - 44
             let railW = (contentW - 10) / 3

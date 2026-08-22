@@ -33,6 +33,12 @@ private struct CreditsScaffold<Content: View>: View {
                         .shadow(color: Color.wmIce.opacity(0.5), radius: 9)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
+                        // Keep the centered title out of the close button's
+                        // corner: at AX sizes it ran beneath the X
+                        // (2026-08-22 audit), which also makes the X harder
+                        // to hit. The fit-to-width shrink now happens inside
+                        // this reservation.
+                        .padding(.horizontal, 44)
                         .accessibilityAddTraits(.isHeader)
 
                     HStack {
@@ -52,6 +58,9 @@ private struct CreditsScaffold<Content: View>: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 64)
                 .padding(.bottom, 30)
+                // Pinned header chrome over a scrolling body: the body keeps
+                // scaling into the AX range, the header takes the staged cap.
+                .stagedType()
 
                 ScrollView {
                     VStack(spacing: 26) {

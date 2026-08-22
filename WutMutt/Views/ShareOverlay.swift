@@ -87,6 +87,11 @@ struct ShareOverlay: View {
                             .font(.system(size: 20, weight: .bold))
                     } action: { withCard { shareItem = ShareItem(image: $0) } }
                 }
+                // Disc-and-label controls in a fixed row: at AX5 "MORE"
+                // wrapped to "MOR / E" and drifted off its icon (2026-08-22
+                // audit). Control chrome, staged cap; the card above is a
+                // fixed-size export artifact already.
+                .stagedType()
 
                 Button {
                     model.shareOpen = false

@@ -95,12 +95,18 @@ struct ResultsView: View {
                 Text(model.shareBadge)
                     .font(.playfair(15, bold: true, italic: true, relativeTo: .subheadline))
                     .foregroundColor(.wmCream)
+                    .lineLimit(1)
                     .padding(.horizontal, 36)
                     .padding(.vertical, 7)
                     .background(RibbonBadge().fill(Color.wmAccent))
                     .shadow(color: Color(hex: "#6E1E33").opacity(0.4), radius: 7, y: 4)
                     .rotationEffect(.degrees(-6))
                     .offset(x: 17, y: 1)
+                    // The pennant's fold geometry assumes one modest line —
+                    // at AX5 the notches ballooned into a bowtie covering the
+                    // whole portrait (2026-08-22 audit). Decorative sticker,
+                    // staged cap.
+                    .stagedType()
             }
         }
         .accessibilityElement(children: .ignore)
@@ -140,6 +146,14 @@ struct ResultsView: View {
                 .font(.playfair(20, bold: true, italic: true, relativeTo: .title3))
                 .foregroundColor(.wmAccent)
                 .multilineTextAlignment(.center)
+                // One line by design, and the line must win over the type
+                // size: SwiftUI wraps before it scales, so without the
+                // lineLimit the AX sizes broke the adjective mid-word
+                // ("Devastatingl / y sure") and the scale factor never
+                // engaged. The floor covers "Life-altering epiphany", the
+                // widest label in the set, at AX5.
+                .lineLimit(1)
+                .minimumScaleFactor(0.45)
         }
         .frame(maxWidth: .infinity)
         .padding(EdgeInsets(top: 16, leading: 18, bottom: 18, trailing: 18))
@@ -229,24 +243,31 @@ struct BreedRow: View {
     let breed: Breed
     let isLead: Bool
     let open: () -> Void
+    // Content surface: rows keep scaling into the accessibility range, but
+    // the side-by-side name/percent line runs out of room there — the name
+    // column gets too narrow for single words and broke them mid-word
+    // ("Plott Houn / d", 2026-08-22 audit). At AX sizes the name takes the
+    // full width and the percent moves to its own line beneath.
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         Button(action: open) {
             VStack(spacing: 8) {
-                HStack(alignment: .firstTextBaseline, spacing: 16) {
-                    Text(breed.name)
-                        .font(.playfair(isLead ? 26 : 20, bold: true,
-                                        relativeTo: isLead ? .title2 : .body))
-                        .foregroundColor(.wmHeading)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("\(breed.pct)%")
-                        .font(.playfair(isLead ? 24 : 18, bold: true,
-                                        relativeTo: isLead ? .title3 : .body))
-                        .foregroundColor(.wmLabel)
-                    Text("›")
-                        .font(.nunito(16, weight: .extraBold))
-                        .foregroundColor(.wmChevron)
+                if typeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 2) {
+                        name.frame(maxWidth: .infinity, alignment: .leading)
+                        HStack(spacing: 16) {
+                            pct
+                            Spacer()
+                            chevron
+                        }
+                    }
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: 16) {
+                        name.frame(maxWidth: .infinity, alignment: .leading)
+                        pct
+                        chevron
+                    }
                 }
                 // Outlined like the covers' headline type, and for the same
                 // reason: three of the four data colours are pale enough to
@@ -276,6 +297,27 @@ struct BreedRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(breed.name), \(breed.pct) percent")
         .accessibilityHint("Opens the character dossier")
+    }
+
+    private var name: some View {
+        Text(breed.name)
+            .font(.playfair(isLead ? 26 : 20, bold: true,
+                            relativeTo: isLead ? .title2 : .body))
+            .foregroundColor(.wmHeading)
+            .multilineTextAlignment(.leading)
+    }
+
+    private var pct: some View {
+        Text("\(breed.pct)%")
+            .font(.playfair(isLead ? 24 : 18, bold: true,
+                            relativeTo: isLead ? .title3 : .body))
+            .foregroundColor(.wmLabel)
+    }
+
+    private var chevron: some View {
+        Text("›")
+            .font(.nunito(16, weight: .extraBold))
+            .foregroundColor(.wmChevron)
     }
 }
 

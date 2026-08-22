@@ -346,6 +346,21 @@ extension View {
         modifier(ShadowPool(opacity: opacity, midOpacity: midOpacity,
                             radiusFraction: radiusFraction))
     }
+
+    /// The app's accessibility-type policy, staged half.
+    ///
+    /// Screens and chrome with fixed theatrical geometry — the curtain's
+    /// layered stage, the off-air cards, the camera's control discs, the
+    /// hero ribbon — cannot hold accessibility-size text: at AX5 the 2026-08-22
+    /// audit had sign-offs rendering over buttons and the ribbon's folds
+    /// swallowing the portrait. These surfaces scale through the full
+    /// standard range and cap at xxxLarge, the same trade iOS makes for tab
+    /// bars. Reading surfaces (results rows, dossier, credits bodies) are
+    /// NOT capped — they keep scaling into the AX range and adapt their
+    /// layout instead. VoiceOver is unaffected either way.
+    func stagedType() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+    }
 }
 
 /// The raspberry hero gradient (`linear-gradient(160deg, #D91F5C, #A3134A)`),
@@ -439,16 +454,35 @@ struct CreditsLinks: View {
     /// (one inherited rgba, no dimming), so that is the default.
     var separatorOpacity: Double = 0.92
     @EnvironmentObject private var model: AppModel
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        HStack(spacing: 6) {
-            link("AI Disclosure") { model.aiDisclosureOpen = true }
-            dot
-            link("Image Credits") { model.imageCreditsOpen = true }
-            dot
-            Text("© 2026")
-                .font(.nunito(12, weight: .bold))
-                .foregroundColor(tint.opacity(0.9))
+        // One footer line at standard sizes; at accessibility sizes the row
+        // runs out of columns and broke "AI Disclo / sure" mid-word
+        // (2026-08-22 audit), so the links stack instead — dots dropped,
+        // they only separate things that share a line.
+        if typeSize.isAccessibilitySize {
+            VStack(spacing: 2) {
+                // flatHeight: the -15pt tap-target pull-back is for a footer
+                // that must keep its one-line design height. Stacked, it
+                // would overlap the two links' 44pt targets — here the
+                // targets get their real height instead.
+                link("AI Disclosure", flatHeight: false) { model.aiDisclosureOpen = true }
+                link("Image Credits", flatHeight: false) { model.imageCreditsOpen = true }
+                Text("© 2026")
+                    .font(.nunito(12, weight: .bold))
+                    .foregroundColor(tint.opacity(0.9))
+            }
+        } else {
+            HStack(spacing: 6) {
+                link("AI Disclosure") { model.aiDisclosureOpen = true }
+                dot
+                link("Image Credits") { model.imageCreditsOpen = true }
+                dot
+                Text("© 2026")
+                    .font(.nunito(12, weight: .bold))
+                    .foregroundColor(tint.opacity(0.9))
+            }
         }
     }
 
@@ -464,9 +498,10 @@ struct CreditsLinks: View {
             .accessibilityHidden(true)
     }
 
-    /// 44pt tap target, pulled back out of the layout so the footer keeps its
-    /// design height.
-    private func link(_ title: String, action: @escaping () -> Void) -> some View {
+    /// 44pt tap target, pulled back out of the layout (`flatHeight`) so the
+    /// one-line footer keeps its design height.
+    private func link(_ title: String, flatHeight: Bool = true,
+                      action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.nunito(12, weight: .bold))
@@ -475,7 +510,7 @@ struct CreditsLinks: View {
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())
         }
-        .padding(.vertical, -15)
+        .padding(.vertical, flatHeight ? -15 : 0)
     }
 }
 

@@ -127,6 +127,11 @@ struct OffAirView: View {
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()
+        // A fixed-height stage with a bottom-pinned sign-off: at accessibility
+        // sizes the stack outgrows the screen, the Texts compress into "…" and
+        // the sign-off lands on the buttons (AX5 audit). Staged cap, per the
+        // policy on stagedType().
+        .stagedType()
     }
 }
 

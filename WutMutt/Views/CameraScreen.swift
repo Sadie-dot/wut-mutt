@@ -82,6 +82,12 @@ struct CameraScreen: View {
                 Text(model.dogDetected ? "Every pup has a story to tell…" : "Cue dramatic entrance")
                     .font(.playfair(18, italic: true, relativeTo: .body))
                     .foregroundColor(.wmCream)
+                    // This shadow is load-bearing for contrast, not decor. The
+                    // pool behind it feathers to nothing, so over a blown-out
+                    // white feed the outermost glyphs sit on as little as
+                    // ~0.5-alpha backing — cream on that alone is ~3.4:1,
+                    // under the 4.5:1 floor. The shadow's halo carries the
+                    // worst case to ~6.5:1 (measured 2026-08-22).
                     .shadow(color: Color.wmNearBlack.opacity(0.95), radius: 5, y: 2)
                 // "Cue dramatic entrance" directs the dog, not the viewer — on
                 // its own it never says why REVEAL is dimmed. A screenplay
@@ -143,6 +149,11 @@ struct CameraScreen: View {
             .padding(.horizontal, 36)
             .frame(maxHeight: .infinity, alignment: .bottom)
             .padding(.bottom, 42)
+            // The REVEAL disc is fixed geometry: at AX5 its label wrapped to
+            // "REV / EAL" and spilled outside the circle while ALBUM and FLIP
+            // crowded it (2026-08-22 audit). Control chrome, staged cap —
+            // the caption band above scales on, its pool grows with it.
+            .stagedType()
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()

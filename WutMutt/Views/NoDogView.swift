@@ -93,5 +93,8 @@ struct NoDogView: View {
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()
+        // Same fixed stage as OffAirView, same AX5 failure (BOOP over the
+        // pills, truncated copy) — staged cap, per the policy on stagedType().
+        .stagedType()
     }
 }
