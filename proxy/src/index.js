@@ -170,7 +170,7 @@ Rules:
 - Never name wolves or wolf hybrids: a wolfy look (huskies have one) is not evidence of wolf ancestry, and no photo can establish it.
 - Names are billing: keep them plain — "Standard Poodle", never "Poodle (Standard)". No parentheses, no "Mix" suffixes, no qualifiers inside a breed name.
 - "certainty" is 40-99: how confident the visual breed read is.
-- "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small".
+- "dogSize" describes THIS animal, not its breeds' typical build: "large" or "small" only when it plainly reads that way, otherwise "unclear". A large-breed puppy is "small". With no scale cues in frame — a close-up that could be any size — size is "unclear": a wrong size is worse than an honest one, because the app builds a joke on this answer and a misread plays it backwards.
 - "dogCoat" is "flat" or "fluffy" for the coat actually visible in the photo.
 - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
 - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
