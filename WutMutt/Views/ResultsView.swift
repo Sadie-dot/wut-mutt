@@ -114,22 +114,35 @@ struct ResultsView: View {
     }
 
     private var twistQuote: some View {
-        // A cast of one gets its own twist — "1 breeds all along" is the
-        // grammar the accuracy-first prompt would otherwise produce. The
-        // word is "fancy", not "purebred": the user keeps registry language
-        // out of the storyline — the show's voice does not do kennel clubs.
-        (model.breeds.count == 1
-         ? (Text("“In a twist no one saw coming…\nfur baby was ")
-            + Text("fancy").bold().foregroundColor(.wmAccent)
-            + Text(" all along.”"))
-         : (Text("“In a twist no one saw coming…\nfur baby was ")
-            + Text("\(model.breedCountWord) breeds").bold().foregroundColor(.wmAccent)
-            + Text(" all along.”")))
+        twistText
             .font(.playfair(16, italic: true, relativeTo: .body))
             .foregroundColor(.wmBodyText2)
             .multilineTextAlignment(.center)
             .lineSpacing(5)
             .padding(.horizontal, 10)
+    }
+
+    // A cast of one gets its own twist — "1 breeds all along" is the grammar
+    // the accuracy-first prompt would otherwise produce. The word is "fancy",
+    // not "purebred": the user keeps registry language out of the storyline —
+    // the show's voice does not do kennel clubs.
+    //
+    // And a cast of one GUEST STAR gets a third: "fancy all along" claims a
+    // pedigree the reveal explicitly refused to name. Surfaced live by a
+    // dingo (2026-08-23) — Claude billed the whole identity to the wildcard
+    // rather than force a wrong breed — and the line is the user's:
+    // "fabulously cosmic", the Guest Star's own register.
+    private var twistText: Text {
+        let opener = Text("“In a twist no one saw coming…\nfur baby was ")
+        let payoff: Text
+        if model.breeds.count == 1 {
+            payoff = model.breeds[0].name.caseInsensitiveCompare("Guest Star") == .orderedSame
+                ? Text("fabulously cosmic").bold().foregroundColor(.wmAccent)
+                : Text("fancy").bold().foregroundColor(.wmAccent)
+        } else {
+            payoff = Text("\(model.breedCountWord) breeds").bold().foregroundColor(.wmAccent)
+        }
+        return opener + payoff + Text(" all along.”")
     }
 
     private var certaintyCard: some View {

@@ -583,7 +583,10 @@ final class AppModel: ObservableObject {
             return .dog(breeds: Self.forcedBreeds, certainty: Self.forcedCertainty,
                         look: Self.forcedLook)
         case "purebred":                    // the accuracy-first single-breed verdict
-            var lead = Breed.fallbackEpisode[0]
+            // Honors WM_FORCE_BREED like the "dog" path, so the solo-cast
+            // twists are forceable — purebred + "Guest Star" is the
+            // all-mystery verdict a live dingo produced.
+            var lead = Self.forcedBreeds[0]
             lead.pct = 100
             return .dog(breeds: [lead], certainty: 96, look: Self.forcedLook)
         case "nolook":                      // a proxy that predates dogSize/dogCoat
