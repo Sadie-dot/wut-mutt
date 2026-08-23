@@ -530,13 +530,18 @@ final class AppModel: ObservableObject {
             let result = await pending
             guard !Task.isCancelled, self.screen == .analyzing else { return }
 
-            // Now the dog is known, so the question can be about this dog.
+            // The closing-question beat plays only when there's a dog to ask
+            // about: its payoff is the results kicker answering it, and the
+            // twist and off-air screens answer different questions entirely.
+            // A non-dog used to get the default "Am I a chihuahua?" asked
+            // about a photo with no dog in it — a setup with no punchline,
+            // holding the bad news an extra two beats.
             if case .dog(let breeds, _, let look) = result {
                 self.closing = self.closingQuestion(for: look, breeds: breeds)
+                self.teaserIdx = self.setup.count
+                try? await Task.sleep(nanoseconds: 1_600_000_000)
+                guard !Task.isCancelled, self.screen == .analyzing else { return }
             }
-            self.teaserIdx = self.setup.count
-            try? await Task.sleep(nanoseconds: 1_600_000_000)
-            guard !Task.isCancelled, self.screen == .analyzing else { return }
 
             switch result {
             case .notADog:

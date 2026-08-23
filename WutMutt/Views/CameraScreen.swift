@@ -6,6 +6,10 @@ import SwiftUI
 struct CameraScreen: View {
     @EnvironmentObject private var model: AppModel
     @StateObject private var camera = CameraController()
+    /// The zoom the current pinch started from. Re-read from the controller
+    /// at each gesture's first change, so pinches compound and a camera flip
+    /// (which resets the device to 1x) can't make the next pinch jump.
+    @State private var pinchBase: CGFloat?
 
     var body: some View {
         let W = WMScreen.width
@@ -157,6 +161,19 @@ struct CameraScreen: View {
         }
         .frame(width: W, height: H)
         .ignoresSafeArea()
+        // Pinch-to-zoom on the feed, 1x-5x (clamped in the controller).
+        // simultaneousGesture so the control row's taps keep working — the
+        // overlay gradients cover the whole screen, so an exclusive gesture
+        // here would swallow them.
+        .simultaneousGesture(
+            MagnificationGesture()
+                .onChanged { scale in
+                    let base = pinchBase ?? camera.zoomFactor
+                    pinchBase = base
+                    camera.setZoom(base * scale)
+                }
+                .onEnded { _ in pinchBase = nil }
+        )
         .onAppear {
             #if !targetEnvironment(simulator)
             camera.start()

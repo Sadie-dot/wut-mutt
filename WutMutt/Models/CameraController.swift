@@ -16,6 +16,27 @@ final class CameraController: NSObject, ObservableObject {
     private var position: AVCaptureDevice.Position = .back
     private var captureCompletion: ((UIImage?) -> Void)?
     private var lastDetection = Date.distantPast
+    /// The bound input device, kept so pinch-to-zoom has something to zoom.
+    private var activeDevice: AVCaptureDevice?
+
+    /// Current zoom, 1x up. The screen's pinch gesture reads this back as its
+    /// baseline so successive pinches compound instead of restarting at 1.
+    @Published private(set) var zoomFactor: CGFloat = 1
+
+    /// Pinch-to-zoom, clamped to 1x-5x (or the format's max if lower). 5x is
+    /// generous for a phone-to-dog distance while still leaving the too-tight
+    /// shots that fight the whole-body Vision gate out of easy reach. The
+    /// zoom applies to the feed Vision reads AND to the captured photo, so
+    /// what passes the gate is what gets revealed. No-ops in the simulator,
+    /// where there is no device.
+    func setZoom(_ factor: CGFloat) {
+        guard let device = activeDevice else { return }
+        let clamped = max(1, min(factor, min(5, device.activeFormat.videoMaxZoomFactor)))
+        guard (try? device.lockForConfiguration()) != nil else { return }
+        device.videoZoomFactor = clamped
+        device.unlockForConfiguration()
+        zoomFactor = clamped
+    }
 
     func start() {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -67,6 +88,7 @@ final class CameraController: NSObject, ObservableObject {
             session.addOutput(videoOutput)
         }
         session.commitConfiguration()
+        activeDevice = device
         configured = true
     }
 
@@ -78,8 +100,12 @@ final class CameraController: NSObject, ObservableObject {
            let input = try? AVCaptureDeviceInput(device: device),
            session.canAddInput(input) {
             session.addInput(input)
+            activeDevice = device
         }
         session.commitConfiguration()
+        // A fresh device starts at 1x; published so the pinch baseline
+        // follows the flip instead of jumping on the next gesture.
+        DispatchQueue.main.async { self.zoomFactor = 1 }
     }
 }
 
