@@ -16,6 +16,10 @@ final class CameraController: NSObject, ObservableObject {
     private var position: AVCaptureDevice.Position = .back
     private var captureCompletion: ((UIImage?) -> Void)?
     private var lastDetection = Date.distantPast
+    /// When a dog last passed the gate; REVEAL stays lit within `dogGrace` of
+    /// this even through missed frames.
+    private var lastDogSeen = Date.distantPast
+    private let dogGrace: TimeInterval = 2.0
     /// The bound input device, kept so pinch-to-zoom has something to zoom.
     private var activeDevice: AVCaptureDevice?
 
@@ -142,12 +146,18 @@ extension CameraController: AVCaptureVideoDataOutputSampleBufferDelegate {
         let found = (request.results ?? []).contains {
             DogSubject.isDog($0) && DogSubject.isCentered($0)
         } || DogSubject.classifiedDog(classify.results ?? [])
-        if found {
-            DispatchQueue.main.async { [weak self] in
-                guard let self, !self.dogInFrame else { return }
-                // Sticky once seen — the caption flips and REVEAL stays lit.
-                self.dogInFrame = true
-            }
+        // Hysteresis, not stickiness. The gate used to latch on the first
+        // sighting and never release — pan from your dog to an empty
+        // sidewalk and REVEAL stayed lit, which a live-dog test proved by
+        // submitting the sidewalk. But a gate that tracks every frame
+        // flickers, because Vision blanks on a head turn. So: light
+        // instantly on a sighting, dim only after a real absence — four
+        // consecutive misses at the 0.5s cadence.
+        if found { lastDogSeen = Date() }
+        let lit = found || Date().timeIntervalSince(lastDogSeen) <= dogGrace
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.dogInFrame != lit else { return }
+            self.dogInFrame = lit
         }
     }
 }

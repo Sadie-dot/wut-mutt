@@ -181,7 +181,11 @@ struct CameraScreen: View {
         }
         .onDisappear { camera.stop() }
         .onReceive(camera.$dogInFrame) { seen in
-            if seen { model.dogDetected = true }
+            // Mirror both directions — the controller's hysteresis decides
+            // when the gate dims, and the caption/frame/REVEAL follow. In
+            // the simulator the controller never emits (no frames), so the
+            // stand-in detection in goHome() keeps working untouched.
+            model.dogDetected = seen
         }
     }
 
