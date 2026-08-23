@@ -135,7 +135,13 @@ function logBreeds(env, rawResponse) {
     const result = JSON.parse(text);
     if (!result.isDog || !Array.isArray(result.breeds)) return;
     result.breeds.forEach((breed, position) => {
-      const name = String(breed?.name ?? "").trim().toLowerCase().slice(0, 96);
+      // Mirrors the app's plainName normalization: without it, "Poodle
+      // (Standard)" and "Standard Poodle" count as different breeds in the
+      // frequency data that drives photo sourcing.
+      const name = String(breed?.name ?? "")
+        .replace(/\s*\([^)]*\)/g, " ")
+        .replace(/\s+/g, " ")
+        .trim().toLowerCase().slice(0, 96);
       if (!name) return;
       env.BREEDS_AE.writeDataPoint({
         indexes: [name],

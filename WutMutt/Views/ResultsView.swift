@@ -132,13 +132,20 @@ struct ResultsView: View {
     // dingo (2026-08-23) — Claude billed the whole identity to the wildcard
     // rather than force a wrong breed — and the line is the user's:
     // "fabulously cosmic", the Guest Star's own register.
+    /// A cast of exactly one Guest Star — the reveal that names no breed at
+    /// all. Drives the cosmic twist line and hides the "each breed" caption.
+    private var allMysteryCast: Bool {
+        model.breeds.count == 1 &&
+        model.breeds[0].name.caseInsensitiveCompare("Guest Star") == .orderedSame
+    }
+
     private var twistText: Text {
         let opener = Text("“In a twist no one saw coming…\nfur baby was ")
         let payoff: Text
-        if model.breeds.count == 1 {
-            payoff = model.breeds[0].name.caseInsensitiveCompare("Guest Star") == .orderedSame
-                ? Text("fabulously cosmic").bold().foregroundColor(.wmAccent)
-                : Text("fancy").bold().foregroundColor(.wmAccent)
+        if allMysteryCast {
+            payoff = Text("fabulously cosmic").bold().foregroundColor(.wmAccent)
+        } else if model.breeds.count == 1 {
+            payoff = Text("fancy").bold().foregroundColor(.wmAccent)
         } else {
             payoff = Text("\(model.breedCountWord) breeds").bold().foregroundColor(.wmAccent)
         }
@@ -199,13 +206,19 @@ struct ResultsView: View {
             // for mystery parentage, so the gag itself carries the
             // ancestry-unknown subtext while the footer's "Not a DNA test"
             // keeps the literal job.
-            Text("How much of each breed our swapped baby manifests.")
-                .font(.playfair(12, italic: true, relativeTo: .caption))
-                .foregroundColor(.wmLabel)
-                .frame(maxWidth: .infinity)
-                .multilineTextAlignment(.center)
-                .padding(.top, 10)
-                .padding(.bottom, 8)
+            //
+            // Except under the all-mystery cast: the one row is explicitly
+            // not a breed, so "each breed" would contradict the cosmic twist
+            // line that just played. The card ends on the Guest Star's bar.
+            if !allMysteryCast {
+                Text("How much of each breed our swapped baby manifests.")
+                    .font(.playfair(12, italic: true, relativeTo: .caption))
+                    .foregroundColor(.wmLabel)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 10)
+                    .padding(.bottom, 8)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 6)

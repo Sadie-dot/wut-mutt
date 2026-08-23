@@ -185,10 +185,34 @@ struct BreedIdentifier {
             throw BreedIdentifierError.api(type: nil, message: "Couldn't read the studio's answer.")
         }
         guard wire.isDog, !wire.breeds.isEmpty else { return .notADog }
-        let breeds = wire.breeds.prefix(4).enumerated().map { i, b in
-            Breed(name: Self.plainName(b.name), pct: b.pct, tagline: b.tagline,
-                  size: b.size, energy: b.energy, drool: b.drool, floof: b.floof,
-                  clues: b.clues, fact: b.fact, colorIndex: i)
+        // Claude has always returned a clean cast — distinct names, percentages
+        // summing to 100 — but the schema enforces neither, and both failures
+        // would render as quiet nonsense: twin rows for one breed, bars that
+        // undercut their own caption's arithmetic. Folded and rescaled once
+        // here, so every surface downstream can trust the invariant.
+        var seen: [String: Int] = [:]           // lowercased plain name → index
+        var merged: [(breed: WireBreed, pct: Int)] = []
+        for b in wire.breeds {
+            let key = Self.plainName(b.name).lowercased()
+            let pct = max(0, b.pct)
+            if let i = seen[key] { merged[i].pct += pct }
+            else { seen[key] = merged.count; merged.append((b, pct)) }
+        }
+        merged = Array(merged.prefix(4))
+        var pcts = merged.map(\.pct)
+        let sum = pcts.reduce(0, +)
+        if sum == 0 {
+            pcts[0] = 100                       // non-empty per the guard above
+        } else if sum != 100 {
+            pcts = pcts.map { $0 * 100 / sum }  // floor-scaled…
+            pcts[0] += 100 - pcts.reduce(0, +)  // …drift goes to the lead
+        }
+        let breeds = merged.enumerated().map { i, m in
+            Breed(name: Self.plainName(m.breed.name), pct: pcts[i],
+                  tagline: m.breed.tagline, size: m.breed.size,
+                  energy: m.breed.energy, drool: m.breed.drool,
+                  floof: m.breed.floof, clues: m.breed.clues,
+                  fact: m.breed.fact, colorIndex: i)
         }
         // Size is what decides the question, so no size means no look at all —
         // a missing coat alone falls back to flat rather than losing the read.
