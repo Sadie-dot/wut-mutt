@@ -261,9 +261,24 @@ final class AppModel: ObservableObject {
     ///
     /// Order matters. A poodle also satisfies the coat branch, and asking a
     /// poodle whether it's a poodle is the one reading with no joke in it.
+    /// The bully cluster as Claude bills it — the humility rule's living
+    /// names plus the ancestor. The humility rule never stacks these, so a
+    /// bully verdict is always the lead.
+    private static let bullyLeads: Set<String> = [
+        "pit bull", "american pit bull terrier", "american staffordshire terrier",
+        "staffordshire bull terrier", "american bully", "bull-and-terrier",
+    ]
+
     func closingQuestion(for look: DogLook?, breeds: [Breed]) -> ClosingQuestion {
         if breeds.contains(where: { $0.name.localizedCaseInsensitiveContains("poodle") }) {
             return Self.humanQuestion
+        }
+        // A bully lead always gets the poodle question (the user's rule,
+        // 2026-08-27): the coat-inversion joke at its maximum setting — the
+        // catalog's flattest-coated tough guys asked the curliest question
+        // there is, and the kicker lands "NOT A POODLE" every time.
+        if let lead = breeds.first, Self.bullyLeads.contains(lead.name.lowercased()) {
+            return Self.poodleQuestion
         }
         // No look means a studio that predates the fields — ask what the app
         // always asked rather than inventing a reading of the dog.

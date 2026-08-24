@@ -181,6 +181,7 @@ Rules:
 - "tagline" is a melodramatic soap-opera character description, e.g. "The brooding lead with a hidden past".
 - "size"/"energy"/"drool"/"floof" are 1-3 word ratings.
 - "clues" are 3 short visual details seen in THIS photo.
+- Clues and taglines describe what is plainly visible, never a diagnosis: don't call a dog wet, muddy, sick, or old from coat texture or posture alone — silky coats read "damp" when they aren't, and a wrong condition on a card is worse than a plain one.
 - "fact" is a real, accurate, fun breed fact in 1-2 sentences. Never invent facts.
 - If the mix is uncertain, the last breed may be a wildcard named "Guest Star".
 - The Guest Star's "size"/"energy"/"drool"/"floof" are playful mysteries in a fabulous register — like "Perfect", "Dreamy", "Effortless", "Inspired" — never real measurements. It is a fabulous mystery in the family tree — an unnamed ancestor, not a sibling and not a breed.`;

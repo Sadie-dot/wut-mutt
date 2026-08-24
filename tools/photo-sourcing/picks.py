@@ -52,7 +52,10 @@ PICKS = {
     "Border Collie": 2,
     "Chihuahua": 3,                     # [1] has a sunbather on the beach behind
     "Basset Hound": 4,
-    "Pembroke Welsh Corgi": 0,              # [1] and [3] are a dog in a wheelchair cart
+    "Pembroke Welsh Corgi": (0, 1.0),       # [1] and [3] are a dog in a wheelchair cart.
+                                            # Right-facing profile with the face at the
+                                            # right edge — centred, the crop cut the head
+                                            # off (caught on a live dossier 2026-08-27).
     "Vizsla": 5,
     "Pug": 1,
     "Australian Cattle Dog": 4,
