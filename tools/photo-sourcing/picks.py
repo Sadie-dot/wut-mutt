@@ -63,7 +63,9 @@ PICKS = {
     "Weimaraner": 1,
     "Collie": 4,
     "Newfoundland": 1,
-    "Rhodesian Ridgeback": 2,
+    "Rhodesian Ridgeback": (2, 0.0),    # left-facing profile, nose tip touching
+                                        # the left edge when centred (2026-08-28
+                                        # edge audit)
     "Great Pyrenees": 6,
     "Mastiff": 1,
     "Akita": 2,
@@ -73,11 +75,22 @@ PICKS = {
     "Shiba Inu": 3,                         # the breed category is one photographer's dog-park series
     "Pit Bull": 2,
     "American Staffordshire Terrier": 0,
-    "Staffordshire Bull Terrier": 1,
+    "Staffordshire Bull Terrier": 6,    # recast 2026-08-28, the user's pick
+                                        # after a live dossier: [1]'s red dog
+                                        # clipped its nose (fifth profile-crop
+                                        # catch) and reads leggier than the
+                                        # breed; [6] is the PD show-stance
+                                        # classic, hand-appended from a
+                                        # re-worded search.
     "Goldendoodle": 2,                      # [0] is an annotated breed diagram with text labels
     "Labradoodle": 5,
     "Plott Hound": (0, 1.0),            # sitting at the right edge; centred, it loses its nose
-    "Catahoula Leopard Dog": 0,         # [1] shows none of the leopard coat.
+    "Catahoula Leopard Dog": (0, 0.2),  # [1] shows none of the leopard coat.
+                                        # 0.2: centred, the muzzle exits the
+                                        # left edge; hard left promotes the
+                                        # ringside person from speck to blur.
+                                        # This keeps the nose and demotes the
+                                        # person (2026-08-28 audit).
                                         # Kept through the 2026-08-15 humans
                                         # audit, the user's call: the far
                                         # tent-line specks are illegible at
@@ -88,6 +101,10 @@ PICKS = {
                                         # but lacks the merle that makes the
                                         # breed recognisable.
     "Chinese Crested": 5,
+    "Lhasa Apso": 1,                    # full parted coat, face-on; [4] is the
+                                        # show topknot but [1] reads more like
+                                        # the dogs that get billed; user's pick
+
     # Commons holds exactly two permissive Bernedoodles. [1] has a person's
     # leg and hand in the frame and is 640px wide — under the crop, so it
     # would upscale. [0] is head-forward at 3024x4032, native 3:4.

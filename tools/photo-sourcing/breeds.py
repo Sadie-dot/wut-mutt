@@ -75,6 +75,10 @@ BREEDS = [
     # --- Seen in this app's own reveals ---
     ("Plott Hound",               "Plott Hound dog"),
     ("Catahoula Leopard Dog",     "Louisiana Catahoula Leopard Dog"),
+    # Billed on a real reveal 2026-08-28 (the shaggy small-fluffy cluster's
+    # third act: the same kind of dog has now read Havanese, Cavalier-led,
+    # and Lhasa-adjacent across reveals).
+    ("Lhasa Apso",                "Lhasa Apso dog"),
     # Bare "Mountain Cur" returns Madeira's mountains — Curral das Freiras.
     # Qualified, Commons has exactly two Mountain Curs and both are CC BY-SA,
     # so this breed cannot be served under the permissive-only rule and falls

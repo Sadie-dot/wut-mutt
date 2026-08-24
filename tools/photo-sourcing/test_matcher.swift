@@ -12,6 +12,7 @@ let cases: [(String, String?)] = [
     ("German Shepherd",                 "German Shepherd"),
     ("Chinese Crested (Powderpuff)",    "Chinese Crested"),
     ("Chinese Crested",                 "Chinese Crested"),
+    ("Lhasa Apso",                      "Lhasa Apso"),
     ("Plott Hound",                     "Plott Hound"),
     ("Catahoula Leopard Dog",           "Catahoula Leopard Dog"),
     ("Louisiana Catahoula Leopard Dog", "Catahoula Leopard Dog"),
