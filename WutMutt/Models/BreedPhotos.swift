@@ -161,6 +161,11 @@ enum BreedPhotos {
         // the trait grid.)
         "bull terrier": "Bull Terrier",
         "bull english terrier": "Bull Terrier",
+        // A pinned refusal (the Bull Terrier trick): the Italian Greyhound is
+        // a distinct toy breed, but "greyhound" is rare enough in the catalog
+        // to carry a match alone — without this pin it claims the Greyhound's
+        // portrait. No catalog row, so the lookup lands on the trait grid.
+        "greyhound italian": "Italian Greyhound",
     ]
 
     /// Nicknames and rival spellings, mapped onto the words the catalog uses.
@@ -189,6 +194,7 @@ enum BreedPhotos {
         "wiener": ["dachshund"],
         "weiner": ["dachshund"],
         "sausage": ["dachshund"],
+        "westie": ["west", "highland"],
     ]
 
     /// Query side only — the catalog's own names are already canonical, and

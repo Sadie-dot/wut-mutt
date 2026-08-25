@@ -104,6 +104,40 @@ PICKS = {
     "Lhasa Apso": 1,                    # full parted coat, face-on; [4] is the
                                         # show topknot but [1] reads more like
                                         # the dogs that get billed; user's pick
+    "Alaskan Malamute": 4,              # face-forward in snow, full broad head;
+                                        # [3] clips ear tips, [5] is Westminster
+                                        # clutter; user's pick 2026-08-30
+
+    # The 2026-08-30 gap batch, user's picks ("take all recommendations"):
+    # Tier 1 breeds the app's own copy names, Tier 2 breeds Claude bills on
+    # sight. Irish Wolfhound, Maltipoo, and Shar-Pei are pending re-worded
+    # searches — the first sweep found only show-hall people, one couch
+    # blob, and the same smooth blue dog four times.
+    "Whippet": 0,                       # standing gray, classic outline
+    "Cockapoo": 1,                      # black, face-on in grass; [3] is Leon
+                                        # the documented F1B, the alternate
+    "Coton de Tulear": 0,               # white fluff face-on; [3] is grooming-
+                                        # table clutter
+    "American Bully": 1,                # the blue standing in grass — the
+                                        # breed's whole silhouette
+    "Dalmatian": 0,                     # spotted head close-up; [1] is a
+                                        # painting, [2] carries a person
+    "Belgian Malinois": 0,              # studio head portrait, textbook mask
+    "Samoyed": 1,                       # the big smiling face; [0] has a
+                                        # groomer, [3] two dogs
+    "Bichon Frise": 1,                  # studio show-cut portrait; [2] is a
+                                        # corrupted frame
+    "Chow Chow": 6,                     # "Bokeh the Chow": the blue-black
+                                        # tongue fully out on a black ground —
+                                        # the breed's one-of-a-kind marker,
+                                        # found by the user's purple-tongue
+                                        # re-search; hand-appended. [2] is a
+                                        # market stall, not a dog.
+    "West Highland White Terrier": 2,   # sitting in grass, face to camera
+    "Irish Setter": 1,                  # mahogany face-on portrait; [0] is
+                                        # archival Nixon-with-setter
+    "Greyhound": 0,                     # the huge-eyed brindle head portrait;
+                                        # [1] is a steamboat postcard
 
     # Commons holds exactly two permissive Bernedoodles. [1] has a person's
     # leg and hand in the frame and is 640px wide — under the crop, so it

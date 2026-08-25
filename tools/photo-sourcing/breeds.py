@@ -79,6 +79,39 @@ BREEDS = [
     # third act: the same kind of dog has now read Havanese, Cavalier-led,
     # and Lhasa-adjacent across reveals).
     ("Lhasa Apso",                "Lhasa Apso dog"),
+    ("Alaskan Malamute",          "Alaskan Malamute dog"),   # billed live 2026-08-30
+
+    # --- The 2026-08-30 gap batch ---
+    # Tier 1: the app's own copy names these — the closing-question pools
+    # (Whippet, wolfhound), the cross rule (Cockapoo, Maltipoo), the fluffy
+    # rule (Coton), and the bully rule (American Bully) — so a confirmation
+    # or clear read leads straight to a photo-less dossier.
+    ("Whippet",                   "Whippet dog"),
+    # Searched twice 2026-08-30 and unserved: every permissive candidate is a
+    # show-hall shot with people's faces, a painting, or century-old archive.
+    # Falls to the trait grid; the wolfhound closing question only ever
+    # denies anyway. Left here to document that it was looked for.
+    ("Irish Wolfhound",           None),
+    ("Cockapoo",                  "Cockapoo dog"),
+    # Searched twice 2026-08-30 and unserved: one couch blob and two Marine
+    # Corps dog-run event photos. Falls to the trait grid.
+    ("Maltipoo",                  "Maltipoo dog"),
+    ("Coton de Tulear",           "Coton de Tulear"),
+    ("American Bully",            "American Bully dog"),
+    # Tier 2: visually unmistakable breeds Claude bills on sight.
+    ("Dalmatian",                 "Dalmatian dog"),
+    ("Belgian Malinois",          None),
+    ("Samoyed",                   "Samoyed dog"),
+    ("Bichon Frise",              None),
+    ("Chow Chow",                 "Chow Chow dog"),
+    # Searched twice 2026-08-30 and unserved: five frames of the same
+    # Shar-Pei × AmStaff cross, and one harsh-flash close-up. Falls to the
+    # trait grid.
+    ("Shar-Pei",                  "Shar Pei dog"),
+    ("West Highland White Terrier", None),
+    ("Irish Setter",              None),
+    # Bare "Greyhound" is a bus company before it is a dog.
+    ("Greyhound",                 "Greyhound dog"),
     # Bare "Mountain Cur" returns Madeira's mountains — Curral das Freiras.
     # Qualified, Commons has exactly two Mountain Curs and both are CC BY-SA,
     # so this breed cannot be served under the permissive-only rule and falls

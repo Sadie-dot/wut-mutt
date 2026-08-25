@@ -13,6 +13,33 @@ let cases: [(String, String?)] = [
     ("Chinese Crested (Powderpuff)",    "Chinese Crested"),
     ("Chinese Crested",                 "Chinese Crested"),
     ("Lhasa Apso",                      "Lhasa Apso"),
+    // The 2026-08-30 gap batch: each must match itself, and the lookalike
+    // neighbors that share their words must not borrow their portraits.
+    ("Alaskan Malamute",                "Alaskan Malamute"),
+    ("Whippet",                         "Whippet"),
+    ("Cockapoo",                        "Cockapoo"),
+    ("Coton de Tulear",                 "Coton de Tulear"),
+    ("American Bully",                  "American Bully"),
+    ("Dalmatian",                       "Dalmatian"),
+    ("Belgian Malinois",                "Belgian Malinois"),
+    ("Malinois",                        "Belgian Malinois"),
+    ("Samoyed",                         "Samoyed"),
+    ("Bichon Frise",                    "Bichon Frise"),
+    ("Bichon",                          "Bichon Frise"),
+    ("Chow Chow",                       "Chow Chow"),
+    ("West Highland White Terrier",     "West Highland White Terrier"),
+    ("Westie",                          "West Highland White Terrier"),
+    ("Irish Setter",                    "Irish Setter"),
+    ("Greyhound",                       "Greyhound"),
+    ("Italian Greyhound",               nil),   // a distinct toy breed — must
+                                                // not borrow the Greyhound
+    ("English Setter",                  nil),   // both its words are generic —
+                                                // must not borrow the Irish
+    // Searched and unserved (2026-08-30) — each must miss cleanly to the
+    // trait grid, not borrow a neighbor.
+    ("Irish Wolfhound",                 nil),
+    ("Maltipoo",                        nil),
+    ("Shar-Pei",                        nil),
     ("Plott Hound",                     "Plott Hound"),
     ("Catahoula Leopard Dog",           "Catahoula Leopard Dog"),
     ("Louisiana Catahoula Leopard Dog", "Catahoula Leopard Dog"),
