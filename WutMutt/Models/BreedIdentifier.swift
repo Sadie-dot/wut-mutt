@@ -219,9 +219,25 @@ struct BreedIdentifier {
         let look = wire.dogSize.flatMap(DogLook.Size.init(rawValue:)).map {
             DogLook(size: $0, coat: wire.dogCoat.flatMap(DogLook.Coat.init(rawValue:)) ?? .flat)
         }
-        return .dog(breeds: Array(breeds),
-                    certainty: max(40, min(99, wire.certainty)),
-                    look: look)
+        // Certainty must agree with the cast — the Worker prompt states the
+        // three-tier contract, but the model kept claiming epiphany over a
+        // shrug: a 40-point Guest Star came back 60+ through two rule
+        // wordings on live reveals. Enforced here deterministically, like
+        // the percentage arithmetic above: a Guest-Star-led or ≥40 cast
+        // caps at 59 ("Merely suspicious"), any hedge (Guest Star ≥20 or no
+        // breed reaching half) caps at 79. The prompt still asks the model
+        // for honest numbers; this makes dishonest ones unrepresentable.
+        var certainty = max(40, min(99, wire.certainty))
+        let guestPct = breeds.first {
+            $0.name.caseInsensitiveCompare("Guest Star") == .orderedSame
+        }?.pct ?? 0
+        let guestLeads = breeds[0].name.caseInsensitiveCompare("Guest Star") == .orderedSame
+        if guestLeads || guestPct >= 40 {
+            certainty = min(certainty, 59)
+        } else if guestPct >= 20 || breeds[0].pct < 50 {
+            certainty = min(certainty, 79)
+        }
+        return .dog(breeds: Array(breeds), certainty: certainty, look: look)
     }
 
     // MARK: Off-air copy
