@@ -63,9 +63,13 @@ PICKS = {
     "Weimaraner": 1,
     "Collie": 4,
     "Newfoundland": 1,
-    "Rhodesian Ridgeback": (2, 0.0),    # left-facing profile, nose tip touching
-                                        # the left edge when centred (2026-08-28
-                                        # edge audit)
+    "Rhodesian Ridgeback": 3,           # recast 2026-08-31, the user's catch:
+                                        # [2]'s head study shows no back on the
+                                        # breed NAMED for its ridge. [3] is the
+                                        # full side profile — whole back line,
+                                        # only a leash in frame. (The Bokeh
+                                        # principle: the signature trait is
+                                        # the photo's job.)
     "Great Pyrenees": 6,
     "Mastiff": 1,
     "Akita": 2,
@@ -136,8 +140,12 @@ PICKS = {
     "West Highland White Terrier": 2,   # sitting in grass, face to camera
     "Irish Setter": 1,                  # mahogany face-on portrait; [0] is
                                         # archival Nixon-with-setter
-    "Greyhound": 0,                     # the huge-eyed brindle head portrait;
-                                        # [1] is a steamboat postcard
+    "Greyhound": 4,                     # recast 2026-08-31 (the Bokeh
+                                        # principle): [0]'s head portrait hid
+                                        # the breed's fame — the silhouette.
+                                        # [4] is the full outline in an open
+                                        # field: deep chest, wasp waist,
+                                        # tuck-up. [1] is a steamboat postcard.
 
     # Commons holds exactly two permissive Bernedoodles. [1] has a person's
     # leg and hand in the frame and is 640px wide — under the crop, so it
