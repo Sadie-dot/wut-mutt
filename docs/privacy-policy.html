@@ -101,16 +101,16 @@
   choice and is handled by whichever app or service you pick. We receive nothing.
 </p>
 
-<h2>Your Claude API key (source builds only)</h2>
+<h2>Building from source</h2>
 <p>
-  The App Store version of Wut Mutt always uses our identification service and
-  never asks you for an API key. If you build the app yourself from source
-  without configuring that service, it will instead ask for your own Anthropic
-  API key. In that case the key is stored only in your device's secure Keychain,
-  and photos go directly from your device to Anthropic rather than through our
-  service — so our rate limit and the breed count above do not apply. We never
-  receive, transmit, or store your personal key. You can remove it at any time by
-  deleting the app.
+  Wut Mutt never asks you for an API key, and it stores no credentials of any
+  kind on your device. If you build the app yourself from source, it reaches
+  the same kind of identification service through a configuration file you
+  supply — pointing it at a service you run yourself is possible, in which
+  case that service's handling of photos is under your control and our rate
+  limit and breed count above do not apply. Without that configuration a
+  source build simply reports that no service is configured; it never falls
+  back to asking for a key.
 </p>
 
 <h2>Settings stored on your device</h2>
