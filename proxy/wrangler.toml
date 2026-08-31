@@ -17,7 +17,10 @@ binding = "RATE_KV"
 id = "95e768d5cd6f4f3c8fe3f087953e20ba"
 
 [vars]
-DAILY_CAP = "40"
+# TEMPORARILY 400 for the App Review window (raised 2026-09-02) so a
+# reviewer can't hit the intermission card mid-review and read it as a
+# breakage. REVERT TO "40" and redeploy after approval.
+DAILY_CAP = "400"
 
 # Which breed names Claude actually returns, so the bundled photo set can be
 # sourced against real frequency instead of a guess at AKC's list. Breed name,
